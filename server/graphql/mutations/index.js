@@ -6,4 +6,4 @@ module.exports = {
   addUser,
   removeUser,
   updateUser
-}
+};

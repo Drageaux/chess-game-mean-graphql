@@ -9,4 +9,4 @@ exports.userSchema = new GraphQLSchema({
     name: 'Mutation',
     fields: mutation
   })
-})
+});

@@ -3,7 +3,7 @@
 import gql from 'graphql-tag';
 
 export const allUsers = gql`
-  query {
+  query allUsers {
     users {
       id
       name
