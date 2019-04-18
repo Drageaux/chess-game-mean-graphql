@@ -4,7 +4,7 @@
     "dev:server": "npm run dev --prefix server",
     "build": "",
     "deploy": "",
-    "dev": "concurrently \"npm run dev:client\" && \"npm run dev:server\"",
+    "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
     "prestart": "npm run build --prefix client",
     "start": "npm run start --prefix server"
   },
