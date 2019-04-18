@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Square, FileEnum } from './square';
+import { default as parser } from './gameboard-parser';
 import { Piece } from './pieces/piece';
 import { Pawn } from './pieces/pawn';
 import { Rook } from './pieces/rook';
@@ -18,7 +19,7 @@ export class GameboardComponent implements OnInit {
   BOARD_SIZE = 8;
   board: Square[][] = [];
   moving = false;
-  currMoves: Move[] = [];
+  currMovesInStr: string[] = [];
 
   constructor() {
     for (let i = 0; i < this.BOARD_SIZE; i++) {
@@ -45,6 +46,7 @@ export class GameboardComponent implements OnInit {
           sq.piece = new Pawn('black');
         } else if (sq.rank === 1) {
           const f = sq.file;
+          /*
           if (f === 'a' || f === 'h') {
             sq.piece = new Rook('white');
           } else if (f === 'b' || f === 'g') {
@@ -56,8 +58,10 @@ export class GameboardComponent implements OnInit {
           } else if (f === 'e') {
             sq.piece = new King('white');
           }
+          */
         } else if (sq.rank === 8) {
           const f = sq.file;
+          /*
           if (f === 'a' || f === 'h') {
             sq.piece = new Rook('black');
           } else if (f === 'b' || f === 'g') {
@@ -69,21 +73,28 @@ export class GameboardComponent implements OnInit {
           } else if (f === 'e') {
             sq.piece = new King('black');
           }
+          */
         }
       }
       console.log(rank);
     }
+
+    // for testing
+    this.insertPiece('a', 6, new Pawn('white'));
+    this.insertPiece('e', 6, new Pawn('white'));
   }
 
   selectSquare(s: Square) {
     const p: Piece = s.piece;
     if (p) {
       this.moving = true;
-      console.log(
-        'all possible moves for "' + this.toString() + '": ',
-        p.getAllPossibleMoves(s.file, s.rank)
-      );
-      this.currMoves = p.getAllPossibleMoves(s.file, s.rank);
+      const allLegalMoves = p.getLegalMoves(s.file, s.rank, this.board);
+      this.currMovesInStr = parser.movesToStrings(allLegalMoves);
+      console.log(this.currMovesInStr);
     }
+  }
+
+  private insertPiece(file: string, rank: number, piece: Piece) {
+    this.board[rank - 1][FileEnum[file] - 1].piece = piece;
   }
 }

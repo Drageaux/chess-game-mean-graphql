@@ -26,7 +26,7 @@
       >
         <!-- activate square if a piece is trying to move -->
         <div
-          *ngIf="moving && currMoves.indexOf('' + s.file + s.rank) != -1"
+          *ngIf="moving && currMovesInStr.indexOf('' + s.file + s.rank) != -1"
           class="move"
         ></div>
         <i
