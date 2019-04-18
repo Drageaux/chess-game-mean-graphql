@@ -1,4 +1,5 @@
 import { Square, FileEnum } from '../square';
+import { Move } from '../move';
 
 export abstract class Piece {
   name: string;
@@ -13,5 +14,6 @@ export abstract class Piece {
   }
 
   abstract move(board: Square[][], position: Square);
-  abstract getAllPossibleMoves(file: string, rank: number);
+  protected abstract getAllPossibleMoves(file: string, rank: number): Move[];
+  abstract getLegalMoves(file: string, rank: number, board: Square[][]): Move[];
 }
