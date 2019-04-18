@@ -1,16 +1,37 @@
 <div class="text-center">
   <i class="fas fa-home"></i>
 
-  <div class="board">
+  <div class="board d-table mx-auto">
     <div
-      *ngFor="let r of board.slice().reverse(); let index=index; #odd=odd; #even=even;"
+      *ngFor="
+        let r of board.slice().reverse();
+        let r_index = index;
+        let r_odd = odd;
+        let r_even = even
+      "
       class="board-rank"
     >
       <div
-        *ngFor="let f of r; #index=index; #odd=odd; #even=even;"
+        *ngFor="
+          let s of r;
+          let s_index = index;
+          let s_odd = odd;
+          let s_even = even
+        "
         class="board-square"
+        [ngClass]="{
+          white: (s_even && r_even) || (s_odd && r_odd),
+          black: (s_odd && r_even) || (s_even && r_odd)
+        }"
       >
-        {{ f.toPositionString() }}
+        <!-- {{ s.toPositionString() }} -->
+        <i
+          class="fas fa-chess-{{ s.piece?.name }}-alt "
+          [ngClass]="{
+            white: s.piece?.color == 'white',
+            black: s.piece?.color == 'black'
+          }"
+        ></i>
       </div>
     </div>
   </div>
