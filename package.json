@@ -1,8 +1,14 @@
 {
   "scripts": {
-    "start:client": "npm run start --prefix client",
-    "start:server": "npm run start --prefix server",
+    "dev:client": "npm run start --prefix client",
+    "dev:server": "npm run dev --prefix server",
     "build": "",
-    "deploy": ""
+    "deploy": "",
+    "dev": "concurrently \"npm run dev:client\" && \"npm run dev:server\"",
+    "prestart": "npm run build --prefix client",
+    "start": "npm run start --prefix server"
+  },
+  "devDependencies": {
+    "concurrently": "^4.1.0"
   }
 }
