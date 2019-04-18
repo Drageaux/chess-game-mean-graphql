@@ -1,11 +1,10 @@
 export class Move {
-  rank: number;
   file: string;
-  piece: any;
+  rank: number;
 
-  constructor(rank: number, file: string, byPiece: any = null) {
-    this.rank = rank;
+  constructor(file: string, rank: number) {
     this.file = file;
+    this.rank = rank;
   }
 
   isLegalMove() {}
