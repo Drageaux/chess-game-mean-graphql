@@ -1,0 +1,17 @@
+<div class="text-center">
+  <i class="fas fa-home"></i>
+
+  <div class="board">
+    <div
+      *ngFor="let r of board.slice().reverse(); let index=index; #odd=odd; #even=even;"
+      class="board-rank"
+    >
+      <div
+        *ngFor="let f of r; #index=index; #odd=odd; #even=even;"
+        class="board-square"
+      >
+        {{ f.toPositionString() }}
+      </div>
+    </div>
+  </div>
+</div>

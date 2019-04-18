@@ -9,6 +9,7 @@ import { FormsModule } from '@angular/forms';
 import { GraphQLModule } from './graphql.module';
 // Custom
 import { UsersModule } from './user/users.module';
+import { GameboardModule } from './gameboard/gameboard.module';
 
 @NgModule({
   declarations: [AppComponent],
@@ -18,7 +19,8 @@ import { UsersModule } from './user/users.module';
     GraphQLModule, // import GraphQLModule
     AppRoutingModule,
     FormsModule,
-    UsersModule
+    UsersModule,
+    GameboardModule
   ],
   providers: [],
   bootstrap: [AppComponent]
