@@ -7,6 +7,7 @@ import { Knight } from './pieces/knight';
 import { Bishop } from './pieces/bishop';
 import { Queen } from './pieces/queen';
 import { King } from './pieces/king';
+import { Move } from './move';
 
 @Component({
   selector: 'app-gameboard',
@@ -16,6 +17,8 @@ import { King } from './pieces/king';
 export class GameboardComponent implements OnInit {
   BOARD_SIZE = 8;
   board: Square[][] = [];
+  moving = false;
+  currMoves: Move[] = [];
 
   constructor() {
     for (let i = 0; i < this.BOARD_SIZE; i++) {
@@ -73,11 +76,14 @@ export class GameboardComponent implements OnInit {
   }
 
   selectSquare(s: Square) {
-    if (s.piece) {
+    const p: Piece = s.piece;
+    if (p) {
+      this.moving = true;
       console.log(
         'all possible moves for "' + this.toString() + '": ',
-        s.piece.getAllPossibleMoves(s.file, s.rank)
+        p.getAllPossibleMoves(s.file, s.rank)
       );
+      this.currMoves = p.getAllPossibleMoves(s.file, s.rank);
     }
   }
 }

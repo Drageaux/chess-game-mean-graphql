@@ -14,11 +14,11 @@ export class Pawn extends Piece {
   }
 
   getAllPossibleMoves(file: string, rank: number) {
-    const allPossibleMoves: Move[] = [];
+    const allPossibleMoves: string[] = [];
     if (this.color === 'white') {
-      allPossibleMoves.push(new Move(rank + 1, file, this));
+      allPossibleMoves.push(file + '' + (rank + 1));
       if (!this.firstMoved) {
-        allPossibleMoves.push(new Move(rank + 2, file, this));
+        allPossibleMoves.push(file + '' + (rank + 2));
       }
     }
 

@@ -21,8 +21,14 @@
           white: (s_even && r_even) || (s_odd && r_odd),
           black: (s_odd && r_even) || (s_even && r_odd)
         }"
-        (click)="s?.piece ? selectSquare(s) : ''"
+        (click)="s.piece ? selectSquare(s) : ''"
+        id="square-{{ '' + s.file + s.rank }}"
       >
+        <!-- activate square if a piece is trying to move -->
+        <div
+          *ngIf="moving && currMoves.indexOf('' + s.file + s.rank) != -1"
+          class="move"
+        ></div>
         <i
           *ngIf="s?.piece"
           class="fas fa-chess-{{ s.piece?.name }}"
