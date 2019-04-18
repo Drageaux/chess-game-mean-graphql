@@ -1,4 +1,6 @@
-export class Piece {
+import { Square, FileEnum } from '../square';
+
+export abstract class Piece {
   name: string;
   color: 'white' | 'black';
   constructor(name: string, color: 'white' | 'black') {
@@ -9,4 +11,7 @@ export class Piece {
   toString() {
     return this.color + ' ' + this.name;
   }
+
+  abstract move(board: Square[][], position: Square);
+  protected abstract getAllPossibleMoves(file: string, rank: number);
 }

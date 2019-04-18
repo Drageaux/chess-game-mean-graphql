@@ -1,6 +1,4 @@
 <div class="text-center">
-  <i class="fas fa-home"></i>
-
   <div class="board d-table mx-auto">
     <div
       *ngFor="
@@ -23,9 +21,10 @@
           white: (s_even && r_even) || (s_odd && r_odd),
           black: (s_odd && r_even) || (s_even && r_odd)
         }"
+        (click)="s?.piece ? selectSquare(s) : ''"
       >
-        <!-- {{ s.toPositionString() }} -->
         <i
+          *ngIf="s?.piece"
           class="fas fa-chess-{{ s.piece?.name }}"
           [ngClass]="{
             white: s.piece?.color == 'white',

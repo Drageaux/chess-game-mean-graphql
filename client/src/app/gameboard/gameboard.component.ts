@@ -27,9 +27,8 @@ export class GameboardComponent implements OnInit {
   addFileSquares(currRank: number): Square[] {
     const rank: Square[] = [];
     for (let i = 0; i < 8; i++) {
-      rank.push(new Square(currRank, FileEnum[i + 1]));
+      rank.push(new Square(FileEnum[i + 1], currRank));
     }
-    // console.log(rank);
     return rank;
   }
 
@@ -70,6 +69,15 @@ export class GameboardComponent implements OnInit {
         }
       }
       console.log(rank);
+    }
+  }
+
+  selectSquare(s: Square) {
+    if (s.piece) {
+      console.log(
+        'all possible moves for "' + this.toString() + '": ',
+        s.piece.getAllPossibleMoves(s.file, s.rank)
+      );
     }
   }
 }

@@ -1,11 +1,13 @@
-export class Square {
-  rank: number;
-  file: string;
-  piece: any;
+import { Piece } from './pieces/piece';
 
-  constructor(rank: number, file: string, piece: any = null) {
-    this.rank = rank;
+export class Square {
+  file: string;
+  rank: number;
+  piece: Piece;
+
+  constructor(file: string, rank: number, piece: any = null) {
     this.file = file;
+    this.rank = rank;
     this.piece = piece;
   }
 
