@@ -17,7 +17,7 @@ export class Square {
   }
 
   toPositionString() {
-    return '' + this.rank + this.file;
+    return '' + this.file + this.rank;
   }
 }
 

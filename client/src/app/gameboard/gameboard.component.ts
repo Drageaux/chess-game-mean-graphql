@@ -1,6 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { Square, FileEnum } from './square';
-import { Piece } from './piece';
+import { Piece } from './pieces/piece';
+import { Pawn } from './pieces/pawn';
+import { Rook } from './pieces/rook';
+import { Knight } from './pieces/knight';
+import { Bishop } from './pieces/bishop';
+import { Queen } from './pieces/queen';
+import { King } from './pieces/king';
 
 @Component({
   selector: 'app-gameboard',
@@ -29,11 +35,28 @@ export class GameboardComponent implements OnInit {
 
   // set up pieces
   ngOnInit() {
-    for (const ranks of this.board) {
-      for (const sq of ranks) {
-        sq.piece = new Piece('pawn', 'white');
+    for (const rank of this.board) {
+      for (const sq of rank) {
+        if (sq.rank === 2) {
+          sq.piece = new Pawn('white');
+        } else if (sq.rank === 7) {
+          sq.piece = new Pawn('black');
+        } else if (sq.rank === 1) {
+          const f = sq.file;
+          if (f === 'a' || f === 'h') {
+            sq.piece = new Rook('white');
+          } else if (f === 'b' || f === 'g') {
+            sq.piece = new Knight('white');
+          } else if (f === 'c' || f === 'f') {
+            sq.piece = new Bishop('white');
+          } else if (f === 'd') {
+            sq.piece = new Queen('white');
+          } else if (f === 'e') {
+            sq.piece = new King('white');
+          }
+        }
       }
-      console.log(ranks);
+      console.log(rank);
     }
   }
 }
