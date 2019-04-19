@@ -106,6 +106,9 @@ export class GameboardComponent implements OnInit {
   }
 
   selectPiece(s: Square) {
+    if (s === this.currSquare) {
+      return;
+    }
     this.currSquare = s;
     const p: Piece = s.piece;
     if (p) {
