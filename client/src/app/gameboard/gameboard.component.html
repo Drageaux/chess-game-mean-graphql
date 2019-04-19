@@ -34,8 +34,10 @@
           *ngIf="s?.piece"
           class="fas fa-chess-{{ s.piece?.name }}"
           [ngClass]="{
-            white: s.piece?.color == 'white',
-            black: s.piece?.color == 'black'
+            white: s.piece?.color === 'white',
+            black: s.piece?.color === 'black',
+            'white-turn': s.piece?.color === 'white' && currTurn === 'white',
+            'black-turn': s.piece?.color === 'black' && currTurn === 'black'
           }"
         ></i>
       </div>

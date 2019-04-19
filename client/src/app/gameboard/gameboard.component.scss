@@ -8,6 +8,13 @@
   display: table-cell;
   vertical-align: middle;
 
+  &.white {
+    background: url(../../assets/img/light-veneer.png);
+  }
+  &.black {
+    background: url(../../assets/img/purty-wood.png);
+  }
+
   .move {
     position: absolute;
     width: 100%;
@@ -16,14 +23,14 @@
     background: rgba(255, 255, 0, 0.5);
   }
 
-  &.white {
-    background: url(../../assets/img/light-veneer.png);
-  }
-  &.black {
-    background: url(../../assets/img/purty-wood.png);
-  }
   i {
     font-size: 2em;
+  }
+  i.white-turn {
+    font-size: 2.5em;
+  }
+  i.black-turn {
+    font-size: 2.5em;
   }
 }
 
