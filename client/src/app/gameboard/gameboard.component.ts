@@ -3,11 +3,13 @@ import { Square, FileEnum } from './square';
 import { default as parser } from './gameboard-parser';
 import { Piece } from './pieces/piece';
 import { Pawn } from './pieces/pawn';
+/*
 import { Rook } from './pieces/rook';
 import { Knight } from './pieces/knight';
 import { Bishop } from './pieces/bishop';
 import { Queen } from './pieces/queen';
 import { King } from './pieces/king';
+*/
 import { Move } from './move';
 
 @Component({
@@ -88,8 +90,10 @@ export class GameboardComponent implements OnInit {
     const p: Piece = s.piece;
     if (p) {
       this.moving = true;
-      const allLegalMoves = p.getLegalMoves(s.file, s.rank, this.board);
-      this.currMovesInStr = parser.movesToStrings(allLegalMoves);
+
+      this.currMovesInStr = parser.movesToStrings(
+        p.getAllPossibleMoves(s.file, s.rank, this.board)
+      );
       console.log(this.currMovesInStr);
     }
   }
