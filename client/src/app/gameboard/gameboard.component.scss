@@ -25,13 +25,13 @@
   i {
     font-size: 2em;
   }
+}
 
-  i.white {
-    color: white;
-    text-shadow: 0px 0px 4px black;
-  }
-  i.black {
-    color: black;
-    transform: scaleX(-1);
-  }
+i.white {
+  color: white;
+  text-shadow: 0px 0px 4px black;
+}
+i.black {
+  color: black;
+  transform: scaleX(-1);
 }
