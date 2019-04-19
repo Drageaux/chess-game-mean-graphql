@@ -1,4 +1,5 @@
 <div class="text-center">
+  <h4>current turn: {{ currTurn }}</h4>
   <div class="board d-table mx-auto">
     <div
       *ngFor="
@@ -21,7 +22,7 @@
           white: (s_even && r_even) || (s_odd && r_odd),
           black: (s_odd && r_even) || (s_even && r_odd)
         }"
-        (click)="s.piece ? selectSquare(s) : ''"
+        (click)="handleSquareClick(s)"
         id="square-{{ '' + s.file + s.rank }}"
       >
         <!-- activate square if a piece is trying to move -->

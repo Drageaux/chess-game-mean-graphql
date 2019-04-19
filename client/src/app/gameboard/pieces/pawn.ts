@@ -12,7 +12,7 @@ export class Pawn extends Piece {
     throw new Error('Method not implemented.');
   }
 
-  // get board-agnostic moves
+  // get board-aware moves
   getAllPossibleMoves(file: string, rank: number, board: Square[][]): Move[] {
     const params: [string, number, Square[][]] = [file, rank, board];
     let allPossibleMoves = [];
@@ -62,13 +62,13 @@ export class Pawn extends Piece {
     rank: number,
     board: Square[][]
   ): Move[] {
-    const params: [string, number, Square[][]] = [file, rank, board];
     const result: Move[] = [];
-
     const fileNum = FileEnum[file];
     const rightFileEnum: number = fileNum + 1;
     const leftFileEnum: number = fileNum - 1;
+
     if (rank + 1 <= 8) {
+      // check both right and left square diagonally in front
       if (rightFileEnum <= 8) {
         const sq = parser.getSquare(FileEnum[rightFileEnum], rank + 1, board);
         if (sq.piece && sq.piece.color !== this.color) {
@@ -85,25 +85,7 @@ export class Pawn extends Piece {
     return result;
   }
 
-  // get board-aware moves
-  // getLegalMoves(fromFile: string, fromRank: number, board: Square[][]): Move[] {
-  //   let result = [];
-  //   const allPossibleMoves = this.getAllPossibleMoves(fromFile, fromRank);
-
-  //   result = allPossibleMoves;
-  //   // TODO: differentiate 2-colored pawn
-  //   for (const m of allPossibleMoves) {
-  //     // TODO: block if anyone in front
-  //     const square = parser.getSquare(m.file, m.rank, board);
-  //     if (square.piece) {
-  //       continue;
-  //     } else if () {}  else {
-  //       result.push(m);
-  //     }
-  //   }
-
-  //   // TODO: allow if opponent 1 square away diagonally
-
-  //   return result;
-  // }
+  promote() {
+    throw Error('Method not implemented');
+  }
 }

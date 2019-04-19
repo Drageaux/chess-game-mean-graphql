@@ -3,13 +3,11 @@ import { Square, FileEnum } from './square';
 import { default as parser } from './gameboard-parser';
 import { Piece } from './pieces/piece';
 import { Pawn } from './pieces/pawn';
-/*
 import { Rook } from './pieces/rook';
 import { Knight } from './pieces/knight';
 import { Bishop } from './pieces/bishop';
 import { Queen } from './pieces/queen';
 import { King } from './pieces/king';
-*/
 import { Move } from './move';
 
 @Component({
@@ -22,6 +20,8 @@ export class GameboardComponent implements OnInit {
   board: Square[][] = [];
   moving = false;
   currMovesInStr: string[] = [];
+  currTurn: 'black' | 'white' = 'white';
+  currSquare: Square;
 
   constructor() {
     for (let i = 0; i < this.BOARD_SIZE; i++) {
@@ -84,13 +84,35 @@ export class GameboardComponent implements OnInit {
     // for testing
     this.insertPiece('a', 6, new Pawn('white'));
     this.insertPiece('e', 6, new Pawn('white'));
+    this.insertPiece('e', 3, new Pawn('black'));
+    this.insertPiece('f', 3, new Pawn('white'));
   }
 
-  selectSquare(s: Square) {
+  // event handling
+  handleSquareClick(s: Square) {
+    if (s.piece && s.piece.color === this.currTurn) {
+      // if click current player's piece, activate the tile
+      this.selectPiece(s);
+    } else if (
+      this.moving &&
+      this.currMovesInStr.indexOf('' + s.file + s.rank) !== -1
+    ) {
+      // if click empty tile, move
+
+      // reset current status
+      this.currMovesInStr = [];
+      this.moving = false;
+    }
+    console.log(s);
+  }
+
+  selectPiece(s: Square) {
+    this.currSquare = s;
     const p: Piece = s.piece;
     if (p) {
       this.moving = true;
 
+      // help render
       this.currMovesInStr = parser.movesToStrings(
         p.getAllPossibleMoves(s.file, s.rank, this.board)
       );
@@ -99,6 +121,13 @@ export class GameboardComponent implements OnInit {
   }
 
   private insertPiece(file: string, rank: number, piece: Piece) {
-    this.board[rank - 1][FileEnum[file] - 1].piece = piece;
+    // check if a piece already exists
+    if (!this.board[rank - 1][FileEnum[file] - 1].piece) {
+      this.board[rank - 1][FileEnum[file] - 1].piece = piece;
+    }
+  }
+
+  private movePiece(currFile: string, currRank: number, nextMove: Move) {
+    this.currTurn = 'white' ? 'black' : 'white';
   }
 }
