@@ -20,8 +20,10 @@ export class Pawn extends Piece {
       allPossibleMoves = allPossibleMoves.concat(
         ...this.getWhitePieceMoves(...params)
       );
-
-      console.table(allPossibleMoves);
+    } else if (this.color === 'black') {
+      allPossibleMoves = allPossibleMoves.concat(
+        ...this.getBlackPieceMoves(...params)
+      );
     }
     return allPossibleMoves;
   }
@@ -55,7 +57,29 @@ export class Pawn extends Piece {
     return result;
   }
 
-  private getBlackPieceMoves(file: string, rank: number, board: Square[][]) {}
+  private getBlackPieceMoves(file: string, rank: number, board: Square[][]) {
+    const params: [string, number, Square[][]] = [file, rank, board];
+    let result = [];
+    const firstMove = rank === 7;
+
+    if (rank - 1 >= 1) {
+      const sq = parser.getSquare(file, rank - 1, board);
+      if (!sq.piece) {
+        result.push(new Move(file, rank - 1));
+      }
+    }
+    if (firstMove) {
+      const sq1 = parser.getSquare(file, rank - 1, board);
+      const sq2 = parser.getSquare(file, rank - 2, board);
+      if (!sq1.piece && !sq2.piece) {
+        result.push(new Move(file, rank - 2));
+      }
+    }
+    // capture an enemy by moving 1 square diagonally
+    result = result.concat(...this.getCapturableMoves(...params));
+
+    return result;
+  }
 
   private getCapturableMoves(
     file: string,
@@ -67,7 +91,7 @@ export class Pawn extends Piece {
     const rightFileEnum: number = fileNum + 1;
     const leftFileEnum: number = fileNum - 1;
 
-    if (rank + 1 <= 8) {
+    if (rank + 1 <= 8 && this.color === 'white') {
       // check both right and left square diagonally in front
       if (rightFileEnum <= 8) {
         const sq = parser.getSquare(FileEnum[rightFileEnum], rank + 1, board);
@@ -79,6 +103,19 @@ export class Pawn extends Piece {
         const sq = parser.getSquare(FileEnum[leftFileEnum], rank + 1, board);
         if (sq.piece && sq.piece.color !== this.color) {
           result.push(new Move(FileEnum[leftFileEnum], rank + 1));
+        }
+      }
+    } else if (rank - 1 >= 1 && this.color === 'black') {
+      if (rightFileEnum <= 8) {
+        const sq = parser.getSquare(FileEnum[rightFileEnum], rank - 1, board);
+        if (sq.piece && sq.piece.color !== this.color) {
+          result.push(new Move(FileEnum[rightFileEnum], rank - 1));
+        }
+      }
+      if (leftFileEnum >= 1) {
+        const sq = parser.getSquare(FileEnum[leftFileEnum], rank - 1, board);
+        if (sq.piece && sq.piece.color !== this.color) {
+          result.push(new Move(FileEnum[leftFileEnum], rank - 1));
         }
       }
     }

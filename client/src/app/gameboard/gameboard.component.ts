@@ -135,6 +135,6 @@ export class GameboardComponent implements OnInit {
     this.currMovesInStr = [];
     this.moving = false;
     // switch player
-    // this.currTurn = 'white' ? 'black' : 'white';
+    this.currTurn = this.currTurn === 'white' ? 'black' : 'white';
   }
 }
