@@ -102,7 +102,6 @@ export class GameboardComponent implements OnInit {
       // if click empty tile, move
       this.movePiece(this.currSquare, s);
     }
-    console.log(s);
   }
 
   selectPiece(s: Square) {

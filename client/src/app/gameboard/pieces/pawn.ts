@@ -16,107 +16,96 @@ export class Pawn extends Piece {
   getAllPossibleMoves(file: string, rank: number, board: Square[][]): Move[] {
     const params: [string, number, Square[][]] = [file, rank, board];
     let allPossibleMoves = [];
-    if (this.color === 'white') {
-      allPossibleMoves = allPossibleMoves.concat(
-        ...this.getWhitePieceMoves(...params)
-      );
-    } else if (this.color === 'black') {
-      allPossibleMoves = allPossibleMoves.concat(
-        ...this.getBlackPieceMoves(...params)
-      );
-    }
+    allPossibleMoves = allPossibleMoves.concat(
+      ...this.getRegularMoves(...params),
+      ...this.getCapturableMoves(...params)
+    );
     return allPossibleMoves;
   }
 
+  // return rank/row depending on color and number of squares
+  private getVerMoves(rank: number, noSquares: number): number {
+    if (this.color === 'white') {
+      return rank + noSquares <= 8 ? rank + noSquares : null;
+    } else {
+      return rank - noSquares >= 1 ? rank - noSquares : null;
+    }
+  }
+
+  // noSquares negative for left, positive for right
+  private getHorMoves(file: string, noSquares: number): string {
+    if (noSquares === 0) {
+      return null;
+    }
+
+    const fileNum: number = FileEnum[file];
+    if (noSquares > 0) {
+      const rightFileEnum =
+        fileNum + noSquares <= 8 ? fileNum + noSquares : null;
+      return rightFileEnum ? FileEnum[rightFileEnum] : null;
+    } else if (noSquares < 0) {
+      const leftFileEnum =
+        fileNum + noSquares >= 1 ? fileNum + noSquares : null;
+      return leftFileEnum ? FileEnum[leftFileEnum] : null;
+    }
+  }
+
   // get moves for white pawns only
-  private getWhitePieceMoves(
+  private getRegularMoves(
     file: string,
     rank: number,
     board: Square[][]
   ): Move[] {
-    const params: [string, number, Square[][]] = [file, rank, board];
-    let result = [];
-    const firstMove = rank === 2;
+    const result: Move[] = [];
+    const firstMove =
+      (rank === 2 && this.color === 'white') ||
+      (rank === 7 && this.color === 'black');
+    const moveForward = this.getVerMoves(rank, 1);
+    const moveForwardTwo = this.getVerMoves(rank, 2);
 
-    if (rank + 1 <= 8) {
-      const sq = parser.getSquare(file, rank + 1, board);
+    if (moveForward) {
+      const sq = parser.getSquare(file, moveForward, board);
       if (!sq.piece) {
-        result.push(new Move(file, rank + 1));
+        result.push(new Move(file, moveForward));
       }
     }
     if (firstMove) {
-      const sq1 = parser.getSquare(file, rank + 1, board);
-      const sq2 = parser.getSquare(file, rank + 2, board);
+      const sq1 = parser.getSquare(file, moveForward, board);
+      const sq2 = parser.getSquare(file, moveForwardTwo, board);
       if (!sq1.piece && !sq2.piece) {
-        result.push(new Move(file, rank + 2));
+        result.push(new Move(file, moveForwardTwo));
       }
     }
-    // capture an enemy by moving 1 square diagonally
-    result = result.concat(...this.getCapturableMoves(...params));
-
     return result;
   }
 
-  private getBlackPieceMoves(file: string, rank: number, board: Square[][]) {
-    const params: [string, number, Square[][]] = [file, rank, board];
-    let result = [];
-    const firstMove = rank === 7;
-
-    if (rank - 1 >= 1) {
-      const sq = parser.getSquare(file, rank - 1, board);
-      if (!sq.piece) {
-        result.push(new Move(file, rank - 1));
-      }
-    }
-    if (firstMove) {
-      const sq1 = parser.getSquare(file, rank - 1, board);
-      const sq2 = parser.getSquare(file, rank - 2, board);
-      if (!sq1.piece && !sq2.piece) {
-        result.push(new Move(file, rank - 2));
-      }
-    }
-    // capture an enemy by moving 1 square diagonally
-    result = result.concat(...this.getCapturableMoves(...params));
-
-    return result;
-  }
-
+  // capture an enemy by moving 1 square diagonally
   private getCapturableMoves(
     file: string,
     rank: number,
     board: Square[][]
   ): Move[] {
     const result: Move[] = [];
-    const fileNum = FileEnum[file];
-    const rightFileEnum: number = fileNum + 1;
-    const leftFileEnum: number = fileNum - 1;
+    const forwardRank = this.getVerMoves(rank, 1);
+    if (!forwardRank) {
+      return [];
+    }
+    // get right coordinate and check if its legal
+    const rightFile = this.getHorMoves(file, 1);
+    // get left coordinate and check if its legal
+    const leftFile = this.getHorMoves(file, -1);
 
-    if (rank + 1 <= 8 && this.color === 'white') {
-      // check both right and left square diagonally in front
-      if (rightFileEnum <= 8) {
-        const sq = parser.getSquare(FileEnum[rightFileEnum], rank + 1, board);
-        if (sq.piece && sq.piece.color !== this.color) {
-          result.push(new Move(FileEnum[rightFileEnum], rank + 1));
-        }
+    // check both right and left square diagonally in front
+    if (rightFile) {
+      const sq = parser.getSquare(rightFile, forwardRank, board);
+      if (sq.piece && sq.piece.color !== this.color) {
+        result.push(new Move(rightFile, forwardRank));
       }
-      if (leftFileEnum >= 1) {
-        const sq = parser.getSquare(FileEnum[leftFileEnum], rank + 1, board);
-        if (sq.piece && sq.piece.color !== this.color) {
-          result.push(new Move(FileEnum[leftFileEnum], rank + 1));
-        }
-      }
-    } else if (rank - 1 >= 1 && this.color === 'black') {
-      if (rightFileEnum <= 8) {
-        const sq = parser.getSquare(FileEnum[rightFileEnum], rank - 1, board);
-        if (sq.piece && sq.piece.color !== this.color) {
-          result.push(new Move(FileEnum[rightFileEnum], rank - 1));
-        }
-      }
-      if (leftFileEnum >= 1) {
-        const sq = parser.getSquare(FileEnum[leftFileEnum], rank - 1, board);
-        if (sq.piece && sq.piece.color !== this.color) {
-          result.push(new Move(FileEnum[leftFileEnum], rank - 1));
-        }
+    }
+    if (leftFile) {
+      const sq = parser.getSquare(leftFile, forwardRank, board);
+      if (sq.piece && sq.piece.color !== this.color) {
+        result.push(new Move(leftFile, forwardRank));
       }
     }
     return result;
