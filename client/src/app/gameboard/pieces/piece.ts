@@ -14,6 +14,7 @@ export abstract class Piece {
   }
 
   abstract move(board: Square[][], position: Square);
+
   abstract getAllPossibleMoves(
     file: string,
     rank: number,

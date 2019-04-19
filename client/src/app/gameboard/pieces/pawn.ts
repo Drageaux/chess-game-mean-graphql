@@ -27,34 +27,63 @@ export class Pawn extends Piece {
   }
 
   // get moves for white pawns only
-  private getWhitePieceMoves(file: string, rank: number, board: Square[][]) {
-    const result = [];
-
+  private getWhitePieceMoves(
+    file: string,
+    rank: number,
+    board: Square[][]
+  ): Move[] {
+    const params: [string, number, Square[][]] = [file, rank, board];
+    let result = [];
     const firstMove = rank === 2;
+
     if (rank + 1 <= 8) {
       const sq = parser.getSquare(file, rank + 1, board);
       if (!sq.piece) {
         result.push(new Move(file, rank + 1));
       }
     }
-    if (firstMove && rank + 2 <= 8) {
-      const sq = parser.getSquare(file, rank + 2, board);
-      if (!sq.piece) {
+    if (firstMove) {
+      const sq1 = parser.getSquare(file, rank + 1, board);
+      const sq2 = parser.getSquare(file, rank + 2, board);
+      if (!sq1.piece && !sq2.piece) {
         result.push(new Move(file, rank + 2));
       }
     }
-    // TODO: capture an enemy by moving 1 square diagonally
-    if (FileEnum[file] + 1 <= 8) {
-      result.push(new Move(FileEnum[FileEnum[file] + 1], rank + 1));
-    }
-    if (FileEnum[file] - 1 >= 1) {
-      result.push(new Move(FileEnum[FileEnum[file] - 1], rank + 1));
-    }
+    // capture an enemy by moving 1 square diagonally
+    result = result.concat(...this.getCapturableMoves(...params));
 
     return result;
   }
 
   private getBlackPieceMoves(file: string, rank: number, board: Square[][]) {}
+
+  private getCapturableMoves(
+    file: string,
+    rank: number,
+    board: Square[][]
+  ): Move[] {
+    const params: [string, number, Square[][]] = [file, rank, board];
+    const result: Move[] = [];
+
+    const fileNum = FileEnum[file];
+    const rightFileEnum: number = fileNum + 1;
+    const leftFileEnum: number = fileNum - 1;
+    if (rank + 1 <= 8) {
+      if (rightFileEnum <= 8) {
+        const sq = parser.getSquare(FileEnum[rightFileEnum], rank + 1, board);
+        if (sq.piece && sq.piece.color !== this.color) {
+          result.push(new Move(FileEnum[rightFileEnum], rank + 1));
+        }
+      }
+      if (leftFileEnum >= 1) {
+        const sq = parser.getSquare(FileEnum[leftFileEnum], rank + 1, board);
+        if (sq.piece && sq.piece.color !== this.color) {
+          result.push(new Move(FileEnum[leftFileEnum], rank + 1));
+        }
+      }
+    }
+    return result;
+  }
 
   // get board-aware moves
   // getLegalMoves(fromFile: string, fromRank: number, board: Square[][]): Move[] {
