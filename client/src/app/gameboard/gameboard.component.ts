@@ -18,10 +18,12 @@ import { Move } from './move';
 export class GameboardComponent implements OnInit {
   BOARD_SIZE = 8;
   board: Square[][] = [];
+
   moving = false;
   currMovesInStr: string[] = [];
   currTurn: 'black' | 'white' = 'white';
   currSquare: Square;
+  capturedPieces: Piece[] = [];
 
   constructor() {
     for (let i = 0; i < this.BOARD_SIZE; i++) {
@@ -98,10 +100,7 @@ export class GameboardComponent implements OnInit {
       this.currMovesInStr.indexOf('' + s.file + s.rank) !== -1
     ) {
       // if click empty tile, move
-
-      // reset current status
-      this.currMovesInStr = [];
-      this.moving = false;
+      this.movePiece(this.currSquare, s);
     }
     console.log(s);
   }
@@ -116,7 +115,6 @@ export class GameboardComponent implements OnInit {
       this.currMovesInStr = parser.movesToStrings(
         p.getAllPossibleMoves(s.file, s.rank, this.board)
       );
-      console.log(this.currMovesInStr);
     }
   }
 
@@ -127,7 +125,16 @@ export class GameboardComponent implements OnInit {
     }
   }
 
-  private movePiece(currFile: string, currRank: number, nextMove: Move) {
-    this.currTurn = 'white' ? 'black' : 'white';
+  private movePiece(s: Square, nextSquare: Square) {
+    if (nextSquare.piece) {
+      this.capturedPieces.push(nextSquare.piece);
+    }
+    nextSquare.piece = s.piece;
+    s.piece = null;
+    // reset current status
+    this.currMovesInStr = [];
+    this.moving = false;
+    // switch player
+    // this.currTurn = 'white' ? 'black' : 'white';
   }
 }

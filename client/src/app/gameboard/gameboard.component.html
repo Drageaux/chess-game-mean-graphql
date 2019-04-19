@@ -41,4 +41,16 @@
       </div>
     </div>
   </div>
+
+  <h4>captured pieces:</h4>
+  <p>
+    <i
+      *ngFor="let piece of capturedPieces"
+      class="fas fa-chess-{{ piece?.name }}"
+      [ngClass]="{
+        white: piece?.color == 'white',
+        black: piece?.color == 'black'
+      }"
+    ></i>
+  </p>
 </div>
