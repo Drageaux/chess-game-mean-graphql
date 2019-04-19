@@ -8,10 +8,6 @@ export class Pawn extends Piece {
     super('pawn', color);
   }
 
-  move(board: Square[][], position: Square) {
-    throw new Error('Method not implemented.');
-  }
-
   // get board-aware moves
   getAllPossibleMoves(file: string, rank: number, board: Square[][]): Move[] {
     const params: [string, number, Square[][]] = [file, rank, board];

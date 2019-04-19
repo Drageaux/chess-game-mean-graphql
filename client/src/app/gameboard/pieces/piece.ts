@@ -13,8 +13,6 @@ export abstract class Piece {
     return this.color + ' ' + this.name;
   }
 
-  abstract move(board: Square[][], position: Square);
-
   abstract getAllPossibleMoves(
     file: string,
     rank: number,

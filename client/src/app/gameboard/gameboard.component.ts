@@ -50,10 +50,10 @@ export class GameboardComponent implements OnInit {
           sq.piece = new Pawn('black');
         } else if (sq.rank === 1) {
           const f = sq.file;
-          /*
           if (f === 'a' || f === 'h') {
             sq.piece = new Rook('white');
-          } else if (f === 'b' || f === 'g') {
+          }
+          /* else if (f === 'b' || f === 'g') {
             sq.piece = new Knight('white');
           } else if (f === 'c' || f === 'f') {
             sq.piece = new Bishop('white');
@@ -65,10 +65,11 @@ export class GameboardComponent implements OnInit {
           */
         } else if (sq.rank === 8) {
           const f = sq.file;
-          /*
+
           if (f === 'a' || f === 'h') {
             sq.piece = new Rook('black');
-          } else if (f === 'b' || f === 'g') {
+          }
+          /* else if (f === 'b' || f === 'g') {
             sq.piece = new Knight('black');
           } else if (f === 'c' || f === 'f') {
             sq.piece = new Bishop('black');
@@ -85,7 +86,7 @@ export class GameboardComponent implements OnInit {
 
     // for testing
     this.insertPiece('a', 6, new Pawn('white'));
-    this.insertPiece('e', 6, new Pawn('white'));
+    this.insertPiece('e', 6, new Rook('white'));
     this.insertPiece('e', 3, new Pawn('black'));
     this.insertPiece('f', 3, new Pawn('white'));
   }
@@ -128,7 +129,16 @@ export class GameboardComponent implements OnInit {
     if (nextSquare.piece) {
       this.capturedPieces.push(nextSquare.piece);
     }
+    // move piece to new position, and maybe do something special with it
     nextSquare.piece = s.piece;
+    if (nextSquare instanceof Pawn) {
+      // TODO: prompt to promote
+      if (nextSquare.piece.color === 'white' && nextSquare.rank === 8) {
+      } else if (nextSquare.piece.color === 'black' && nextSquare.rank === 1) {
+      }
+    }
+
+    // remove piece from old position
     s.piece = null;
     // reset current status
     this.currMovesInStr = [];
