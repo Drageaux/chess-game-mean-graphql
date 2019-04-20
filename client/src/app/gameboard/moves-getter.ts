@@ -19,7 +19,7 @@ export default class MovesGetter {
     const fileEnum: number = FileEnum[file];
 
     // tslint:disable-next-line:no-console
-    console.time('get moves in 1 loop');
+    console.time('get straight lines');
 
     // find the closest piece
     // border-inclusive if piece is enemy (capturable)
@@ -82,7 +82,7 @@ export default class MovesGetter {
       }
     }
     // tslint:disable-next-line:no-console
-    console.timeEnd('get moves in 1 loop');
+    console.timeEnd('get straight lines');
 
     return result;
   }
@@ -106,7 +106,7 @@ export default class MovesGetter {
     const fileEnum: number = FileEnum[file];
 
     // tslint:disable-next-line:no-console
-    console.time('get moves in 1 loop');
+    console.time('get diagonal lines');
 
     // find the closest piece
     // border-inclusive if piece is enemy (capturable)
@@ -223,7 +223,7 @@ export default class MovesGetter {
     }
 
     // tslint:disable-next-line:no-console
-    console.timeEnd('get moves in 1 loop');
+    console.timeEnd('get diagonal lines');
 
     return result;
   }
