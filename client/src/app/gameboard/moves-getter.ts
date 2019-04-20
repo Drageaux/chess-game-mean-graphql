@@ -87,6 +87,15 @@ export default class MovesGetter {
     return result;
   }
 
+  /**
+   * Breadth-first search for the correct square.
+   * Stop going in a direction when hitting a border or a friendly piece
+   *
+   * @param piece - the Piece being picked up
+   * @param file - horizontal coordinate
+   * @param rank - vertical coordinate
+   * @param board - the active gameboard
+   */
   static getDiagonalLineMoves(
     piece: Bishop | Queen,
     file: string,
