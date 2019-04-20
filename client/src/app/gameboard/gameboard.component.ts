@@ -52,12 +52,12 @@ export class GameboardComponent implements OnInit {
           const f = sq.file;
           if (f === 'a' || f === 'h') {
             sq.piece = new Rook('white');
+          } else if (f === 'c' || f === 'f') {
+            sq.piece = new Bishop('white');
           }
           /* else if (f === 'b' || f === 'g') {
             sq.piece = new Knight('white');
-          } else if (f === 'c' || f === 'f') {
-            sq.piece = new Bishop('white');
-          } else if (f === 'd') {
+          }  else if (f === 'd') {
             sq.piece = new Queen('white');
           } else if (f === 'e') {
             sq.piece = new King('white');
@@ -68,11 +68,11 @@ export class GameboardComponent implements OnInit {
 
           if (f === 'a' || f === 'h') {
             sq.piece = new Rook('black');
+          } else if (f === 'c' || f === 'f') {
+            sq.piece = new Bishop('black');
           }
           /* else if (f === 'b' || f === 'g') {
             sq.piece = new Knight('black');
-          } else if (f === 'c' || f === 'f') {
-            sq.piece = new Bishop('black');
           } else if (f === 'd') {
             sq.piece = new Queen('black');
           } else if (f === 'e') {
@@ -89,6 +89,7 @@ export class GameboardComponent implements OnInit {
     this.insertPiece('e', 6, new Rook('white'));
     this.insertPiece('e', 3, new Pawn('black'));
     this.insertPiece('f', 3, new Pawn('white'));
+    this.insertPiece('h', 6, new Bishop('white'));
   }
 
   // event handling

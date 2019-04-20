@@ -61,14 +61,14 @@ export class Pawn extends Piece {
 
     if (moveForward) {
       const sq = parser.getSquare(file, moveForward, board);
-      if (!sq.piece) {
+      if (sq && !sq.piece) {
         result.push(new Move(file, moveForward));
       }
     }
     if (firstMove) {
       const sq1 = parser.getSquare(file, moveForward, board);
       const sq2 = parser.getSquare(file, moveForwardTwo, board);
-      if (!sq1.piece && !sq2.piece) {
+      if (sq1 && !sq1.piece && sq2 && !sq2.piece) {
         result.push(new Move(file, moveForwardTwo));
       }
     }
@@ -94,13 +94,13 @@ export class Pawn extends Piece {
     // check both right and left square diagonally in front
     if (rightFile) {
       const sq = parser.getSquare(rightFile, forwardRank, board);
-      if (sq.piece && sq.piece.color !== this.color) {
+      if (sq && sq.piece && sq.piece.color !== this.color) {
         result.push(new Move(rightFile, forwardRank));
       }
     }
     if (leftFile) {
       const sq = parser.getSquare(leftFile, forwardRank, board);
-      if (sq.piece && sq.piece.color !== this.color) {
+      if (sq && sq.piece && sq.piece.color !== this.color) {
         result.push(new Move(leftFile, forwardRank));
       }
     }

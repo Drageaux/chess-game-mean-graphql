@@ -1,5 +1,5 @@
 import { Piece } from './piece';
-import { Square, FileEnum } from '../square';
+import { Square } from '../square';
 import { Move } from '../move';
 import { default as movesGetter } from '../moves-getter';
 
