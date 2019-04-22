@@ -57,10 +57,9 @@ export class GameboardComponent implements OnInit {
             sq.piece = new Bishop('white');
           } else if (f === 'd') {
             sq.piece = new Queen('white');
-          } /*else if (f === 'e') {
+          } else if (f === 'e') {
             sq.piece = new King('white');
           }
-          */
         } else if (sq.rank === 8) {
           const f = sq.file;
           if (f === 'a' || f === 'h') {
@@ -71,10 +70,9 @@ export class GameboardComponent implements OnInit {
             sq.piece = new Bishop('black');
           } else if (f === 'd') {
             sq.piece = new Queen('black');
-          } /* else if (f === 'e') {
+          } else if (f === 'e') {
             sq.piece = new King('black');
           }
-          */
         }
       }
       console.log(rank);

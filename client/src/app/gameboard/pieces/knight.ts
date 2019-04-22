@@ -2,7 +2,6 @@ import { Piece } from './piece';
 import { Square, FileEnum } from '../square';
 import { Move } from '../move';
 import { default as movesGetter } from '../moves-getter';
-import { default as parser } from '../gameboard-parser';
 
 interface NewMove {
   fileEnum: number;
