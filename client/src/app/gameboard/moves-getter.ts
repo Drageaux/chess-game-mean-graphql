@@ -40,7 +40,7 @@ export default class MovesGetter {
    * Return true if line reached limit/should stop
    *
    */
-  private static appendLegalMove(
+  static appendLegalMove(
     currPiece: Piece,
     moveArr: Move[],
     newFileEnum: number,
