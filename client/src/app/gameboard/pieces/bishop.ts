@@ -8,10 +8,6 @@ export class Bishop extends Piece {
     super('bishop', color);
   }
 
-  move(board: Square[][]) {
-    throw new Error('Method not implemented.');
-  }
-
   getAllPossibleMoves(file: string, rank: number, board: Square[][]): Move[] {
     const params: [string, number, Square[][]] = [file, rank, board];
     let allPossibleMoves = [];
