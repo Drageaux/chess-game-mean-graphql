@@ -15,11 +15,11 @@ export class Square {
     if (!this.piece) {
       return '';
     }
-    return this.piece.color + ' ' + this.piece.name;
+    return `${this.piece.color} ${this.piece.name}`;
   }
 
   toPositionString() {
-    return '' + this.file + this.rank;
+    return `${this.file}${this.rank}`;
   }
 }
 

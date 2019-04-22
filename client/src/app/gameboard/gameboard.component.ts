@@ -96,7 +96,7 @@ export class GameboardComponent implements OnInit {
       this.selectPiece(s);
     } else if (
       this.moving &&
-      this.currMovesInStr.indexOf('' + s.file + s.rank) !== -1
+      this.currMovesInStr.indexOf(`${s.file} + ${s.rank}`) !== -1
     ) {
       // if click empty tile, move
       this.movePiece(this.currSquare, s);

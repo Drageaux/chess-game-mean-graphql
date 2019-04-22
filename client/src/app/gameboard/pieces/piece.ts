@@ -10,7 +10,7 @@ export abstract class Piece {
   }
 
   toString() {
-    return this.color + ' ' + this.name;
+    return `${this.color} ${this.name}`;
   }
 
   abstract getAllPossibleMoves(
