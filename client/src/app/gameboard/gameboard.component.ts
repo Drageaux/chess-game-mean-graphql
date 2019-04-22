@@ -82,6 +82,7 @@ export class GameboardComponent implements OnInit {
 
     // for testing
     this.insertPiece('a', 6, new Pawn('white'));
+    this.insertPiece('d', 6, new Pawn('black'));
     this.insertPiece('e', 6, new Rook('white'));
     this.insertPiece('e', 3, new Pawn('black'));
     this.insertPiece('f', 3, new Pawn('white'));

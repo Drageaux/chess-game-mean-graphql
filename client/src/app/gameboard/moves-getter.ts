@@ -4,6 +4,7 @@ import { default as parser } from './gameboard-parser';
 import { Rook } from './pieces/rook';
 import { Queen } from './pieces/queen';
 import { Bishop } from './pieces/bishop';
+import { Piece } from './pieces/piece';
 
 const MIN = 1;
 const MAX = 8;
@@ -35,6 +36,32 @@ export default class MovesGetter {
     }
   }
 
+  /**
+   * Return true if reached limit/should stop
+   *
+   */
+  private static appendLegalMove(
+    currPiece: Piece,
+    moveArr: Move[],
+    newFileEnum: number,
+    newRank: number,
+    board: Square[][]
+  ): boolean {
+    const s: Square = parser.getSquare(newFileEnum, newRank, board);
+    if (s) {
+      if (!s.piece) {
+        moveArr.push(this.makeMove(newFileEnum, newRank));
+        return false;
+      } else {
+        if (s.piece.color !== currPiece.color) {
+          moveArr.push(this.makeMove(newFileEnum, newRank));
+        }
+        return true;
+      }
+    }
+    return true;
+  }
+
   static getStraightLineMoves(
     piece: Rook | Queen,
     file: string,
@@ -53,58 +80,26 @@ export default class MovesGetter {
 
     // go left
     for (let i = fileEnum - 1; i >= MIN; i--) {
-      const s: Square = parser.getSquare(FileEnum[i], rank, board);
-      if (s) {
-        if (!s.piece) {
-          result.push(this.makeMove(i, rank));
-        } else {
-          if (s.piece.color !== piece.color) {
-            result.push(this.makeMove(i, rank));
-          }
-          break;
-        }
+      if (this.appendLegalMove(piece, result, i, rank, board)) {
+        break;
       }
     }
     // go right
     for (let i = fileEnum + 1; i <= MAX; i++) {
-      const s: Square = parser.getSquare(FileEnum[i], rank, board);
-      if (s) {
-        if (!s.piece) {
-          result.push(this.makeMove(i, rank));
-        } else {
-          if (s.piece.color !== piece.color) {
-            result.push(this.makeMove(i, rank));
-          }
-          break;
-        }
+      if (this.appendLegalMove(piece, result, i, rank, board)) {
+        break;
       }
     }
     // go up
     for (let i = rank + 1; i <= MAX; i++) {
-      const s: Square = parser.getSquare(file, i, board);
-      if (s) {
-        if (!s.piece) {
-          result.push(this.makeMove(file, i));
-        } else {
-          if (s.piece.color !== piece.color) {
-            result.push(this.makeMove(file, i));
-          }
-          break;
-        }
+      if (this.appendLegalMove(piece, result, fileEnum, i, board)) {
+        break;
       }
     }
     // go down
     for (let i = rank - 1; i >= MIN; i--) {
-      const s: Square = parser.getSquare(file, i, board);
-      if (s) {
-        if (!s.piece) {
-          result.push(this.makeMove(file, i));
-        } else {
-          if (s.piece.color !== piece.color) {
-            result.push(this.makeMove(file, i));
-          }
-          break;
-        }
+      if (this.appendLegalMove(piece, result, fileEnum, i, board)) {
+        break;
       }
     }
     // tslint:disable-next-line:no-console
@@ -174,8 +169,8 @@ export default class MovesGetter {
       newFileEnum = fileEnum - distance;
       newRank = rank + distance;
       if (
-        !topLeftStop &&
-        !parser.isOutOfBound(FileEnum[fileEnum - distance], rank + distance)
+        !topLeftStop
+        // && !parser.isOutOfBound(FileEnum[fileEnum - distance], rank + distance)
       ) {
         const s: Square = parser.getSquare(
           FileEnum[fileEnum - distance],
