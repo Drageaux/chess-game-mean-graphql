@@ -55,10 +55,10 @@ export default class MovesGetter {
       const s: Square = parser.getSquare(FileEnum[i], rank, board);
       if (s) {
         if (!s.piece) {
-          result.push(new Move(FileEnum[i], rank));
+          result.push(this.makeMove(i, rank));
         } else {
           if (s.piece.color !== piece.color) {
-            result.push(new Move(FileEnum[i], rank));
+            result.push(this.makeMove(i, rank));
           }
           break;
         }
@@ -69,10 +69,10 @@ export default class MovesGetter {
       const s: Square = parser.getSquare(FileEnum[i], rank, board);
       if (s) {
         if (!s.piece) {
-          result.push(new Move(FileEnum[i], rank));
+          result.push(this.makeMove(i, rank));
         } else {
           if (s.piece.color !== piece.color) {
-            result.push(new Move(FileEnum[i], rank));
+            result.push(this.makeMove(i, rank));
           }
           break;
         }
@@ -83,10 +83,10 @@ export default class MovesGetter {
       const s: Square = parser.getSquare(file, i, board);
       if (s) {
         if (!s.piece) {
-          result.push(new Move(file, i));
+          result.push(this.makeMove(file, i));
         } else {
           if (s.piece.color !== piece.color) {
-            result.push(new Move(file, i));
+            result.push(this.makeMove(file, i));
           }
           break;
         }
@@ -97,10 +97,10 @@ export default class MovesGetter {
       const s: Square = parser.getSquare(file, i, board);
       if (s) {
         if (!s.piece) {
-          result.push(new Move(file, i));
+          result.push(this.makeMove(file, i));
         } else {
           if (s.piece.color !== piece.color) {
-            result.push(new Move(file, i));
+            result.push(this.makeMove(file, i));
           }
           break;
         }
@@ -155,16 +155,12 @@ export default class MovesGetter {
         );
         if (s) {
           if (!s.piece) {
-            result.push(
-              new Move(FileEnum[fileEnum - distance], rank - distance)
-            );
+            result.push(this.makeMove(fileEnum - distance, rank - distance));
           } else {
             if (s.piece.color === piece.color) {
               bottomLeftStop = true;
             } else {
-              result.push(
-                new Move(FileEnum[fileEnum - distance], rank - distance)
-              );
+              result.push(this.makeMove(fileEnum - distance, rank - distance));
               bottomLeftStop = true;
             }
           }
@@ -182,14 +178,10 @@ export default class MovesGetter {
         );
         if (s) {
           if (!s.piece) {
-            result.push(
-              new Move(FileEnum[fileEnum - distance], rank + distance)
-            );
+            result.push(this.makeMove(fileEnum - distance, rank + distance));
           } else {
             if (s.piece.color !== piece.color) {
-              result.push(
-                new Move(FileEnum[fileEnum - distance], rank + distance)
-              );
+              result.push(this.makeMove(fileEnum - distance, rank + distance));
             }
             topLeftStop = true;
           }
@@ -207,14 +199,10 @@ export default class MovesGetter {
         );
         if (s) {
           if (!s.piece) {
-            result.push(
-              new Move(FileEnum[fileEnum + distance], rank + distance)
-            );
+            result.push(this.makeMove(fileEnum + distance, rank + distance));
           } else {
             if (s.piece.color !== piece.color) {
-              result.push(
-                new Move(FileEnum[fileEnum + distance], rank + distance)
-              );
+              result.push(this.makeMove(fileEnum + distance, rank + distance));
             }
             topRightStop = true;
           }
@@ -232,14 +220,10 @@ export default class MovesGetter {
         );
         if (s) {
           if (!s.piece) {
-            result.push(
-              new Move(FileEnum[fileEnum + distance], rank - distance)
-            );
+            result.push(this.makeMove(fileEnum + distance, rank - distance));
           } else {
             if (s.piece.color !== piece.color) {
-              result.push(
-                new Move(FileEnum[fileEnum + distance], rank - distance)
-              );
+              result.push(this.makeMove(fileEnum + distance, rank - distance));
             }
             bottomRightStop = true;
           }
