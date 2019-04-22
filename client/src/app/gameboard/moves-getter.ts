@@ -139,95 +139,55 @@ export default class MovesGetter {
     let topRightStop = false;
     let newFileEnum;
     let newRank;
-    let newMove: Move;
+    let outOfBound;
     // go left
     for (let distance = MIN; distance <= MAX; distance++) {
       // go bottom-left
-      newFileEnum = fileEnum - distance;
-      newRank = rank - distance;
-      newMove = !bottomLeftStop ? this.makeMove(newFileEnum, newRank) : null;
-      if (newMove) {
-        const s: Square = parser.getSquare(
-          FileEnum[newFileEnum],
-          newRank,
-          board
-        );
-        if (s) {
-          if (!s.piece) {
-            result.push(newMove);
-          } else {
-            if (s.piece.color === piece.color) {
-              bottomLeftStop = true;
-            } else {
-              result.push(newMove);
-              bottomLeftStop = true;
-            }
-          }
+      if (!bottomLeftStop) {
+        newFileEnum = fileEnum - distance;
+        newRank = rank - distance;
+        outOfBound = !parser.isOutOfBound(newFileEnum, newRank);
+        if (
+          !outOfBound ||
+          this.appendLegalMove(piece, result, newFileEnum, newRank, board)
+        ) {
+          bottomLeftStop = true;
         }
       }
       // go top-left
-      newFileEnum = fileEnum - distance;
-      newRank = rank + distance;
-      if (
-        !topLeftStop
-        // && !parser.isOutOfBound(FileEnum[fileEnum - distance], rank + distance)
-      ) {
-        const s: Square = parser.getSquare(
-          FileEnum[fileEnum - distance],
-          rank + distance,
-          board
-        );
-        if (s) {
-          if (!s.piece) {
-            result.push(this.makeMove(fileEnum - distance, rank + distance));
-          } else {
-            if (s.piece.color !== piece.color) {
-              result.push(this.makeMove(fileEnum - distance, rank + distance));
-            }
-            topLeftStop = true;
-          }
+      if (!topLeftStop) {
+        newFileEnum = fileEnum - distance;
+        newRank = rank + distance;
+        outOfBound = !parser.isOutOfBound(newFileEnum, newRank);
+        if (
+          !outOfBound ||
+          this.appendLegalMove(piece, result, newFileEnum, newRank, board)
+        ) {
+          topLeftStop = true;
         }
       }
       // go top-right
-      if (
-        !topRightStop &&
-        !parser.isOutOfBound(FileEnum[fileEnum + distance], rank + distance)
-      ) {
-        const s: Square = parser.getSquare(
-          FileEnum[fileEnum + distance],
-          rank + distance,
-          board
-        );
-        if (s) {
-          if (!s.piece) {
-            result.push(this.makeMove(fileEnum + distance, rank + distance));
-          } else {
-            if (s.piece.color !== piece.color) {
-              result.push(this.makeMove(fileEnum + distance, rank + distance));
-            }
-            topRightStop = true;
-          }
+      if (!topRightStop) {
+        newFileEnum = fileEnum + distance;
+        newRank = rank + distance;
+        outOfBound = !parser.isOutOfBound(newFileEnum, newRank);
+        if (
+          !outOfBound ||
+          this.appendLegalMove(piece, result, newFileEnum, newRank, board)
+        ) {
+          topRightStop = true;
         }
       }
       // go bottom-right
-      if (
-        !bottomRightStop &&
-        !parser.isOutOfBound(FileEnum[fileEnum + distance], rank - distance)
-      ) {
-        const s: Square = parser.getSquare(
-          FileEnum[fileEnum + distance],
-          rank - distance,
-          board
-        );
-        if (s) {
-          if (!s.piece) {
-            result.push(this.makeMove(fileEnum + distance, rank - distance));
-          } else {
-            if (s.piece.color !== piece.color) {
-              result.push(this.makeMove(fileEnum + distance, rank - distance));
-            }
-            bottomRightStop = true;
-          }
+      if (!bottomRightStop) {
+        newFileEnum = fileEnum + distance;
+        newRank = rank - distance;
+        outOfBound = !parser.isOutOfBound(newFileEnum, newRank);
+        if (
+          !outOfBound ||
+          this.appendLegalMove(piece, result, newFileEnum, newRank, board)
+        ) {
+          bottomRightStop = true;
         }
       }
     }
