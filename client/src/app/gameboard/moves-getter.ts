@@ -37,7 +37,7 @@ export default class MovesGetter {
   }
 
   /**
-   * Return true if reached limit/should stop
+   * Return true if line reached limit/should stop
    *
    */
   private static appendLegalMove(
