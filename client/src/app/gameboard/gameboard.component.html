@@ -30,6 +30,12 @@
           *ngIf="moving && currMovesInStr.indexOf('' + s.file + s.rank) != -1"
           class="move"
         ></div>
+        <div
+          class="current"
+          *ngIf="
+            moving && currSquare.file === s.file && currSquare.rank === s.rank
+          "
+        ></div>
         <i
           *ngIf="s?.piece"
           class="fas fa-chess-{{ s.piece?.name }}"
