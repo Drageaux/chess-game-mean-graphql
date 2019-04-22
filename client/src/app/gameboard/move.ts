@@ -6,6 +6,4 @@ export class Move {
     this.file = file;
     this.rank = rank;
   }
-
-  isLegalMove() {}
 }

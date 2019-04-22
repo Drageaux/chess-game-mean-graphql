@@ -46,7 +46,6 @@ export class Pawn extends Piece {
     }
   }
 
-  // get moves for white pawns only
   private getRegularMoves(
     file: string,
     rank: number,

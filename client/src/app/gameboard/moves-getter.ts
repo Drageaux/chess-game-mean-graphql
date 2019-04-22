@@ -9,6 +9,31 @@ const MIN = 1;
 const MAX = 8;
 
 export default class MovesGetter {
+  static makeMove(file: string | number, rank: number): Move {
+    try {
+      let moveFile: string;
+      let moveRank: number;
+      // not hurting performance that much
+      if (file) {
+        if (!isNaN(Number(file.toString()))) {
+          moveFile = FileEnum[file];
+        } else {
+          moveFile = file.toString();
+        }
+      }
+      if (!moveFile || !Object.values(FileEnum).includes(moveFile)) {
+        throw Error('Wrong file/column input: a-h only');
+      }
+      moveRank = rank;
+      if (!moveRank || moveRank < 1 || moveRank > 8) {
+        throw Error('Wrong rank/row input: 1-8 only');
+      }
+      return new Move(moveFile, moveRank);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+
   static getStraightLineMoves(
     piece: Rook | Queen,
     file: string,
