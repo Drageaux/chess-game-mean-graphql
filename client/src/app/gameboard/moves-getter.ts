@@ -31,6 +31,7 @@ export default class MovesGetter {
       return new Move(moveFile, moveRank);
     } catch (e) {
       console.error(e);
+      return null;
     }
   }
 
@@ -141,32 +142,37 @@ export default class MovesGetter {
     let topLeftStop = false;
     let bottomRightStop = false;
     let topRightStop = false;
+    let newFileEnum;
+    let newRank;
+    let newMove: Move;
     // go left
     for (let distance = MIN; distance <= MAX; distance++) {
       // go bottom-left
-      if (
-        !bottomLeftStop &&
-        !parser.isOutOfBound(FileEnum[fileEnum - distance], rank - distance)
-      ) {
+      newFileEnum = fileEnum - distance;
+      newRank = rank - distance;
+      newMove = !bottomLeftStop ? this.makeMove(newFileEnum, newRank) : null;
+      if (newMove) {
         const s: Square = parser.getSquare(
-          FileEnum[fileEnum - distance],
-          rank - distance,
+          FileEnum[newFileEnum],
+          newRank,
           board
         );
         if (s) {
           if (!s.piece) {
-            result.push(this.makeMove(fileEnum - distance, rank - distance));
+            result.push(newMove);
           } else {
             if (s.piece.color === piece.color) {
               bottomLeftStop = true;
             } else {
-              result.push(this.makeMove(fileEnum - distance, rank - distance));
+              result.push(newMove);
               bottomLeftStop = true;
             }
           }
         }
       }
       // go top-left
+      newFileEnum = fileEnum - distance;
+      newRank = rank + distance;
       if (
         !topLeftStop &&
         !parser.isOutOfBound(FileEnum[fileEnum - distance], rank + distance)
