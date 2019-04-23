@@ -61,11 +61,9 @@ export class GameboardComponent implements OnInit {
           const f = sq.file;
           if (f === 'a' || f === 'h') {
             sq.piece = new Rook('white');
-            (sq.piece as Rook).hasMoved.subscribe($event => {
-              if ($event === true) {
-                whiteKingPiece.hasMoved = true;
-              }
-            });
+            (sq.piece as Rook).hasMoved.subscribe(
+              $event => (whiteKingPiece.hasMoved = $event)
+            );
           } else if (f === 'b' || f === 'g') {
             sq.piece = new Knight('white');
           } else if (f === 'c' || f === 'f') {
@@ -79,11 +77,9 @@ export class GameboardComponent implements OnInit {
           const f = sq.file;
           if (f === 'a' || f === 'h') {
             sq.piece = new Rook('black');
-            (sq.piece as Rook).hasMoved.subscribe($event => {
-              if ($event === true) {
-                whiteKingPiece.hasMoved = true;
-              }
-            });
+            (sq.piece as Rook).hasMoved.subscribe(
+              $event => (blackKingPiece.hasMoved = $event)
+            );
           } else if (f === 'b' || f === 'g') {
             sq.piece = new Knight('black');
           } else if (f === 'c' || f === 'f') {
@@ -107,6 +103,13 @@ export class GameboardComponent implements OnInit {
     this.removePiece('b', 1);
     this.removePiece('c', 1);
     this.removePiece('d', 1);
+    this.removePiece('f', 1);
+    this.removePiece('g', 1);
+    this.removePiece('b', 8);
+    this.removePiece('c', 8);
+    this.removePiece('d', 8);
+    this.removePiece('f', 8);
+    this.removePiece('g', 8);
   }
 
   // event handling
@@ -184,6 +187,7 @@ export class GameboardComponent implements OnInit {
       } else if (nextSquare.piece.color === 'black' && nextSquare.rank === 1) {
       }
     } else if (
+      // no longer able to castle
       nextSquare.piece instanceof Rook ||
       nextSquare.piece instanceof King
     ) {
@@ -195,12 +199,16 @@ export class GameboardComponent implements OnInit {
       this.castle(move.file, nextSquare.piece.color);
     }
 
-    // reset current status
+    // stop moving
+    this.stopMoving();
+    // switch player, making sure to compare colors based on the piece that just moved
+    this.currTurn = nextSquare.piece.color === 'white' ? 'black' : 'white';
+  }
+
+  private stopMoving() {
     this.currMoves = [];
     this.currMovesInStr = [];
     this.moving = false;
-    // switch player, making sure to compare colors based on the piece that just moved
-    this.currTurn = nextSquare.piece.color === 'white' ? 'black' : 'white';
   }
 
   // special moves
