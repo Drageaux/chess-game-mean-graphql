@@ -9,7 +9,6 @@ import { Knight } from './pieces/knight';
 import { Bishop } from './pieces/bishop';
 import { Queen } from './pieces/queen';
 import { King } from './pieces/king';
-import { Observable } from 'rxjs';
 import { Move } from './move';
 
 @Component({

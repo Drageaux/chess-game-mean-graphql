@@ -73,7 +73,7 @@ export class King extends Piece {
     if (!this.hasMoved && this.canCastle) {
       // left side castle
       const leftRookSquare = parser.getSquare(1, rank, board);
-      let roadClear = true;
+      let leftRoadClear = true;
       if (
         leftRookSquare.piece instanceof Piece &&
         leftRookSquare.piece.color === this.color
@@ -82,16 +82,32 @@ export class King extends Piece {
         for (let i = 2; i < FileEnum[file]; i++) {
           const sq = parser.getSquare(i, rank, board);
           if (sq && sq.piece) {
-            roadClear = false;
+            leftRoadClear = false;
             break;
           }
         }
-        if (roadClear) {
+        if (leftRoadClear) {
           movesGetter.appendLegalMove(this, result, 3, rank, board);
         }
       }
-      // TODO: right side castle
-      // emit event where rook has to move through king
+      const rightRookSquare = parser.getSquare(8, rank, board);
+      let rightRoadClear = true;
+      if (
+        rightRookSquare.piece instanceof Piece &&
+        rightRookSquare.piece.color === this.color
+      ) {
+        // check if road's clear
+        for (let i = 7; i > FileEnum[file]; i--) {
+          const sq = parser.getSquare(i, rank, board);
+          if (sq && sq.piece) {
+            rightRoadClear = false;
+            break;
+          }
+        }
+        if (rightRoadClear) {
+          movesGetter.appendLegalMove(this, result, 7, rank, board);
+        }
+      }
     }
 
     for (const move of result) {
