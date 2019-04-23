@@ -193,15 +193,14 @@ export class GameboardComponent implements OnInit {
     // castling
     if (move.castle) {
       this.castle(move.file, nextSquare.piece.color);
-      return;
     }
 
     // reset current status
     this.currMoves = [];
     this.currMovesInStr = [];
     this.moving = false;
-    // switch player
-    this.currTurn = this.currTurn === 'white' ? 'black' : 'white';
+    // switch player, making sure to compare colors based on the piece that just moved
+    this.currTurn = nextSquare.piece.color === 'white' ? 'black' : 'white';
   }
 
   // special moves
