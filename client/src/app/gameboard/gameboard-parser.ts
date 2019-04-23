@@ -7,22 +7,10 @@ export default class GameboardParser {
     rank: number,
     board: Square[][]
   ): Square {
-    if (!file || !rank) {
+    if (this.isOutOfBound(file, rank)) {
       return null;
     }
-    // if is a number, get index
-    // else turn it into a number
-    let fileEnum;
-    if (isNaN(Number(file.toString()))) {
-      fileEnum = FileEnum[file];
-    } else {
-      fileEnum = file;
-    }
-
-    if (this.isOutOfBound(fileEnum, rank)) {
-      return null;
-    }
-    return board[rank - 1][fileEnum - 1];
+    return board[rank - 1][this.fileStrToNum(file) - 1];
   }
 
   static movesToStrings(moves: Move[]): string[] {
@@ -33,7 +21,24 @@ export default class GameboardParser {
     return result;
   }
 
-  static isOutOfBound(file: number, rank: number) {
-    return rank < 1 || rank > 8 || file < 1 || file > 8;
+  static fileStrToNum(file: string | number): number {
+    let fileEnum;
+    if (isNaN(Number(file.toString()))) {
+      fileEnum = FileEnum[file];
+    } else {
+      fileEnum = file;
+    }
+    return fileEnum;
+  }
+
+  static isOutOfBound(file: number | string, rank: number) {
+    if (!file || !rank) {
+      return true;
+    }
+    // if is a number, get index
+    // else turn it into a number
+    const fileEnum = this.fileStrToNum(file);
+
+    return rank < 1 || rank > 8 || fileEnum < 1 || fileEnum > 8;
   }
 }
