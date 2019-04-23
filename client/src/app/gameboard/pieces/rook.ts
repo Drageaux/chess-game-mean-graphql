@@ -2,10 +2,17 @@ import { Piece } from './piece';
 import { Square } from '../square';
 import { Move } from '../move';
 import { default as movesGetter } from '../moves-getter';
+import { EventEmitter } from '@angular/core';
 
 export class Rook extends Piece {
-  constructor(color: 'white' | 'black') {
+  hasMoved = new EventEmitter<boolean>();
+
+  constructor(color: 'white' | 'black', hasMoved: boolean = false) {
     super('rook', color);
+  }
+
+  updateHasMoved() {
+    this.hasMoved.emit(true);
   }
 
   getAllPossibleMoves(file: string, rank: number, board: Square[][]): Move[] {
