@@ -9,6 +9,14 @@ export class Pawn extends Piece {
     super('pawn', color);
   }
 
+  // we only care about dangerous moves
+  updateAttackMoves(file: string, rank: number, board: Square[][]) {
+    const params: [string, number, Square[][]] = [file, rank, board];
+    const newAttackMoves = [];
+    // get diagonal moves, because getCapturableMoves() requires an enemy Piece
+    this.attackMoves = newAttackMoves.concat(...this.getDiagMoves(...params));
+  }
+
   // get board-aware moves
   getAllPossibleMoves(file: string, rank: number, board: Square[][]): Move[] {
     const params: [string, number, Square[][]] = [file, rank, board];
@@ -71,6 +79,33 @@ export class Pawn extends Piece {
       const sq2 = parser.getSquare(file, moveForwardTwo, board);
       if (sq1 && !sq1.piece && sq2 && !sq2.piece) {
         result.push(movesGetter.makeMove(file, moveForwardTwo));
+      }
+    }
+    return result;
+  }
+
+  private getDiagMoves(file: string, rank: number, board: Square[][]): Move[] {
+    const result: Move[] = [];
+    const forwardRank = this.getVerMoves(rank, 1);
+    if (!forwardRank) {
+      return [];
+    }
+    // get right coordinate and check if its legal
+    const rightFile = this.getHorMoves(file, 1);
+    // get left coordinate and check if its legal
+    const leftFile = this.getHorMoves(file, -1);
+
+    // check both right and left square diagonally in front
+    if (rightFile) {
+      const sq = parser.getSquare(rightFile, forwardRank, board);
+      if (sq && ((sq.piece && sq.piece.color !== this.color) || !sq.piece)) {
+        result.push(movesGetter.makeMove(rightFile, forwardRank));
+      }
+    }
+    if (leftFile) {
+      const sq = parser.getSquare(leftFile, forwardRank, board);
+      if (sq && ((sq.piece && sq.piece.color !== this.color) || !sq.piece)) {
+        result.push(movesGetter.makeMove(leftFile, forwardRank));
       }
     }
     return result;

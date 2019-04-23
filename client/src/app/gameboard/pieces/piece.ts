@@ -6,7 +6,7 @@ export abstract class Piece {
   color: 'white' | 'black';
   myFile: string;
   myRank: number;
-  nextMoves: Move[] = [];
+  attackMoves: Move[] = [];
 
   constructor(name: string, color: 'white' | 'black') {
     this.name = name;
@@ -17,8 +17,8 @@ export abstract class Piece {
     return `${this.color} ${this.name}`;
   }
 
-  updateNextMoves(file: string, rank: number, board: Square[][]) {
-    this.nextMoves = this.getAllPossibleMoves(file, rank, board);
+  updateAttackMoves(file: string, rank: number, board: Square[][]) {
+    this.attackMoves = this.getAllPossibleMoves(file, rank, board);
   }
 
   abstract getAllPossibleMoves(

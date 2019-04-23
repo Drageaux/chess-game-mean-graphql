@@ -105,14 +105,14 @@ export class GameboardComponent implements OnInit {
           // observing upon move; get moves that may be dangerous for the opposing King
           this.onMoved.subscribe(($event: 'white' | 'black') => {
             if ($event === 'white' && piece.color === 'white') {
-              piece.updateNextMoves(piece.myFile, piece.myRank, this.board);
+              piece.updateAttackMoves(piece.myFile, piece.myRank, this.board);
               this.attackMoves.white = this.attackMoves.white.concat(
-                ...piece.nextMoves
+                ...piece.attackMoves
               );
             } else if ($event === 'black' && piece.color === 'black') {
-              piece.updateNextMoves(piece.myFile, piece.myRank, this.board);
+              piece.updateAttackMoves(piece.myFile, piece.myRank, this.board);
               this.attackMoves.black = this.attackMoves.black.concat(
-                ...piece.nextMoves
+                ...piece.attackMoves
               );
             }
           });
@@ -241,11 +241,10 @@ export class GameboardComponent implements OnInit {
     }
 
     const color = nextSquare.piece.color;
-
     // stop moving
     this.stopMoving();
     // signals that this turn is over
-    this.onMoved.emit(nextSquare.piece.color);
+    this.onMoved.emit(color);
     if (color === 'white') {
       this.attackMoves.black = [];
     } else if (color === 'black') {
