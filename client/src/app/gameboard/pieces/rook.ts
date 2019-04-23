@@ -21,7 +21,6 @@ export class Rook extends Piece {
     allPossibleMoves = allPossibleMoves.concat(
       ...movesGetter.getStraightLineMoves(this, ...params)
     );
-    console.log('rook moves', allPossibleMoves);
     return allPossibleMoves;
   }
 }

@@ -32,7 +32,6 @@ export class King extends Piece {
       ...this.getRegularMoves(...params),
       ...this.getCastlingMoves(...params)
     );
-    console.log('king moves', allPossibleMoves);
     return allPossibleMoves;
   }
 

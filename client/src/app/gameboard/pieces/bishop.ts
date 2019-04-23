@@ -14,7 +14,6 @@ export class Bishop extends Piece {
     allPossibleMoves = allPossibleMoves.concat(
       ...movesGetter.getDiagonalLineMoves(this, ...params)
     );
-    console.log('bishop moves', allPossibleMoves);
     return allPossibleMoves;
   }
 }

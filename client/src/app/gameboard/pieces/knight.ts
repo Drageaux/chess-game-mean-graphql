@@ -19,7 +19,6 @@ export class Knight extends Piece {
     allPossibleMoves = allPossibleMoves.concat(
       ...this.getRegularMoves(...params)
     );
-    console.log('knight moves', allPossibleMoves);
     return allPossibleMoves;
   }
 

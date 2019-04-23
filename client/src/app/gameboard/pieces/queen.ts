@@ -15,7 +15,6 @@ export class Queen extends Piece {
       ...movesGetter.getDiagonalLineMoves(this, ...params),
       ...movesGetter.getStraightLineMoves(this, ...params)
     );
-    console.log('bishop moves', allPossibleMoves);
     return allPossibleMoves;
   }
 }
