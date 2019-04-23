@@ -62,7 +62,7 @@ export class GameboardComponent implements OnInit {
           if (f === 'a' || f === 'h') {
             sq.piece = new Rook('white');
             (sq.piece as Rook).hasMoved.subscribe(
-              ($event) => (whiteKingPiece.hasMoved = $event)
+              $event => (whiteKingPiece.hasMoved = $event)
             );
           } else if (f === 'b' || f === 'g') {
             sq.piece = new Knight('white');
@@ -78,7 +78,7 @@ export class GameboardComponent implements OnInit {
           if (f === 'a' || f === 'h') {
             sq.piece = new Rook('black');
             (sq.piece as Rook).hasMoved.subscribe(
-              ($event) => (blackKingPiece.hasMoved = $event)
+              $event => (blackKingPiece.hasMoved = $event)
             );
           } else if (f === 'b' || f === 'g') {
             sq.piece = new Knight('black');
@@ -124,7 +124,7 @@ export class GameboardComponent implements OnInit {
       // if click empty tile, move
       this.movePiece(
         this.currSquare,
-        this.currMoves.filter((x) => x.file === s.file && x.rank === s.rank)[0]
+        this.currMoves.filter(x => x.file === s.file && x.rank === s.rank)[0]
       );
     }
   }
