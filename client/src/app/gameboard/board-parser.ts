@@ -16,7 +16,7 @@ export default class BoardParser {
   static movesToStrings(moves: Move[]): string[] {
     const result: string[] = [];
     for (const m of moves) {
-      result.push(m.file + '' + m.rank);
+      result.push(`${m.file}${m.rank}`);
     }
     return result;
   }
