@@ -1,6 +1,6 @@
 import { Square, FileEnum } from './square';
 import { Move } from './move';
-import { default as parser } from './gameboard-parser';
+import { default as parser } from './board-parser';
 import { Rook } from './pieces/rook';
 import { Queen } from './pieces/queen';
 import { Bishop } from './pieces/bishop';

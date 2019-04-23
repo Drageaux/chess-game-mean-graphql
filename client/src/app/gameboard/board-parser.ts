@@ -1,7 +1,7 @@
 import { Square, FileEnum } from './square';
 import { Move } from './move';
 
-export default class GameboardParser {
+export default class BoardParser {
   static getSquare(
     file: string | number,
     rank: number,

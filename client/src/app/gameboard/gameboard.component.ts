@@ -1,6 +1,6 @@
 import { Component, OnInit, EventEmitter } from '@angular/core';
 import { Square, FileEnum } from './square';
-import { default as parser } from './gameboard-parser';
+import { default as parser } from './board-parser';
 import { default as movesGetter } from './moves-getter';
 import { Piece } from './pieces/piece';
 import { Pawn } from './pieces/pawn';
@@ -31,10 +31,10 @@ export class GameboardComponent implements OnInit {
   // events
   onMoved = new EventEmitter<any>();
   // opponent interactions
-  // attackMoves = {
-  //   white: [],
-  //   black: []
-  // };
+  attackMoves: { white: Move[]; black: Move[] } = {
+    white: [],
+    black: []
+  };
 
   constructor() {
     for (let i = 0; i < this.BOARD_SIZE; i++) {
@@ -219,6 +219,8 @@ export class GameboardComponent implements OnInit {
 
     // stop moving
     this.stopMoving();
+    // signals that this turn is over
+    this.onMoved.emit(nextSquare.piece.color);
     // switch player, making sure to compare colors based on the piece that just moved
     this.currTurn = nextSquare.piece.color === 'white' ? 'black' : 'white';
   }
@@ -227,8 +229,6 @@ export class GameboardComponent implements OnInit {
     this.currMoves = [];
     this.currMovesInStr = [];
     this.moving = false;
-    // signals that this turn is over
-    this.onMoved.emit(true);
   }
 
   // special moves

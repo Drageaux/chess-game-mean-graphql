@@ -1,7 +1,7 @@
 import { Move } from './../move';
 import { Piece } from './piece';
 import { Square, FileEnum } from '../square';
-import { default as parser } from '../gameboard-parser';
+import { default as parser } from '../board-parser';
 
 export class Pawn extends Piece {
   constructor(color: 'white' | 'black') {

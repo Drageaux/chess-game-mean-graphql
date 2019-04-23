@@ -2,7 +2,7 @@ import { Piece } from './piece';
 import { Square, FileEnum } from '../square';
 import { Move } from '../move';
 import { default as movesGetter } from '../moves-getter';
-import { default as parser } from '../gameboard-parser';
+import { default as parser } from '../board-parser';
 
 export class King extends Piece {
   // tslint:disable-next-line:variable-name
