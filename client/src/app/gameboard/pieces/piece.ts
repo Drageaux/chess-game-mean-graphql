@@ -4,6 +4,8 @@ import { Move } from '../move';
 export abstract class Piece {
   name: string;
   color: 'white' | 'black';
+  myFile: string;
+  myRank: number;
   nextMoves: Move[] = [];
 
   constructor(name: string, color: 'white' | 'black') {

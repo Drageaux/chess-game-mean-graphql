@@ -1,6 +1,6 @@
 import { Component, OnInit, EventEmitter } from '@angular/core';
 import { Square, FileEnum } from './square';
-import { default as parser } from './board-parser';
+import BoardParser, { default as parser } from './board-parser';
 import { default as movesGetter } from './moves-getter';
 import { Piece } from './pieces/piece';
 import { Pawn } from './pieces/pawn';
@@ -18,6 +18,7 @@ import { Move } from './move';
 })
 export class GameboardComponent implements OnInit {
   BOARD_SIZE = 8;
+  parser = BoardParser;
   board: Square[][] = [];
 
   moving = false;
@@ -98,14 +99,30 @@ export class GameboardComponent implements OnInit {
         }
 
         if (piece) {
-          this.onMoved.subscribe($event => {
-            piece.updateNextMoves(sq.file, sq.rank, this.board);
+          piece.myFile = sq.file;
+          piece.myRank = sq.rank;
+
+          // observing upon move; get moves that may be dangerous for the opposing King
+          this.onMoved.subscribe(($event: 'white' | 'black') => {
+            if ($event === 'white' && piece.color === 'white') {
+              piece.updateNextMoves(piece.myFile, piece.myRank, this.board);
+              this.attackMoves.white = this.attackMoves.white.concat(
+                ...piece.nextMoves
+              );
+            } else if ($event === 'black' && piece.color === 'black') {
+              piece.updateNextMoves(piece.myFile, piece.myRank, this.board);
+              this.attackMoves.black = this.attackMoves.black.concat(
+                ...piece.nextMoves
+              );
+            }
           });
           sq.piece = piece;
         }
       }
     }
+  }
 
+  private addTestPieces() {
     // for testing
     /*
     this.insertPiece('a', 6, new Pawn('white'));
@@ -181,6 +198,10 @@ export class GameboardComponent implements OnInit {
     return false;
   }
 
+  /**
+   * Moving a piece from one place to a destination, given an original Square object and the next Move
+   * (check for special moves, update necessary properties)
+   */
   private movePiece(s: Square, move: Move) {
     const nextSquare = parser.getSquare(move.file, move.rank, this.board);
     if (!nextSquare) {
@@ -192,8 +213,10 @@ export class GameboardComponent implements OnInit {
     if (nextSquare.piece) {
       this.capturedPieces.push(nextSquare.piece);
     }
-    // move piece to new position
+    // move piece to new position & update piece's knowledge of its position
     nextSquare.piece = s.piece;
+    nextSquare.piece.myFile = nextSquare.file;
+    nextSquare.piece.myRank = nextSquare.rank;
     // remove piece from old position
     s.piece = null;
 
@@ -217,12 +240,19 @@ export class GameboardComponent implements OnInit {
       return;
     }
 
+    const color = nextSquare.piece.color;
+
     // stop moving
     this.stopMoving();
     // signals that this turn is over
     this.onMoved.emit(nextSquare.piece.color);
+    if (color === 'white') {
+      this.attackMoves.black = [];
+    } else if (color === 'black') {
+      this.attackMoves.white = [];
+    }
     // switch player, making sure to compare colors based on the piece that just moved
-    this.currTurn = nextSquare.piece.color === 'white' ? 'black' : 'white';
+    this.currTurn = color === 'white' ? 'black' : 'white';
   }
 
   private stopMoving() {

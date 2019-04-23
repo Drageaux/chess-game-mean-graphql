@@ -39,9 +39,14 @@
         <div
           class="offensive"
           *ngIf="
-            parser
-              .movesToStrings(attackMoves.white)
-              .indexOf('' + s.file + s.rank) != -1
+            (currTurn == 'white' &&
+              parser
+                .movesToStrings(attackMoves.black)
+                .indexOf('' + s.file + s.rank) != -1) ||
+            (currTurn == 'black' &&
+              parser
+                .movesToStrings(attackMoves.white)
+                .indexOf('' + s.file + s.rank) != -1)
           "
         ></div>
         <i
