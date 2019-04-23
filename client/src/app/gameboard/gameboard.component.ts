@@ -30,6 +30,11 @@ export class GameboardComponent implements OnInit {
   blackCastling = false;
   // events
   onMoved = new EventEmitter<any>();
+  // opponent interactions
+  // attackMoves = {
+  //   white: [],
+  //   black: []
+  // };
 
   constructor() {
     for (let i = 0; i < this.BOARD_SIZE; i++) {
@@ -53,48 +58,50 @@ export class GameboardComponent implements OnInit {
 
     for (const rank of this.board) {
       for (const sq of rank) {
+        let piece: Piece = null;
         if (sq.rank === 2) {
-          sq.piece = new Pawn('white');
+          piece = new Pawn('white');
         } else if (sq.rank === 7) {
-          sq.piece = new Pawn('black');
+          piece = new Pawn('black');
         } else if (sq.rank === 1) {
           const f = sq.file;
           if (f === 'a' || f === 'h') {
-            sq.piece = new Rook('white');
-            (sq.piece as Rook).hasMoved.subscribe(
+            piece = new Rook('white');
+            (piece as Rook).hasMoved.subscribe(
               $event => (whiteKingPiece.hasMoved = $event)
             );
           } else if (f === 'b' || f === 'g') {
-            sq.piece = new Knight('white');
+            piece = new Knight('white');
           } else if (f === 'c' || f === 'f') {
-            sq.piece = new Bishop('white');
+            piece = new Bishop('white');
           } else if (f === 'd') {
-            sq.piece = new Queen('white');
+            piece = new Queen('white');
           } else if (f === 'e') {
-            sq.piece = whiteKingPiece;
+            piece = whiteKingPiece;
           }
         } else if (sq.rank === 8) {
           const f = sq.file;
           if (f === 'a' || f === 'h') {
-            sq.piece = new Rook('black');
-            (sq.piece as Rook).hasMoved.subscribe(
+            piece = new Rook('black');
+            (piece as Rook).hasMoved.subscribe(
               $event => (blackKingPiece.hasMoved = $event)
             );
           } else if (f === 'b' || f === 'g') {
-            sq.piece = new Knight('black');
+            piece = new Knight('black');
           } else if (f === 'c' || f === 'f') {
-            sq.piece = new Bishop('black');
+            piece = new Bishop('black');
           } else if (f === 'd') {
-            sq.piece = new Queen('black');
+            piece = new Queen('black');
           } else if (f === 'e') {
-            sq.piece = blackKingPiece;
+            piece = blackKingPiece;
           }
         }
 
-        if (sq.piece) {
+        if (piece) {
           this.onMoved.subscribe($event => {
-            sq.piece.getAllPossibleMoves(sq.file, sq.rank, this.board);
+            piece.updateNextMoves(sq.file, sq.rank, this.board);
           });
+          sq.piece = piece;
         }
       }
     }
@@ -149,6 +156,7 @@ export class GameboardComponent implements OnInit {
       // help render
       this.currMoves = p.getAllPossibleMoves(s.file, s.rank, this.board);
       this.currMovesInStr = parser.movesToStrings(this.currMoves);
+      console.log('');
       console.log(`${s.piece} ${s.file}${s.rank} moves:`, this.currMoves);
     }
   }
