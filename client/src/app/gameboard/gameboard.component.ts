@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, EventEmitter } from '@angular/core';
 import { Square, FileEnum } from './square';
 import { default as parser } from './gameboard-parser';
 import { default as movesGetter } from './moves-getter';
@@ -28,7 +28,8 @@ export class GameboardComponent implements OnInit {
   capturedPieces: Piece[] = [];
   whiteCastling = false;
   blackCastling = false;
-  canCastle;
+  // events
+  onMoved = new EventEmitter<any>();
 
   constructor() {
     for (let i = 0; i < this.BOARD_SIZE; i++) {
@@ -89,10 +90,17 @@ export class GameboardComponent implements OnInit {
             sq.piece = blackKingPiece;
           }
         }
+
+        if (sq.piece) {
+          this.onMoved.subscribe($event => {
+            sq.piece.getAllPossibleMoves(sq.file, sq.rank, this.board);
+          });
+        }
       }
     }
 
     // for testing
+    /*
     this.insertPiece('a', 6, new Pawn('white'));
     this.insertPiece('d', 6, new Pawn('black'));
     this.insertPiece('e', 6, new Rook('white'));
@@ -109,6 +117,7 @@ export class GameboardComponent implements OnInit {
     this.removePiece('d', 8);
     this.removePiece('f', 8);
     this.removePiece('g', 8);
+    */
   }
 
   // event handling
@@ -140,6 +149,7 @@ export class GameboardComponent implements OnInit {
       // help render
       this.currMoves = p.getAllPossibleMoves(s.file, s.rank, this.board);
       this.currMovesInStr = parser.movesToStrings(this.currMoves);
+      console.log(`${s.piece} ${s.file}${s.rank} moves:`, this.currMoves);
     }
   }
 
@@ -196,6 +206,7 @@ export class GameboardComponent implements OnInit {
     // castling
     if (move.castle) {
       this.castle(move.file, nextSquare.piece.color);
+      return;
     }
 
     // stop moving
@@ -208,6 +219,8 @@ export class GameboardComponent implements OnInit {
     this.currMoves = [];
     this.currMovesInStr = [];
     this.moving = false;
+    // signals that this turn is over
+    this.onMoved.emit(true);
   }
 
   // special moves
