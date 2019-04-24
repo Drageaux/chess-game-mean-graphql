@@ -31,8 +31,8 @@ export class GameboardComponent implements OnInit {
   currTurn: 'black' | 'white' = 'white';
   currSquare: Square;
   capturedPieces: Set<Piece> = new Set();
-  whiteCastling = false;
-  blackCastling = false;
+  whiteKingPiece: King;
+  blackKingPiece: King;
   whiteKingChecked = false;
   blackKingChecked = false;
   // events
@@ -60,8 +60,8 @@ export class GameboardComponent implements OnInit {
 
   // set up pieces
   ngOnInit() {
-    const whiteKingPiece: King = new King('white');
-    const blackKingPiece: King = new King('black');
+    this.whiteKingPiece = new King('white');
+    this.blackKingPiece = new King('black');
 
     for (const rank of this.board) {
       for (const sq of rank) {
@@ -75,7 +75,7 @@ export class GameboardComponent implements OnInit {
           if (f === 'a' || f === 'h') {
             piece = new Rook('white');
             const subscription = (piece as Rook).hasMoved.subscribe($event => {
-              whiteKingPiece.hasMoved = $event;
+              this.whiteKingPiece.hasMoved = $event;
               subscription.unsubscribe();
             });
           } else if (f === 'b' || f === 'g') {
@@ -85,14 +85,14 @@ export class GameboardComponent implements OnInit {
           } else if (f === 'd') {
             piece = new Queen('white');
           } else if (f === 'e') {
-            piece = whiteKingPiece;
+            piece = this.whiteKingPiece;
           }
         } else if (sq.rank === 8) {
           const f = sq.file;
           if (f === 'a' || f === 'h') {
             piece = new Rook('black');
             const subscription = (piece as Rook).hasMoved.subscribe($event => {
-              blackKingPiece.hasMoved = $event;
+              this.blackKingPiece.hasMoved = $event;
               subscription.unsubscribe();
             });
           } else if (f === 'b' || f === 'g') {
@@ -102,7 +102,7 @@ export class GameboardComponent implements OnInit {
           } else if (f === 'd') {
             piece = new Queen('black');
           } else if (f === 'e') {
-            piece = blackKingPiece;
+            piece = this.blackKingPiece;
           }
         }
 
