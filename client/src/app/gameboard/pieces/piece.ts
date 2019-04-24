@@ -21,7 +21,14 @@ export abstract class Piece {
     this.attackMoves = this.getAllPossibleMoves(file, rank, board);
   }
 
-  abstract getAllPossibleMoves(
+  getAllLegalMoves(file: string, rank: number, board: Square[][]): Move[] {
+    let allLegalMoves: Move[] = [];
+    const allPossibleMoves = this.getAllPossibleMoves(file, rank, board);
+    allLegalMoves = allPossibleMoves.filter(m => !m.onAlly);
+    return allLegalMoves;
+  }
+
+  protected abstract getAllPossibleMoves(
     file: string,
     rank: number,
     board: Square[][]

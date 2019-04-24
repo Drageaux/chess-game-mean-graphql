@@ -68,7 +68,7 @@ export class Knight extends Piece {
       }
     ];
     for (const newM of allMoves) {
-      movesGetter.appendLegalMove(
+      movesGetter.appendPossibleMove(
         this,
         result,
         newM.fileEnum,

@@ -71,7 +71,7 @@ export class Pawn extends Piece {
     if (moveForward) {
       const sq = parser.getSquare(file, moveForward, board);
       if (sq && !sq.piece) {
-        movesGetter.appendLegalMove(
+        movesGetter.appendPossibleMove(
           this,
           result,
           FileEnum[file],
@@ -84,7 +84,7 @@ export class Pawn extends Piece {
       const sq1 = parser.getSquare(file, moveForward, board);
       const sq2 = parser.getSquare(file, moveForwardTwo, board);
       if (sq1 && !sq1.piece && sq2 && !sq2.piece) {
-        movesGetter.appendLegalMove(
+        movesGetter.appendPossibleMove(
           this,
           result,
           FileEnum[file],
@@ -111,7 +111,7 @@ export class Pawn extends Piece {
     if (rightFile) {
       const sq = parser.getSquare(rightFile, forwardRank, board);
       if (sq && ((sq.piece && sq.piece.color !== this.color) || !sq.piece)) {
-        movesGetter.appendLegalMove(
+        movesGetter.appendPossibleMove(
           this,
           result,
           FileEnum[rightFile],
@@ -123,7 +123,7 @@ export class Pawn extends Piece {
     if (leftFile) {
       const sq = parser.getSquare(leftFile, forwardRank, board);
       if (sq && ((sq.piece && sq.piece.color !== this.color) || !sq.piece)) {
-        movesGetter.appendLegalMove(
+        movesGetter.appendPossibleMove(
           this,
           result,
           FileEnum[leftFile],
@@ -155,7 +155,7 @@ export class Pawn extends Piece {
     if (rightFile) {
       const sq = parser.getSquare(rightFile, forwardRank, board);
       if (sq && sq.piece && sq.piece.color !== this.color) {
-        movesGetter.appendLegalMove(
+        movesGetter.appendPossibleMove(
           this,
           result,
           FileEnum[rightFile],
@@ -167,7 +167,7 @@ export class Pawn extends Piece {
     if (leftFile) {
       const sq = parser.getSquare(leftFile, forwardRank, board);
       if (sq && sq.piece && sq.piece.color !== this.color) {
-        movesGetter.appendLegalMove(
+        movesGetter.appendPossibleMove(
           this,
           result,
           FileEnum[leftFile],

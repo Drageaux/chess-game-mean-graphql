@@ -176,7 +176,7 @@ export class GameboardComponent implements OnInit {
       this.moving = true;
 
       // help render
-      this.currMoves = p.getAllPossibleMoves(s.file, s.rank, this.board);
+      this.currMoves = p.getAllLegalMoves(s.file, s.rank, this.board);
       this.currMovesInStr = parser.movesToStrings(this.currMoves);
       console.log(`${s.piece} ${s.file}${s.rank} moves:`, this.currMoves);
     }

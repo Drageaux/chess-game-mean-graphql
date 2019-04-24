@@ -49,7 +49,7 @@ export class King extends Piece {
         if (row === 0 && col === 0) {
           continue;
         } else {
-          movesGetter.appendLegalMove(
+          movesGetter.appendPossibleMove(
             this,
             result,
             fileEnum + row,
@@ -86,7 +86,7 @@ export class King extends Piece {
           }
         }
         if (leftRoadClear) {
-          movesGetter.appendLegalMove(this, result, 3, rank, board);
+          movesGetter.appendPossibleMove(this, result, 3, rank, board);
         }
       }
       const rightRookSquare = parser.getSquare(8, rank, board);
@@ -104,7 +104,7 @@ export class King extends Piece {
           }
         }
         if (rightRoadClear) {
-          movesGetter.appendLegalMove(this, result, 7, rank, board);
+          movesGetter.appendPossibleMove(this, result, 7, rank, board);
         }
       }
     }

@@ -46,7 +46,9 @@ export default class MovesGetter {
    * If move is valid, append Move to the passed-in moveArr, else append nothing
    * and return null.
    *
-   * @returns Move appended to array, else return null;
+   * @params currPiece - the Piece we're trying to add
+   * @params moveArr - the [[Move]] array to add currPiece
+   * @returns Move appended to array, else return null
    */
   static appendPossibleMove(
     currPiece: Piece,
@@ -55,6 +57,7 @@ export default class MovesGetter {
     newRank: number,
     board: Square[][]
   ): Move {
+    // first, get valid Square
     const s: Square = parser.getSquare(newFileEnum, newRank, board);
     let newMove: Move = null;
     if (s) {
