@@ -29,17 +29,20 @@ export class GameboardComponent implements OnInit {
   moving = false;
   currMoves: Move[] = [];
   currMovesInStr: string[] = [];
+  currMovesMap: Map<string, Move> = new Map();
   currTurn: 'black' | 'white' = 'white';
   currSquare: Square;
   capturedPieces: Piece[] = [];
   whiteCastling = false;
   blackCastling = false;
+  whiteKingChecked = false;
+  blackKingChecked = false;
   // events
   onMoved = new EventEmitter<any>();
   // opponent interactions
-  attackMoves: { white: Move[]; black: Move[] } = {
-    white: [],
-    black: []
+  attackMovesMap: { white: Map<string, Move>; black: Map<string, Move> } = {
+    white: new Map(),
+    black: new Map()
   };
 
   constructor() {
@@ -111,20 +114,22 @@ export class GameboardComponent implements OnInit {
           this.onMoved.subscribe(($event: 'white' | 'black') => {
             if ($event === 'white' && piece.color === 'white') {
               piece.updateAttackMoves(piece.myFile, piece.myRank, this.board);
-              this.attackMoves.white = this.attackMoves.white.concat(
-                ...piece.attackMoves
-              );
+              piece.attackMoves.forEach(m => {
+                this.attackMovesMap.white.set(`${m.file}${m.rank}`, m);
+              });
             } else if ($event === 'black' && piece.color === 'black') {
               piece.updateAttackMoves(piece.myFile, piece.myRank, this.board);
-              this.attackMoves.black = this.attackMoves.black.concat(
-                ...piece.attackMoves
-              );
+              piece.attackMoves.forEach(m => {
+                this.attackMovesMap.black.set(`${m.file}${m.rank}`, m);
+              });
             }
           });
           sq.piece = piece;
         }
       }
     }
+    // check for attack moves for 2nd player
+    this.onMoved.emit('black');
   }
 
   private addTestPieces() {
@@ -154,14 +159,11 @@ export class GameboardComponent implements OnInit {
     if (s.piece && s.piece.color === this.currTurn) {
       // if click current player's piece, activate the tile
       this.selectPiece(s);
-    } else if (
-      this.moving &&
-      this.currMovesInStr.indexOf(`${s.file}${s.rank}`) !== -1
-    ) {
-      // if click empty tile, move
+    } else if (this.moving && this.currMovesMap.has(`${s.file}${s.rank}`)) {
+      // if click empty tile while a piece is selected/moving, move
       this.movePiece(
         this.currSquare,
-        this.currMoves.filter(x => x.file === s.file && x.rank === s.rank)[0]
+        this.currMovesMap.get(`${s.file}${s.rank}`)
       );
     }
   }
@@ -176,9 +178,27 @@ export class GameboardComponent implements OnInit {
       this.moving = true;
 
       // help render
-      this.currMoves = p.getAllLegalMoves(s.file, s.rank, this.board);
-      this.currMovesInStr = parser.movesToStrings(this.currMoves);
-      console.log(`${s.piece} ${s.file}${s.rank} moves:`, this.currMoves);
+      let allPieceLegalMoves: Move[] = p.getAllLegalMoves(
+        s.file,
+        s.rank,
+        this.board
+      );
+      // if is king, filter out dangerous moves
+      if (p instanceof King) {
+        if (p.color === 'white') {
+          allPieceLegalMoves = allPieceLegalMoves.filter(
+            m => !this.attackMovesMap.black.has(`${m.file}${m.rank}`)
+          );
+        } else if (p.color === 'black') {
+          allPieceLegalMoves = allPieceLegalMoves.filter(
+            m => !this.attackMovesMap.white.has(`${m.file}${m.rank}`)
+          );
+        }
+      }
+      allPieceLegalMoves.forEach(m => {
+        this.currMovesMap.set(`${m.file}${m.rank}`, m);
+      });
+      console.log(`${s.piece} ${s.file}${s.rank} moves:`, this.currMovesMap);
     }
   }
 
@@ -249,9 +269,9 @@ export class GameboardComponent implements OnInit {
     this.stopMoving();
     this.onMoveHandler(color);
     if (color === 'white') {
-      this.attackMoves.black = [];
+      this.attackMovesMap.black.clear();
     } else if (color === 'black') {
-      this.attackMoves.white = [];
+      this.attackMovesMap.white.clear();
     }
     // switch player, making sure to compare colors based on the piece that just moved
     this.currTurn = color === 'white' ? 'black' : 'white';
@@ -266,8 +286,7 @@ export class GameboardComponent implements OnInit {
   }
 
   private stopMoving() {
-    this.currMoves = [];
-    this.currMovesInStr = [];
+    this.currMovesMap.clear();
     this.moving = false;
   }
 

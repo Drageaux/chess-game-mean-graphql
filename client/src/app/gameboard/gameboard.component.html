@@ -27,7 +27,7 @@
       >
         <!-- activate square if a piece is trying to move -->
         <div
-          *ngIf="moving && currMovesInStr.indexOf('' + s.file + s.rank) != -1"
+          *ngIf="moving && currMovesMap.has('' + s.file + s.rank)"
           class="move"
         ></div>
         <div
@@ -41,13 +41,9 @@
           *ngIf="
             isAdmin &&
             ((currTurn == 'white' &&
-              parser
-                .movesToStrings(attackMoves.black)
-                .indexOf('' + s.file + s.rank) != -1) ||
+              attackMovesMap.black.has('' + s.file + s.rank)) ||
               (currTurn == 'black' &&
-                parser
-                  .movesToStrings(attackMoves.white)
-                  .indexOf('' + s.file + s.rank) != -1))
+                attackMovesMap.white.has('' + s.file + s.rank)))
           "
         ></div>
         <i
