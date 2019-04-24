@@ -12,7 +12,11 @@ const MIN = 1;
 const MAX = 8;
 
 export default class MovesGetter {
-  static makeMove(file: string | number, rank: number): Move {
+  static makeMove(
+    file: string | number,
+    rank: number,
+    onAlly: boolean = false
+  ): Move {
     try {
       let moveFile: string;
       let moveRank: number;
@@ -31,7 +35,7 @@ export default class MovesGetter {
       if (!moveRank || moveRank < 1 || moveRank > 8) {
         throw Error('Wrong rank/row input: 1-8 only');
       }
-      return new Move(moveFile, moveRank);
+      return new Move(moveFile, moveRank, onAlly);
     } catch (e) {
       console.error(e);
       return null;
@@ -39,29 +43,37 @@ export default class MovesGetter {
   }
 
   /**
-   * Return true if line reached limit/should stop
+   * If move is valid, append Move to the passed-in moveArr, else append nothing
+   * and return null.
    *
+   * @returns Move appended to array, else return null;
    */
-  static appendLegalMove(
+  static appendPossibleMove(
     currPiece: Piece,
     moveArr: Move[],
     newFileEnum: number,
     newRank: number,
     board: Square[][]
-  ): boolean {
+  ): Move {
     const s: Square = parser.getSquare(newFileEnum, newRank, board);
+    let newMove: Move = null;
     if (s) {
       if (!s.piece) {
-        moveArr.push(this.makeMove(newFileEnum, newRank));
-        return false;
+        // NOT overlapping onAlly if empty square
+        newMove = this.makeMove(newFileEnum, newRank, false);
       } else {
         if (s.piece.color !== currPiece.color) {
-          moveArr.push(this.makeMove(newFileEnum, newRank));
+          // NOT overlapping onAlly if different color
+          newMove = this.makeMove(newFileEnum, newRank, false);
+        } else {
+          // overlapping onAlly if same color
+          newMove = this.makeMove(newFileEnum, newRank, true);
         }
-        return true;
       }
+      moveArr.push(newMove);
     }
-    return true;
+
+    return newMove;
   }
 
   static getStraightLineMoves(
@@ -84,25 +96,25 @@ export default class MovesGetter {
 
     // go left
     for (let i = fileEnum - 1; i >= MIN; i--) {
-      if (this.appendLegalMove(piece, result, i, rank, board)) {
+      if (this.appendPossibleMove(piece, result, i, rank, board)) {
         break;
       }
     }
     // go right
     for (let i = fileEnum + 1; i <= MAX; i++) {
-      if (this.appendLegalMove(piece, result, i, rank, board)) {
+      if (this.appendPossibleMove(piece, result, i, rank, board)) {
         break;
       }
     }
     // go up
     for (let i = rank + 1; i <= MAX; i++) {
-      if (this.appendLegalMove(piece, result, fileEnum, i, board)) {
+      if (this.appendPossibleMove(piece, result, fileEnum, i, board)) {
         break;
       }
     }
     // go down
     for (let i = rank - 1; i >= MIN; i--) {
-      if (this.appendLegalMove(piece, result, fileEnum, i, board)) {
+      if (this.appendPossibleMove(piece, result, fileEnum, i, board)) {
         break;
       }
     }
@@ -117,7 +129,7 @@ export default class MovesGetter {
 
   /**
    * Breadth-first search for the correct square.
-   * Stop going in a direction when hitting a border or a friendly piece
+   * Stop going in a direction when hitting a border or after stepping on a piece
    *
    * @param piece - the Piece being picked up
    * @param file - horizontal coordinate
@@ -148,30 +160,36 @@ export default class MovesGetter {
     let topRightStop = false;
     let newFileEnum;
     let newRank;
-    let outOfBound;
     // go left
     for (let distance = MIN; distance <= MAX; distance++) {
       // go bottom-left
       if (!bottomLeftStop) {
         newFileEnum = fileEnum - distance;
         newRank = rank - distance;
-        outOfBound = !parser.isOutOfBound(newFileEnum, newRank);
-        if (
-          !outOfBound ||
-          this.appendLegalMove(piece, result, newFileEnum, newRank, board)
-        ) {
+        const newMove = this.appendPossibleMove(
+          piece,
+          result,
+          newFileEnum,
+          newRank,
+          board
+        );
+        if (!newMove || newMove.onAlly) {
           bottomLeftStop = true;
         }
       }
+
       // go top-left
       if (!topLeftStop) {
         newFileEnum = fileEnum - distance;
         newRank = rank + distance;
-        outOfBound = !parser.isOutOfBound(newFileEnum, newRank);
-        if (
-          !outOfBound ||
-          this.appendLegalMove(piece, result, newFileEnum, newRank, board)
-        ) {
+        const newMove = this.appendPossibleMove(
+          piece,
+          result,
+          newFileEnum,
+          newRank,
+          board
+        );
+        if (!newMove || newMove.onAlly) {
           topLeftStop = true;
         }
       }
@@ -179,11 +197,14 @@ export default class MovesGetter {
       if (!topRightStop) {
         newFileEnum = fileEnum + distance;
         newRank = rank + distance;
-        outOfBound = !parser.isOutOfBound(newFileEnum, newRank);
-        if (
-          !outOfBound ||
-          this.appendLegalMove(piece, result, newFileEnum, newRank, board)
-        ) {
+        const newMove = this.appendPossibleMove(
+          piece,
+          result,
+          newFileEnum,
+          newRank,
+          board
+        );
+        if (!newMove || newMove.onAlly) {
           topRightStop = true;
         }
       }
@@ -191,11 +212,14 @@ export default class MovesGetter {
       if (!bottomRightStop) {
         newFileEnum = fileEnum + distance;
         newRank = rank - distance;
-        outOfBound = !parser.isOutOfBound(newFileEnum, newRank);
-        if (
-          !outOfBound ||
-          this.appendLegalMove(piece, result, newFileEnum, newRank, board)
-        ) {
+        const newMove = this.appendPossibleMove(
+          piece,
+          result,
+          newFileEnum,
+          newRank,
+          board
+        );
+        if (!newMove || newMove.onAlly) {
           bottomRightStop = true;
         }
       }
