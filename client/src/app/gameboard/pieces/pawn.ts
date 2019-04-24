@@ -71,14 +71,26 @@ export class Pawn extends Piece {
     if (moveForward) {
       const sq = parser.getSquare(file, moveForward, board);
       if (sq && !sq.piece) {
-        result.push(movesGetter.makeMove(file, moveForward));
+        movesGetter.appendLegalMove(
+          this,
+          result,
+          FileEnum[file],
+          moveForward,
+          board
+        );
       }
     }
     if (firstMove) {
       const sq1 = parser.getSquare(file, moveForward, board);
       const sq2 = parser.getSquare(file, moveForwardTwo, board);
       if (sq1 && !sq1.piece && sq2 && !sq2.piece) {
-        result.push(movesGetter.makeMove(file, moveForwardTwo));
+        movesGetter.appendLegalMove(
+          this,
+          result,
+          FileEnum[file],
+          moveForwardTwo,
+          board
+        );
       }
     }
     return result;
@@ -99,13 +111,25 @@ export class Pawn extends Piece {
     if (rightFile) {
       const sq = parser.getSquare(rightFile, forwardRank, board);
       if (sq && ((sq.piece && sq.piece.color !== this.color) || !sq.piece)) {
-        result.push(movesGetter.makeMove(rightFile, forwardRank));
+        movesGetter.appendLegalMove(
+          this,
+          result,
+          FileEnum[rightFile],
+          forwardRank,
+          board
+        );
       }
     }
     if (leftFile) {
       const sq = parser.getSquare(leftFile, forwardRank, board);
       if (sq && ((sq.piece && sq.piece.color !== this.color) || !sq.piece)) {
-        result.push(movesGetter.makeMove(leftFile, forwardRank));
+        movesGetter.appendLegalMove(
+          this,
+          result,
+          FileEnum[leftFile],
+          forwardRank,
+          board
+        );
       }
     }
     return result;
@@ -131,13 +155,25 @@ export class Pawn extends Piece {
     if (rightFile) {
       const sq = parser.getSquare(rightFile, forwardRank, board);
       if (sq && sq.piece && sq.piece.color !== this.color) {
-        result.push(movesGetter.makeMove(rightFile, forwardRank));
+        movesGetter.appendLegalMove(
+          this,
+          result,
+          FileEnum[rightFile],
+          forwardRank,
+          board
+        );
       }
     }
     if (leftFile) {
       const sq = parser.getSquare(leftFile, forwardRank, board);
       if (sq && sq.piece && sq.piece.color !== this.color) {
-        result.push(movesGetter.makeMove(leftFile, forwardRank));
+        movesGetter.appendLegalMove(
+          this,
+          result,
+          FileEnum[leftFile],
+          forwardRank,
+          board
+        );
       }
     }
     return result;
