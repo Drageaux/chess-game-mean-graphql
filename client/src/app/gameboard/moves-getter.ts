@@ -48,7 +48,7 @@ export default class MovesGetter {
    *
    * @params currPiece - the Piece we're trying to add
    * @params moveArr - the [[Move]] array to add currPiece
-   * @returns Move appended to array, else return null
+   * @returns whether the move is the end of the line
    */
   static appendPossibleMove(
     currPiece: Piece,
@@ -56,14 +56,17 @@ export default class MovesGetter {
     newFileEnum: number,
     newRank: number,
     board: Square[][]
-  ): Move {
+  ): boolean {
     // first, get valid Square
     const s: Square = parser.getSquare(newFileEnum, newRank, board);
-    let newMove: Move = null;
+    let newMove: Move;
     if (s) {
       if (!s.piece) {
         // NOT overlapping onAlly if empty square
         newMove = this.makeMove(newFileEnum, newRank, false);
+        moveArr.push(newMove);
+        // don't stop
+        return false;
       } else {
         if (s.piece.color !== currPiece.color) {
           // NOT overlapping onAlly if different color
@@ -72,11 +75,12 @@ export default class MovesGetter {
           // overlapping onAlly if same color
           newMove = this.makeMove(newFileEnum, newRank, true);
         }
+        moveArr.push(newMove);
+        return true;
       }
-      moveArr.push(newMove);
     }
 
-    return newMove;
+    return true;
   }
 
   static getStraightLineMoves(
@@ -169,14 +173,14 @@ export default class MovesGetter {
       if (!bottomLeftStop) {
         newFileEnum = fileEnum - distance;
         newRank = rank - distance;
-        const newMove = this.appendPossibleMove(
+        const shouldStop = this.appendPossibleMove(
           piece,
           result,
           newFileEnum,
           newRank,
           board
         );
-        if (!newMove || newMove.onAlly) {
+        if (shouldStop) {
           bottomLeftStop = true;
         }
       }
@@ -185,14 +189,14 @@ export default class MovesGetter {
       if (!topLeftStop) {
         newFileEnum = fileEnum - distance;
         newRank = rank + distance;
-        const newMove = this.appendPossibleMove(
+        const shouldStop = this.appendPossibleMove(
           piece,
           result,
           newFileEnum,
           newRank,
           board
         );
-        if (!newMove || newMove.onAlly) {
+        if (shouldStop) {
           topLeftStop = true;
         }
       }
@@ -200,14 +204,14 @@ export default class MovesGetter {
       if (!topRightStop) {
         newFileEnum = fileEnum + distance;
         newRank = rank + distance;
-        const newMove = this.appendPossibleMove(
+        const shouldStop = this.appendPossibleMove(
           piece,
           result,
           newFileEnum,
           newRank,
           board
         );
-        if (!newMove || newMove.onAlly) {
+        if (shouldStop) {
           topRightStop = true;
         }
       }
@@ -215,14 +219,14 @@ export default class MovesGetter {
       if (!bottomRightStop) {
         newFileEnum = fileEnum + distance;
         newRank = rank - distance;
-        const newMove = this.appendPossibleMove(
+        const shouldStop = this.appendPossibleMove(
           piece,
           result,
           newFileEnum,
           newRank,
           board
         );
-        if (!newMove || newMove.onAlly) {
+        if (shouldStop) {
           bottomRightStop = true;
         }
       }
