@@ -6,9 +6,11 @@
     "deploy": "",
     "dev": "concurrently \"npm run dev:client\" \"npm run dev:server\"",
     "prestart": "npm run build --prefix client",
-    "start": "npm run start --prefix server"
+    "start": "npm run start --prefix server",
+    "doc:client": "typedoc ./client/src --options ./client/typedoc.json --out ./docs/client --readme ./client/README.md"
   },
   "devDependencies": {
-    "concurrently": "^4.1.0"
+    "concurrently": "^4.1.0",
+    "typedoc": "^0.14.2"
   }
 }
