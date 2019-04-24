@@ -116,6 +116,7 @@ export class GameboardComponent implements OnInit {
         }
       }
     }
+
     this.addTestPieces();
     // check for attack moves for 2nd player
     this.onMoved.emit('black');
@@ -213,6 +214,7 @@ export class GameboardComponent implements OnInit {
         piece.attackMoves.forEach(m => {
           this.attackMovesMap.black.set(`${m.file}${m.rank}`, m);
         });
+        console.log(`${piece}`, piece.attackMoves);
       }
     });
   }
@@ -232,6 +234,9 @@ export class GameboardComponent implements OnInit {
 
   private removePiece(file: string, rank: number) {
     if (!parser.isOutOfBound(file, rank)) {
+      const piece: Piece = this.board[rank - 1][parser.fileStrToNum(file) - 1]
+        .piece;
+      this.capturedPieces.add(piece);
       this.board[rank - 1][parser.fileStrToNum(file) - 1].piece = null;
       return true;
     }
