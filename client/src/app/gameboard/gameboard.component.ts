@@ -27,8 +27,6 @@ export class GameboardComponent implements OnInit {
 
   // game status
   moving = false;
-  currMoves: Move[] = [];
-  currMovesInStr: string[] = [];
   currMovesMap: Map<string, Move> = new Map();
   currTurn: 'black' | 'white' = 'white';
   currSquare: Square;
@@ -110,52 +108,41 @@ export class GameboardComponent implements OnInit {
           piece.myFile = sq.file;
           piece.myRank = sq.rank;
 
-          // observing upon move; get moves that may be dangerous for the opposing King
-          this.onMoved.subscribe(($event: 'white' | 'black') => {
-            if ($event === 'white' && piece.color === 'white') {
-              piece.updateAttackMoves(piece.myFile, piece.myRank, this.board);
-              piece.attackMoves.forEach(m => {
-                this.attackMovesMap.white.set(`${m.file}${m.rank}`, m);
-              });
-            } else if ($event === 'black' && piece.color === 'black') {
-              piece.updateAttackMoves(piece.myFile, piece.myRank, this.board);
-              piece.attackMoves.forEach(m => {
-                this.attackMovesMap.black.set(`${m.file}${m.rank}`, m);
-              });
-            }
-          });
+          this.configurePiece(piece);
+
           sq.piece = piece;
         }
       }
     }
+    this.addTestPieces();
     // check for attack moves for 2nd player
     this.onMoved.emit('black');
   }
 
   private addTestPieces() {
     // for testing
-    /*
     this.insertPiece('a', 6, new Pawn('white'));
     this.insertPiece('d', 6, new Pawn('black'));
     this.insertPiece('e', 6, new Rook('white'));
     this.insertPiece('e', 3, new Pawn('black'));
     this.insertPiece('f', 3, new Pawn('white'));
     this.insertPiece('h', 6, new Bishop('white'));
-    this.removePiece('b', 1);
-    this.removePiece('c', 1);
-    this.removePiece('d', 1);
-    this.removePiece('f', 1);
-    this.removePiece('g', 1);
     this.removePiece('b', 8);
     this.removePiece('c', 8);
     this.removePiece('d', 8);
     this.removePiece('f', 8);
     this.removePiece('g', 8);
-    */
   }
 
+  /*********************
+   * USER INTERACTIONS *
+   *********************/
   // event handling
   handleSquareClick(s: Square) {
+    if (s === this.currSquare) {
+      return;
+    }
+
     if (s.piece && s.piece.color === this.currTurn) {
       // if click current player's piece, activate the tile
       this.selectPiece(s);
@@ -169,15 +156,11 @@ export class GameboardComponent implements OnInit {
   }
 
   selectPiece(s: Square) {
-    if (s === this.currSquare) {
-      return;
-    }
     this.currSquare = s;
     const p: Piece = s.piece;
     if (p) {
       this.moving = true;
 
-      // help render
       let allPieceLegalMoves: Move[] = p.getAllLegalMoves(
         s.file,
         s.rank,
@@ -195,6 +178,8 @@ export class GameboardComponent implements OnInit {
           );
         }
       }
+
+      this.currMovesMap.clear();
       allPieceLegalMoves.forEach(m => {
         this.currMovesMap.set(`${m.file}${m.rank}`, m);
       });
@@ -202,8 +187,32 @@ export class GameboardComponent implements OnInit {
     }
   }
 
+  /*******************
+   * DATA MANAGEMENT *
+   *******************/
+  /**
+   * Adds event subscription, etc., to the [[Piece]]
+   */
+  private configurePiece(piece: Piece) {
+    // observing upon move; get moves that may be dangerous for the opposing King
+    this.onMoved.subscribe(($event: 'white' | 'black') => {
+      if ($event === 'white' && piece.color === 'white') {
+        piece.updateAttackMoves(piece.myFile, piece.myRank, this.board);
+        piece.attackMoves.forEach(m => {
+          this.attackMovesMap.white.set(`${m.file}${m.rank}`, m);
+        });
+      } else if ($event === 'black' && piece.color === 'black') {
+        piece.updateAttackMoves(piece.myFile, piece.myRank, this.board);
+        piece.attackMoves.forEach(m => {
+          this.attackMovesMap.black.set(`${m.file}${m.rank}`, m);
+        });
+      }
+    });
+  }
+
   private insertPiece(file: string, rank: number, piece: Piece): boolean {
     // check if a piece already exists
+    this.configurePiece(piece);
     if (
       !parser.isOutOfBound(file, rank) &&
       !this.board[rank - 1][parser.fileStrToNum(file) - 1].piece
@@ -290,7 +299,9 @@ export class GameboardComponent implements OnInit {
     this.moving = false;
   }
 
-  // special moves
+  /*****************
+   * SPECIAL MOVES *
+   *****************/
   private castle(destination: string, color: 'white' | 'black'): void {
     let s: Square;
     let m: Move;
