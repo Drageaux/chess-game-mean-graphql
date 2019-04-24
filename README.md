@@ -1,0 +1,3 @@
+- run `npm install`
+- to see documents, run `npm run doc:client` or `npm run doc:server` (server not supported yet)
+  - generated documents will be in `./docs/client` or `./docs/server`
