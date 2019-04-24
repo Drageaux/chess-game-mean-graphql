@@ -17,10 +17,15 @@ import { Move } from './move';
   styleUrls: ['./gameboard.component.scss']
 })
 export class GameboardComponent implements OnInit {
+  // TODO: auth
+  isAdmin = true;
+
+  // const
   BOARD_SIZE = 8;
   parser = BoardParser;
   board: Square[][] = [];
 
+  // game status
   moving = false;
   currMoves: Move[] = [];
   currMovesInStr: string[] = [];
@@ -173,7 +178,6 @@ export class GameboardComponent implements OnInit {
       // help render
       this.currMoves = p.getAllPossibleMoves(s.file, s.rank, this.board);
       this.currMovesInStr = parser.movesToStrings(this.currMoves);
-      console.log('');
       console.log(`${s.piece} ${s.file}${s.rank} moves:`, this.currMoves);
     }
   }
@@ -240,11 +244,10 @@ export class GameboardComponent implements OnInit {
       return;
     }
 
-    const color = nextSquare.piece.color;
+    const color: 'white' | 'black' = nextSquare.piece.color;
     // stop moving
     this.stopMoving();
-    // signals that this turn is over
-    this.onMoved.emit(color);
+    this.onMoveHandler(color);
     if (color === 'white') {
       this.attackMoves.black = [];
     } else if (color === 'black') {
@@ -252,6 +255,14 @@ export class GameboardComponent implements OnInit {
     }
     // switch player, making sure to compare colors based on the piece that just moved
     this.currTurn = color === 'white' ? 'black' : 'white';
+  }
+
+  private onMoveHandler(color: 'white' | 'black') {
+    // signals that this turn is over
+
+    // console.time('getting attack moves');
+    this.onMoved.emit(color);
+    // console.timeEnd('getting attack moves');
   }
 
   private stopMoving() {

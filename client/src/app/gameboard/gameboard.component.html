@@ -39,14 +39,15 @@
         <div
           class="offensive"
           *ngIf="
-            (currTurn == 'white' &&
+            isAdmin &&
+            ((currTurn == 'white' &&
               parser
                 .movesToStrings(attackMoves.black)
                 .indexOf('' + s.file + s.rank) != -1) ||
-            (currTurn == 'black' &&
-              parser
-                .movesToStrings(attackMoves.white)
-                .indexOf('' + s.file + s.rank) != -1)
+              (currTurn == 'black' &&
+                parser
+                  .movesToStrings(attackMoves.white)
+                  .indexOf('' + s.file + s.rank) != -1))
           "
         ></div>
         <i

@@ -6,6 +6,8 @@ import { Queen } from './pieces/queen';
 import { Bishop } from './pieces/bishop';
 import { Piece } from './pieces/piece';
 
+// turn this to true to console log time
+const performanceTest = false;
 const MIN = 1;
 const MAX = 8;
 
@@ -71,8 +73,10 @@ export default class MovesGetter {
     const result: Move[] = [];
     const fileEnum: number = FileEnum[file];
 
-    // tslint:disable-next-line:no-console
-    console.time('get straight lines');
+    if (performanceTest) {
+      // tslint:disable-next-line:no-console
+      console.time('get straight lines');
+    }
 
     // find the closest piece
     // border-inclusive if piece is enemy (capturable)
@@ -102,8 +106,11 @@ export default class MovesGetter {
         break;
       }
     }
-    // tslint:disable-next-line:no-console
-    console.timeEnd('get straight lines');
+
+    if (performanceTest) {
+      // tslint:disable-next-line:no-console
+      console.timeEnd('get straight lines');
+    }
 
     return result;
   }
@@ -126,8 +133,10 @@ export default class MovesGetter {
     const result: Move[] = [];
     const fileEnum: number = FileEnum[file];
 
-    // tslint:disable-next-line:no-console
-    console.time('get diagonal lines');
+    if (performanceTest) {
+      // tslint:disable-next-line:no-console
+      console.time('get diagonal lines');
+    }
 
     // find the closest piece
     // border-inclusive if piece is enemy (capturable)
@@ -192,8 +201,10 @@ export default class MovesGetter {
       }
     }
 
-    // tslint:disable-next-line:no-console
-    console.timeEnd('get diagonal lines');
+    if (performanceTest) {
+      // tslint:disable-next-line:no-console
+      console.timeEnd('get diagonal lines');
+    }
 
     return result;
   }
