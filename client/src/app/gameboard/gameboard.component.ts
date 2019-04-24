@@ -74,9 +74,10 @@ export class GameboardComponent implements OnInit {
           const f = sq.file;
           if (f === 'a' || f === 'h') {
             piece = new Rook('white');
-            (piece as Rook).hasMoved.subscribe(
-              $event => (whiteKingPiece.hasMoved = $event)
-            );
+            const subscription = (piece as Rook).hasMoved.subscribe($event => {
+              whiteKingPiece.hasMoved = $event;
+              subscription.unsubscribe();
+            });
           } else if (f === 'b' || f === 'g') {
             piece = new Knight('white');
           } else if (f === 'c' || f === 'f') {
@@ -90,9 +91,10 @@ export class GameboardComponent implements OnInit {
           const f = sq.file;
           if (f === 'a' || f === 'h') {
             piece = new Rook('black');
-            (piece as Rook).hasMoved.subscribe(
-              $event => (blackKingPiece.hasMoved = $event)
-            );
+            const subscription = (piece as Rook).hasMoved.subscribe($event => {
+              blackKingPiece.hasMoved = $event;
+              subscription.unsubscribe();
+            });
           } else if (f === 'b' || f === 'g') {
             piece = new Knight('black');
           } else if (f === 'c' || f === 'f') {
