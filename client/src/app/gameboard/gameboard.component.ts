@@ -30,7 +30,7 @@ export class GameboardComponent implements OnInit {
   currMovesMap: Map<string, Move> = new Map();
   currTurn: 'black' | 'white' = 'white';
   currSquare: Square;
-  capturedPieces: Piece[] = [];
+  capturedPieces: Set<Piece> = new Set();
   whiteCastling = false;
   blackCastling = false;
   whiteKingChecked = false;
@@ -195,7 +195,12 @@ export class GameboardComponent implements OnInit {
    */
   private configurePiece(piece: Piece) {
     // observing upon move; get moves that may be dangerous for the opposing King
-    this.onMoved.subscribe(($event: 'white' | 'black') => {
+
+    const subscription = this.onMoved.subscribe(($event: 'white' | 'black') => {
+      if (this.capturedPieces.has(piece)) {
+        subscription.unsubscribe();
+        return;
+      }
       if ($event === 'white' && piece.color === 'white') {
         piece.updateAttackMoves(piece.myFile, piece.myRank, this.board);
         piece.attackMoves.forEach(m => {
@@ -244,7 +249,7 @@ export class GameboardComponent implements OnInit {
 
     // capture piece on destination
     if (nextSquare.piece) {
-      this.capturedPieces.push(nextSquare.piece);
+      this.capturedPieces.add(nextSquare.piece);
     }
     // move piece to new position & update piece's knowledge of its position
     nextSquare.piece = s.piece;
