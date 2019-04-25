@@ -1,5 +1,6 @@
 <div class="text-center">
   <h4>current turn: {{ currTurn }}</h4>
+  <h5>{{ whiteKingChecked || blackKingChecked ? 'checked' : '' }}</h5>
   <div class="board d-table mx-auto">
     <div
       *ngFor="

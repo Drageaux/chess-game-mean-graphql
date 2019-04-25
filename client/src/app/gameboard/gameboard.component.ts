@@ -319,6 +319,9 @@ export class GameboardComponent implements OnInit {
       attackMoves.forEach(m =>
         this.attackMovesMap[color].set(`${m.file}${m.rank}`, m)
       );
+      // is enemy king in ally Pieces' next moves?
+      this.checkEnemyKing(color);
+
       // refresh moves maps and observables list
       if (color === 'white') {
         this.attackMovesMap.black.clear();
@@ -331,9 +334,15 @@ export class GameboardComponent implements OnInit {
   }
 
   private checkEnemyKing(myColor: 'white' | 'black') {
-    myColor === 'white'
-      ? (this.blackKingChecked = true)
-      : (this.whiteKingChecked = true);
+    if (myColor === 'white') {
+      this.blackKingChecked = this.attackMovesMap.white.has(
+        `${this.blackKingPiece.myFile}${this.blackKingPiece.myRank}`
+      );
+    } else {
+      this.whiteKingChecked = this.attackMovesMap.black.has(
+        `${this.whiteKingPiece.myFile}${this.whiteKingPiece.myRank}`
+      );
+    }
   }
 
   private stopMoving() {
