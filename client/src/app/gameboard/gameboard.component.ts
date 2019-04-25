@@ -221,6 +221,7 @@ export class GameboardComponent implements OnInit {
               observer.next(result);
               // free up resource after every attack moves update
               // because this observable is remade every move
+              console.log(piece);
               observer.complete();
             });
         });
@@ -298,6 +299,7 @@ export class GameboardComponent implements OnInit {
     const color: 'white' | 'black' = nextSquare.piece.color;
     // stop moving
     this.stopMoving();
+
     this.aggregateAttackMoves(color);
     // switch player, making sure to compare colors based on the piece that just moved
     this.currTurn = color === 'white' ? 'black' : 'white';
@@ -318,13 +320,13 @@ export class GameboardComponent implements OnInit {
       attackMoves.forEach(m =>
         this.attackMovesMap[color].set(`${m.file}${m.rank}`, m)
       );
-
       // refresh moves maps and observables list
       if (color === 'white') {
         this.attackMovesMap.black.clear();
       } else if (color === 'black') {
         this.attackMovesMap.white.clear();
       }
+      this.onMovedObs = [];
       console.log(this.attackMovesMap);
       // console.timeEnd('getting attack moves');
     });
