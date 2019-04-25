@@ -5,6 +5,7 @@ import { Rook } from './pieces/rook';
 import { Queen } from './pieces/queen';
 import { Bishop } from './pieces/bishop';
 import { Piece } from './pieces/piece';
+import { King } from './pieces/king';
 
 // turn this to true to console log time
 const performanceTest = false;
@@ -71,11 +72,17 @@ export default class MovesGetter {
         if (s.piece.color !== currPiece.color) {
           // NOT overlapping onAlly if different color
           newMove = this.makeMove(newFileEnum, newRank, false);
+          moveArr.push(newMove);
+          // don't have to stop if the piece is enemy King
+          // because if the enemy King moves anywhere in this line, it's still being attacked
+          if (s.piece instanceof King) {
+            return false;
+          }
         } else {
           // overlapping onAlly if same color
           newMove = this.makeMove(newFileEnum, newRank, true);
+          moveArr.push(newMove);
         }
-        moveArr.push(newMove);
         return true;
       }
     }
