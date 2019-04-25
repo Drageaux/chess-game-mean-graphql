@@ -10,6 +10,9 @@ import { Bishop } from './pieces/bishop';
 import { Queen } from './pieces/queen';
 import { King } from './pieces/king';
 import { Move } from './move';
+import { of } from 'rxjs/internal/observable/of';
+import { Observer, Observable, zip, timer } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-gameboard',
@@ -37,6 +40,7 @@ export class GameboardComponent implements OnInit {
   blackKingChecked = false;
   // events
   onMoved = new EventEmitter<any>();
+  onMovedObs: Observable<any>[] = [];
   // opponent interactions
   attackMovesMap: { white: Map<string, Move>; black: Map<string, Move> } = {
     white: new Map(),
@@ -117,7 +121,7 @@ export class GameboardComponent implements OnInit {
       }
     }
 
-    this.addTestPieces();
+    // this.addTestPieces();
     // check for attack moves for 2nd player
     this.onMoved.emit('black');
   }
@@ -164,29 +168,31 @@ export class GameboardComponent implements OnInit {
     if (p) {
       this.moving = true;
 
-      let allPieceLegalMoves: Move[] = p.getAllLegalMoves(
-        s.file,
-        s.rank,
-        this.board
-      );
-      // if is king, filter out dangerous moves
-      if (p instanceof King) {
-        if (p.color === 'white') {
-          allPieceLegalMoves = allPieceLegalMoves.filter(
-            m => !this.attackMovesMap.black.has(`${m.file}${m.rank}`)
-          );
-        } else if (p.color === 'black') {
-          allPieceLegalMoves = allPieceLegalMoves.filter(
-            m => !this.attackMovesMap.white.has(`${m.file}${m.rank}`)
+      p.getAllLegalMoves(s.file, s.rank, this.board).subscribe(
+        allPieceLegalMoves => {
+          // if is king, filter out dangerous moves
+          if (p instanceof King) {
+            if (p.color === 'white') {
+              allPieceLegalMoves = allPieceLegalMoves.filter(
+                m => !this.attackMovesMap.black.has(`${m.file}${m.rank}`)
+              );
+            } else if (p.color === 'black') {
+              allPieceLegalMoves = allPieceLegalMoves.filter(
+                m => !this.attackMovesMap.white.has(`${m.file}${m.rank}`)
+              );
+            }
+          }
+
+          this.currMovesMap.clear();
+          allPieceLegalMoves.forEach(m => {
+            this.currMovesMap.set(`${m.file}${m.rank}`, m);
+          });
+          console.log(
+            `${s.piece} ${s.file}${s.rank} moves:`,
+            this.currMovesMap
           );
         }
-      }
-
-      this.currMovesMap.clear();
-      allPieceLegalMoves.forEach(m => {
-        this.currMovesMap.set(`${m.file}${m.rank}`, m);
-      });
-      console.log(`${s.piece} ${s.file}${s.rank} moves:`, this.currMovesMap);
+      );
     }
   }
 
@@ -198,23 +204,20 @@ export class GameboardComponent implements OnInit {
    */
   private configurePiece(piece: Piece) {
     // observing upon move; get moves that may be dangerous for the opposing King
-
     const subscription = this.onMoved.subscribe(($event: 'white' | 'black') => {
       if (this.capturedPieces.has(piece)) {
         subscription.unsubscribe();
         return;
       }
-      if ($event === 'white' && piece.color === 'white') {
-        piece.updateAttackMoves(piece.myFile, piece.myRank, this.board);
-        piece.attackMoves.forEach(m => {
-          this.attackMovesMap.white.set(`${m.file}${m.rank}`, m);
+      if (piece.color === $event) {
+        // make aggregation observable
+        const observable = new Observable(observer => {
+          observer.next(
+            piece.getAttackMoves(piece.myFile, piece.myRank, this.board)
+          );
+          observer.complete();
         });
-      } else if ($event === 'black' && piece.color === 'black') {
-        piece.updateAttackMoves(piece.myFile, piece.myRank, this.board);
-        piece.attackMoves.forEach(m => {
-          this.attackMovesMap.black.set(`${m.file}${m.rank}`, m);
-        });
-        console.log(`${piece}`, piece.attackMoves);
+        this.onMovedObs.push(observable);
       }
     });
   }
@@ -303,7 +306,11 @@ export class GameboardComponent implements OnInit {
 
     // console.time('getting attack moves');
     this.onMoved.emit(color);
-    // console.timeEnd('getting attack moves');
+    zip(...this.onMovedObs).subscribe((val: Move[][]) => {
+      console.log([].concat.apply([], val));
+      this.onMovedObs = [];
+      // console.timeEnd('getting attack moves');
+    });
   }
 
   private stopMoving() {

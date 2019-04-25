@@ -3,6 +3,7 @@ import { Piece } from './piece';
 import { Square, FileEnum } from '../square';
 import { default as parser } from '../board-parser';
 import { default as movesGetter } from '../moves-getter';
+import { Observable, of } from 'rxjs';
 
 export class Pawn extends Piece {
   constructor(color: 'white' | 'black') {
@@ -10,15 +11,22 @@ export class Pawn extends Piece {
   }
 
   // we only care about dangerous moves
-  updateAttackMoves(file: string, rank: number, board: Square[][]) {
-    const params: [string, number, Square[][]] = [file, rank, board];
-    const newAttackMoves = [];
+
+  getAttackMoves(
+    file: string,
+    rank: number,
+    board: Square[][]
+  ): Observable<Move[]> {
     // get diagonal moves, because getCapturableMoves() requires an enemy Piece
-    this.attackMoves = newAttackMoves.concat(...this.getDiagMoves(...params));
+    return of(this.getDiagMoves(file, rank, board));
   }
 
   // get board-aware moves
-  getAllPossibleMoves(file: string, rank: number, board: Square[][]): Move[] {
+  getAllPossibleMoves(
+    file: string,
+    rank: number,
+    board: Square[][]
+  ): Observable<Move[]> {
     const params: [string, number, Square[][]] = [file, rank, board];
     let allPossibleMoves = [];
     allPossibleMoves = allPossibleMoves.concat(
@@ -26,7 +34,7 @@ export class Pawn extends Piece {
       ...this.getCapturableMoves(...params)
     );
 
-    return allPossibleMoves;
+    return of(allPossibleMoves);
   }
 
   // return rank/row depending on color and number of squares
