@@ -10,9 +10,7 @@ import { Bishop } from './pieces/bishop';
 import { Queen } from './pieces/queen';
 import { King } from './pieces/king';
 import { Move } from './move';
-import { of } from 'rxjs/internal/observable/of';
-import { Observer, Observable, zip, timer, Subscription } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, zip, Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-gameboard',
@@ -78,10 +76,12 @@ export class GameboardComponent implements OnInit {
           const f = sq.file;
           if (f === 'a' || f === 'h') {
             piece = new Rook('white');
-            const subscription = (piece as Rook).hasMoved.subscribe($event => {
-              this.whiteKingPiece.hasMoved = $event;
-              subscription.unsubscribe();
-            });
+            const subscription: Subscription = (piece as Rook).hasMoved.subscribe(
+              $event => {
+                this.whiteKingPiece.hasMoved = $event;
+                subscription.unsubscribe();
+              }
+            );
           } else if (f === 'b' || f === 'g') {
             piece = new Knight('white');
           } else if (f === 'c' || f === 'f') {
@@ -95,10 +95,12 @@ export class GameboardComponent implements OnInit {
           const f = sq.file;
           if (f === 'a' || f === 'h') {
             piece = new Rook('black');
-            const subscription = (piece as Rook).hasMoved.subscribe($event => {
-              this.blackKingPiece.hasMoved = $event;
-              subscription.unsubscribe();
-            });
+            const subscription: Subscription = (piece as Rook).hasMoved.subscribe(
+              $event => {
+                this.blackKingPiece.hasMoved = $event;
+                subscription.unsubscribe();
+              }
+            );
           } else if (f === 'b' || f === 'g') {
             piece = new Knight('black');
           } else if (f === 'c' || f === 'f') {
@@ -121,24 +123,25 @@ export class GameboardComponent implements OnInit {
       }
     }
 
-    // this.addTestPieces();
+    this.addTestPieces();
     // check for attack moves for 2nd player
     this.aggregateAttackMoves('black');
   }
 
   private addTestPieces() {
     // for testing
+    this.removePiece('b', 8);
+    this.removePiece('c', 8);
+    this.removePiece('d', 8);
+    this.removePiece('f', 7);
+    this.removePiece('g', 8);
     this.insertPiece('a', 6, new Pawn('white'));
     this.insertPiece('d', 6, new Pawn('black'));
     this.insertPiece('e', 6, new Rook('white'));
     this.insertPiece('e', 3, new Pawn('black'));
     this.insertPiece('f', 3, new Pawn('white'));
     this.insertPiece('h', 6, new Bishop('white'));
-    this.removePiece('b', 8);
-    this.removePiece('c', 8);
-    this.removePiece('d', 8);
-    this.removePiece('f', 8);
-    this.removePiece('g', 8);
+    this.insertPiece('f', 7, new Queen('white'));
   }
 
   /*********************
@@ -171,15 +174,26 @@ export class GameboardComponent implements OnInit {
       p.getAllLegalMoves(s.file, s.rank, this.board).subscribe(
         allPieceLegalMoves => {
           // if is king, filter out dangerous moves
+          // also filter out castling moves if currently checked
           if (p instanceof King) {
             if (p.color === 'white') {
-              allPieceLegalMoves = allPieceLegalMoves.filter(
-                m => !this.attackMovesMap.black.has(`${m.file}${m.rank}`)
-              );
+              allPieceLegalMoves = allPieceLegalMoves.filter(m => {
+                if (!this.attackMovesMap.black.has(`${m.file}${m.rank}`)) {
+                  if (m.castle && this.whiteKingChecked) {
+                    return false;
+                  }
+                  return true;
+                }
+              });
             } else if (p.color === 'black') {
-              allPieceLegalMoves = allPieceLegalMoves.filter(
-                m => !this.attackMovesMap.white.has(`${m.file}${m.rank}`)
-              );
+              allPieceLegalMoves = allPieceLegalMoves.filter(m => {
+                if (!this.attackMovesMap.white.has(`${m.file}${m.rank}`)) {
+                  if (m.castle && this.blackKingChecked) {
+                    return false;
+                  }
+                  return true;
+                }
+              });
             }
           }
 
@@ -205,28 +219,30 @@ export class GameboardComponent implements OnInit {
    */
   private configurePieceEvents(piece: Piece) {
     // observing upon move; get moves that may be dangerous for the opposing King
-    const subscription = this.onMoved.subscribe(($event: 'white' | 'black') => {
-      if (this.capturedPieces.has(piece)) {
-        // free up resource every move
-        // don't do any of this if captured
-        subscription.unsubscribe();
-        return;
+    const subscription: Subscription = this.onMoved.subscribe(
+      ($event: 'white' | 'black') => {
+        if (this.capturedPieces.has(piece)) {
+          // free up resource every move
+          // don't do any of this if captured
+          subscription.unsubscribe();
+          return;
+        }
+        if (piece.color === $event) {
+          // make aggregation observable
+          const observable = new Observable(observer => {
+            piece
+              .getAttackMoves(piece.myFile, piece.myRank, this.board)
+              .subscribe((result: Move[]) => {
+                observer.next(result);
+                // free up resource after every attack moves update
+                // because this observable is remade every move
+                observer.complete();
+              });
+          });
+          this.onMovedObs.push(observable);
+        }
       }
-      if (piece.color === $event) {
-        // make aggregation observable
-        const observable = new Observable(observer => {
-          piece
-            .getAttackMoves(piece.myFile, piece.myRank, this.board)
-            .subscribe((result: Move[]) => {
-              observer.next(result);
-              // free up resource after every attack moves update
-              // because this observable is remade every move
-              observer.complete();
-            });
-        });
-        this.onMovedObs.push(observable);
-      }
-    });
+    );
   }
 
   private insertPiece(file: string, rank: number, piece: Piece): boolean {
@@ -351,6 +367,12 @@ export class GameboardComponent implements OnInit {
    * SPECIAL MOVES *
    *****************/
   private castle(destination: string, color: 'white' | 'black'): void {
+    if (
+      (color === 'white' && this.whiteKingChecked) ||
+      (color === 'black' && this.blackKingChecked)
+    ) {
+      return;
+    }
     let s: Square;
     let m: Move;
     if (destination === 'c') {
