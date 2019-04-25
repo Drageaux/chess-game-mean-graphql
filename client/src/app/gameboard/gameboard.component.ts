@@ -123,7 +123,7 @@ export class GameboardComponent implements OnInit {
 
     // this.addTestPieces();
     // check for attack moves for 2nd player
-    this.onMoveHandler('black');
+    this.aggregateAttackMoves('black');
   }
 
   private addTestPieces() {
@@ -217,7 +217,7 @@ export class GameboardComponent implements OnInit {
         const observable = new Observable(observer => {
           const getAttackMovesSubs: Subscription = piece
             .getAttackMoves(piece.myFile, piece.myRank, this.board)
-            .subscribe((result:Move[]) => {
+            .subscribe((result: Move[]) => {
               observer.next(result);
               // free up resource after every attack moves update
               // because this observable is remade every move
@@ -302,21 +302,14 @@ export class GameboardComponent implements OnInit {
     const color: 'white' | 'black' = nextSquare.piece.color;
     // stop moving
     this.stopMoving();
-    this.onMoveHandler(color);
-    if (color === 'white') {
-      this.attackMovesMap.black.clear();
-    } else if (color === 'black') {
-      this.attackMovesMap.white.clear();
-    }
+    this.aggregateAttackMoves(color);
     // switch player, making sure to compare colors based on the piece that just moved
     this.currTurn = color === 'white' ? 'black' : 'white';
   }
 
-  private onMoveHandler(color: 'white' | 'black') {
-    // signals that this turn is over
-
+  private aggregateAttackMoves(color: 'white' | 'black') {
     // console.time('getting attack moves');
-    // trigger onMoved event
+    // signals that this turn is over, trigger onMoved event
     this.onMoved.emit(color);
     // after onMoved and every of this color's attack moves is updated
     // aggregate attack moves to check the enemy King
@@ -325,8 +318,15 @@ export class GameboardComponent implements OnInit {
       attackMoves.forEach(m =>
         this.attackMovesMap[color].set(`${m.file}${m.rank}`, m)
       );
-      console.log(this.attackMovesMap);
+
+      // refresh moves maps and observables list
+      if (color === 'white') {
+        this.attackMovesMap.black.clear();
+      } else if (color === 'black') {
+        this.attackMovesMap.white.clear();
+      }
       this.onMovedObs = [];
+      console.log(this.attackMovesMap);
       // console.timeEnd('getting attack moves');
     });
   }
