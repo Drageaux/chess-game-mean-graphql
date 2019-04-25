@@ -221,7 +221,6 @@ export class GameboardComponent implements OnInit {
               observer.next(result);
               // free up resource after every attack moves update
               // because this observable is remade every move
-              console.log(piece);
               observer.complete();
             });
         });
@@ -327,7 +326,6 @@ export class GameboardComponent implements OnInit {
         this.attackMovesMap.white.clear();
       }
       this.onMovedObs = [];
-      console.log(this.attackMovesMap);
       // console.timeEnd('getting attack moves');
     });
   }
