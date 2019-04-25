@@ -215,17 +215,13 @@ export class GameboardComponent implements OnInit {
       if (piece.color === $event) {
         // make aggregation observable
         const observable = new Observable(observer => {
-          const getAttackMovesSubs: Subscription = piece
+          piece
             .getAttackMoves(piece.myFile, piece.myRank, this.board)
             .subscribe((result: Move[]) => {
               observer.next(result);
               // free up resource after every attack moves update
               // because this observable is remade every move
-              return {
-                unsubscribe() {
-                  getAttackMovesSubs.unsubscribe();
-                }
-              };
+              observer.complete();
             });
         });
         this.onMovedObs.push(observable);
@@ -307,6 +303,10 @@ export class GameboardComponent implements OnInit {
     this.currTurn = color === 'white' ? 'black' : 'white';
   }
 
+  /**
+   * In order to check enemy King, all ally Pieces must know
+   * the Squares they are attacking
+   */
   private aggregateAttackMoves(color: 'white' | 'black') {
     // console.time('getting attack moves');
     // signals that this turn is over, trigger onMoved event
@@ -325,10 +325,15 @@ export class GameboardComponent implements OnInit {
       } else if (color === 'black') {
         this.attackMovesMap.white.clear();
       }
-      this.onMovedObs = [];
       console.log(this.attackMovesMap);
       // console.timeEnd('getting attack moves');
     });
+  }
+
+  private checkEnemyKing(myColor: 'white' | 'black') {
+    myColor === 'white'
+      ? (this.blackKingChecked = true)
+      : (this.whiteKingChecked = true);
   }
 
   private stopMoving() {
