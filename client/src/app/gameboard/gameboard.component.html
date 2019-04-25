@@ -1,5 +1,6 @@
 <div class="text-center">
   <h4>current turn: {{ currTurn }}</h4>
+  <h5>{{ whiteKingChecked || blackKingChecked ? 'checked' : '' }}</h5>
   <div class="board d-table mx-auto">
     <div
       *ngFor="
@@ -27,13 +28,23 @@
       >
         <!-- activate square if a piece is trying to move -->
         <div
-          *ngIf="moving && currMovesInStr.indexOf('' + s.file + s.rank) != -1"
+          *ngIf="moving && currMovesMap.has('' + s.file + s.rank)"
           class="move"
         ></div>
         <div
           class="current"
           *ngIf="
             moving && currSquare.file === s.file && currSquare.rank === s.rank
+          "
+        ></div>
+        <div
+          class="offensive"
+          *ngIf="
+            isAdmin &&
+            ((currTurn == 'white' &&
+              attackMovesMap.black.has('' + s.file + s.rank)) ||
+              (currTurn == 'black' &&
+                attackMovesMap.white.has('' + s.file + s.rank)))
           "
         ></div>
         <i

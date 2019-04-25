@@ -1,22 +1,40 @@
 import { Move } from './../move';
 import { Piece } from './piece';
 import { Square, FileEnum } from '../square';
-import { default as parser } from '../gameboard-parser';
+import { default as parser } from '../board-parser';
+import { default as movesGetter } from '../moves-getter';
+import { Observable, of } from 'rxjs';
 
 export class Pawn extends Piece {
   constructor(color: 'white' | 'black') {
     super('pawn', color);
   }
 
+  // we only care about dangerous moves
+
+  getAttackMoves(
+    file: string,
+    rank: number,
+    board: Square[][]
+  ): Observable<Move[]> {
+    // get diagonal moves, because getCapturableMoves() requires an enemy Piece
+    return of(this.getDiagMoves(file, rank, board));
+  }
+
   // get board-aware moves
-  getAllPossibleMoves(file: string, rank: number, board: Square[][]): Move[] {
+  getAllPossibleMoves(
+    file: string,
+    rank: number,
+    board: Square[][]
+  ): Observable<Move[]> {
     const params: [string, number, Square[][]] = [file, rank, board];
     let allPossibleMoves = [];
     allPossibleMoves = allPossibleMoves.concat(
       ...this.getRegularMoves(...params),
       ...this.getCapturableMoves(...params)
     );
-    return allPossibleMoves;
+
+    return of(allPossibleMoves);
   }
 
   // return rank/row depending on color and number of squares
@@ -61,14 +79,65 @@ export class Pawn extends Piece {
     if (moveForward) {
       const sq = parser.getSquare(file, moveForward, board);
       if (sq && !sq.piece) {
-        result.push(new Move(file, moveForward));
+        movesGetter.appendPossibleMove(
+          this,
+          result,
+          FileEnum[file],
+          moveForward,
+          board
+        );
       }
     }
     if (firstMove) {
       const sq1 = parser.getSquare(file, moveForward, board);
       const sq2 = parser.getSquare(file, moveForwardTwo, board);
       if (sq1 && !sq1.piece && sq2 && !sq2.piece) {
-        result.push(new Move(file, moveForwardTwo));
+        movesGetter.appendPossibleMove(
+          this,
+          result,
+          FileEnum[file],
+          moveForwardTwo,
+          board
+        );
+      }
+    }
+    return result;
+  }
+
+  private getDiagMoves(file: string, rank: number, board: Square[][]): Move[] {
+    const result: Move[] = [];
+    const forwardRank = this.getVerMoves(rank, 1);
+    if (!forwardRank) {
+      return [];
+    }
+    // get right coordinate and check if its legal
+    const rightFile = this.getHorMoves(file, 1);
+    // get left coordinate and check if its legal
+    const leftFile = this.getHorMoves(file, -1);
+
+    // check both right and left square diagonally in front
+    if (rightFile) {
+      const sq = parser.getSquare(rightFile, forwardRank, board);
+      if (sq && ((sq.piece && sq.piece.color !== this.color) || !sq.piece)) {
+        movesGetter.appendPossibleMove(
+          this,
+          result,
+          FileEnum[rightFile],
+          forwardRank,
+          board
+        );
+      }
+    }
+    if (leftFile) {
+      const sq = parser.getSquare(leftFile, forwardRank, board);
+      if (sq && ((sq.piece && sq.piece.color !== this.color) || !sq.piece)) {
+        movesGetter.appendPossibleMove(
+          this,
+          result,
+          FileEnum[leftFile],
+          forwardRank,
+          board
+        );
       }
     }
     return result;
@@ -94,13 +163,25 @@ export class Pawn extends Piece {
     if (rightFile) {
       const sq = parser.getSquare(rightFile, forwardRank, board);
       if (sq && sq.piece && sq.piece.color !== this.color) {
-        result.push(new Move(rightFile, forwardRank));
+        movesGetter.appendPossibleMove(
+          this,
+          result,
+          FileEnum[rightFile],
+          forwardRank,
+          board
+        );
       }
     }
     if (leftFile) {
       const sq = parser.getSquare(leftFile, forwardRank, board);
       if (sq && sq.piece && sq.piece.color !== this.color) {
-        result.push(new Move(leftFile, forwardRank));
+        movesGetter.appendPossibleMove(
+          this,
+          result,
+          FileEnum[leftFile],
+          forwardRank,
+          board
+        );
       }
     }
     return result;

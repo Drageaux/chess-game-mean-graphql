@@ -84,3 +84,4 @@ typings/
 client/src/app/**/*.css
 client/src/styles.css
 *.map
+docs/

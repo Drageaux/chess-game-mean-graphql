@@ -2,7 +2,8 @@ import { Piece } from './piece';
 import { Square, FileEnum } from '../square';
 import { Move } from '../move';
 import { default as movesGetter } from '../moves-getter';
-import { default as parser } from '../gameboard-parser';
+import { default as parser } from '../board-parser';
+import { Observable, of } from 'rxjs';
 
 export class King extends Piece {
   // tslint:disable-next-line:variable-name
@@ -25,15 +26,18 @@ export class King extends Piece {
     this._canCastle = false;
   }
 
-  getAllPossibleMoves(file: string, rank: number, board: Square[][]): Move[] {
+  getAllPossibleMoves(
+    file: string,
+    rank: number,
+    board: Square[][]
+  ): Observable<Move[]> {
     const params: [string, number, Square[][]] = [file, rank, board];
     let allPossibleMoves = [];
     allPossibleMoves = allPossibleMoves.concat(
       ...this.getRegularMoves(...params),
       ...this.getCastlingMoves(...params)
     );
-    console.log('king moves', allPossibleMoves);
-    return allPossibleMoves;
+    return of(allPossibleMoves);
   }
 
   private getRegularMoves(
@@ -50,7 +54,7 @@ export class King extends Piece {
         if (row === 0 && col === 0) {
           continue;
         } else {
-          movesGetter.appendLegalMove(
+          movesGetter.appendPossibleMove(
             this,
             result,
             fileEnum + row,
@@ -87,7 +91,7 @@ export class King extends Piece {
           }
         }
         if (leftRoadClear) {
-          movesGetter.appendLegalMove(this, result, 3, rank, board);
+          movesGetter.appendPossibleMove(this, result, 3, rank, board);
         }
       }
       const rightRookSquare = parser.getSquare(8, rank, board);
@@ -105,7 +109,7 @@ export class King extends Piece {
           }
         }
         if (rightRoadClear) {
-          movesGetter.appendLegalMove(this, result, 7, rank, board);
+          movesGetter.appendPossibleMove(this, result, 7, rank, board);
         }
       }
     }

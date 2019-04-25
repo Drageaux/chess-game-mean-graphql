@@ -2,6 +2,7 @@ import { Piece } from './piece';
 import { Square, FileEnum } from '../square';
 import { Move } from '../move';
 import { default as movesGetter } from '../moves-getter';
+import { Observable, of } from 'rxjs';
 
 interface NewMove {
   fileEnum: number;
@@ -13,14 +14,17 @@ export class Knight extends Piece {
     super('knight', color);
   }
 
-  getAllPossibleMoves(file: string, rank: number, board: Square[][]): Move[] {
+  getAllPossibleMoves(
+    file: string,
+    rank: number,
+    board: Square[][]
+  ): Observable<Move[]> {
     const params: [string, number, Square[][]] = [file, rank, board];
     let allPossibleMoves = [];
     allPossibleMoves = allPossibleMoves.concat(
       ...this.getRegularMoves(...params)
     );
-    console.log('knight moves', allPossibleMoves);
-    return allPossibleMoves;
+    return of(allPossibleMoves);
   }
 
   private getRegularMoves(
@@ -69,7 +73,7 @@ export class Knight extends Piece {
       }
     ];
     for (const newM of allMoves) {
-      movesGetter.appendLegalMove(
+      movesGetter.appendPossibleMove(
         this,
         result,
         newM.fileEnum,

@@ -1,7 +1,7 @@
 import { Square, FileEnum } from './square';
 import { Move } from './move';
 
-export default class GameboardParser {
+export default class BoardParser {
   static getSquare(
     file: string | number,
     rank: number,
@@ -16,7 +16,7 @@ export default class GameboardParser {
   static movesToStrings(moves: Move[]): string[] {
     const result: string[] = [];
     for (const m of moves) {
-      result.push(m.file + '' + m.rank);
+      result.push(`${m.file}${m.rank}`);
     }
     return result;
   }
