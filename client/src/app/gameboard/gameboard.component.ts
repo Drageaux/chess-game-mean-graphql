@@ -11,7 +11,7 @@ import { Queen } from './pieces/queen';
 import { King } from './pieces/king';
 import { Move } from './move';
 import { of } from 'rxjs/internal/observable/of';
-import { Observer, Observable, zip, timer } from 'rxjs';
+import { Observer, Observable, zip, timer, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 @Component({
@@ -114,7 +114,7 @@ export class GameboardComponent implements OnInit {
           piece.myFile = sq.file;
           piece.myRank = sq.rank;
 
-          this.configurePiece(piece);
+          this.configurePieceEvents(piece);
 
           sq.piece = piece;
         }
@@ -123,7 +123,7 @@ export class GameboardComponent implements OnInit {
 
     // this.addTestPieces();
     // check for attack moves for 2nd player
-    this.onMoved.emit('black');
+    this.onMoveHandler('black');
   }
 
   private addTestPieces() {
@@ -201,21 +201,32 @@ export class GameboardComponent implements OnInit {
    *******************/
   /**
    * Adds event subscription, etc., to the [[Piece]]
+   * On move, get [[Piece]]'s attack moves to check the enemy [[King]]
    */
-  private configurePiece(piece: Piece) {
+  private configurePieceEvents(piece: Piece) {
     // observing upon move; get moves that may be dangerous for the opposing King
     const subscription = this.onMoved.subscribe(($event: 'white' | 'black') => {
       if (this.capturedPieces.has(piece)) {
+        // free up resource every move
+        // don't do any of this if captured
         subscription.unsubscribe();
         return;
       }
       if (piece.color === $event) {
         // make aggregation observable
         const observable = new Observable(observer => {
-          observer.next(
-            piece.getAttackMoves(piece.myFile, piece.myRank, this.board)
-          );
-          observer.complete();
+          const getAttackMovesSubs: Subscription = piece
+            .getAttackMoves(piece.myFile, piece.myRank, this.board)
+            .subscribe((result:Move[]) => {
+              observer.next(result);
+              // free up resource after every attack moves update
+              // because this observable is remade every move
+              return {
+                unsubscribe() {
+                  getAttackMovesSubs.unsubscribe();
+                }
+              };
+            });
         });
         this.onMovedObs.push(observable);
       }
@@ -224,7 +235,7 @@ export class GameboardComponent implements OnInit {
 
   private insertPiece(file: string, rank: number, piece: Piece): boolean {
     // check if a piece already exists
-    this.configurePiece(piece);
+    this.configurePieceEvents(piece);
     if (
       !parser.isOutOfBound(file, rank) &&
       !this.board[rank - 1][parser.fileStrToNum(file) - 1].piece
@@ -305,9 +316,16 @@ export class GameboardComponent implements OnInit {
     // signals that this turn is over
 
     // console.time('getting attack moves');
+    // trigger onMoved event
     this.onMoved.emit(color);
+    // after onMoved and every of this color's attack moves is updated
+    // aggregate attack moves to check the enemy King
     zip(...this.onMovedObs).subscribe((val: Move[][]) => {
-      console.log([].concat.apply([], val));
+      const attackMoves: Move[] = [].concat.apply([], val);
+      attackMoves.forEach(m =>
+        this.attackMovesMap[color].set(`${m.file}${m.rank}`, m)
+      );
+      console.log(this.attackMovesMap);
       this.onMovedObs = [];
       // console.timeEnd('getting attack moves');
     });
