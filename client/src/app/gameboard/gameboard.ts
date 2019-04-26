@@ -153,6 +153,10 @@ export class Gameboard {
   }
 
   tryMove(currSquare: Square, nextSquare: Square) {
+    // capture piece on destination
+    if (nextSquare.piece) {
+      this.capturedPieces.add(nextSquare.piece);
+    }
     // move piece to new position & update piece's knowledge of its position
     nextSquare.piece = currSquare.piece;
     nextSquare.piece.myFile = nextSquare.file;
@@ -161,7 +165,10 @@ export class Gameboard {
     currSquare.piece = null;
 
     // check if making this move results in a check
-    this.getAttackMovesMap(nextSquare.piece.color).subscribe();
+    const enemyColor = nextSquare.piece.color === 'white' ? 'black' : 'white';
+    this.getAttackMovesMap(enemyColor).subscribe(movesMap => {
+      // if
+    });
   }
 
   /**
@@ -181,10 +188,6 @@ export class Gameboard {
     } catch (e) {
       console.error(e);
     }
-    // capture piece on destination
-    if (nextSquare.piece) {
-      this.capturedPieces.add(nextSquare.piece);
-    }
 
     // check for special conditions
     // TODO: prompt to promote
@@ -201,13 +204,37 @@ export class Gameboard {
       return;
     }
 
-    const color: 'white' | 'black' = nextSquare.piece.color;
-    // stop moving
-    this.stopMoving();
-    // aggregate to check
-    this.getAttackMovesMap(color);
-    // switch player, making sure to compare colors based on the piece that just moved
-    this.currTurn = color === 'white' ? 'black' : 'white';
+    const attackingTeamColor: 'white' | 'black' = nextSquare.piece.color;
+    // aggregate to attack enemy King
+    this.getAttackMovesMap(attackingTeamColor).subscribe(
+      movesMap => {
+        console.log(movesMap);
+        console.log(this.checkKing(attackingTeamColor, movesMap));
+        if (this.checkKing(attackingTeamColor, movesMap)) {
+          // force defend
+          if (attackingTeamColor === 'white') {
+            this.blackKingChecked = true;
+            this.defend('black');
+          } else {
+            this.whiteKingChecked = true;
+            this.defend('white');
+          }
+        } else {
+          if (attackingTeamColor === 'white') {
+            this.blackKingChecked = false;
+          } else {
+            this.whiteKingChecked = false;
+          }
+        }
+      },
+      err => console.error(err),
+      () => {
+        // stop moving
+        this.stopMoving();
+        // switch player, making sure to compare colors based on the piece that just moved
+        this.currTurn = attackingTeamColor === 'white' ? 'black' : 'white';
+      }
+    );
   }
 
   aggregateAllLegalMoves() {}
@@ -320,10 +347,12 @@ export class Gameboard {
    * In order to check enemy King, all ally Pieces must know
    * the Squares they are attacking
    */
-  private getAttackMovesMap(currentTeam: 'white' | 'black') {
+  private getAttackMovesMap(
+    attackTeamColor: 'white' | 'black'
+  ): Observable<Map<string, Move>> {
     // console.time('getting attack moves');
     // signals that this turn is over, trigger onMoved event
-    this.onMoved.emit(currentTeam);
+    this.onMoved.emit(attackTeamColor);
     // after onMoved and every of this color's attack moves is updated
     // aggregate attack moves to check the enemy King
     return zip(...this.onMovedObs).pipe(
@@ -334,30 +363,28 @@ export class Gameboard {
 
         const attackMovesArr: Move[] = [].concat.apply([], val);
         attackMovesArr.forEach(m =>
-          newAttackMoveMaps[currentTeam].set(`${m.file}${m.rank}`, m)
+          newAttackMoveMaps.set(`${m.file}${m.rank}`, m)
         );
+        console.log(this.attackMovesMap);
         // console.timeEnd('getting attack moves');
         return newAttackMoveMaps;
       })
     );
   }
 
-  private checkKing(color: 'white' | 'black'): boolean {
-    if (color === 'white') {
-      return this.attackMovesMap.white.has(
+  private checkKing(
+    attackTeamColor: 'white' | 'black',
+    movesMap: Map<string, Move>
+  ): boolean {
+    if (attackTeamColor === 'white') {
+      return movesMap.has(
         `${this.blackKingPiece.myFile}${this.blackKingPiece.myRank}`
       );
     } else {
-      return this.attackMovesMap.black.has(
+      return movesMap.has(
         `${this.whiteKingPiece.myFile}${this.whiteKingPiece.myRank}`
       );
     }
-    // TODO: force defend
-    // if (this.blackKingChecked) {
-    //   this.defend('black');
-    // } else if (this.whiteKingChecked) {
-    //   this.defend('white');
-    // }
   }
 
   private defend(color: 'white' | 'black') {
