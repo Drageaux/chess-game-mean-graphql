@@ -6,6 +6,7 @@ import { Piece } from './pieces/piece';
 import { King } from './pieces/king';
 import { Move } from './move';
 import { default as parser } from './board-parser';
+import { cloneDeep } from 'lodash';
 
 @Component({
   selector: 'app-gameboard',
@@ -76,21 +77,16 @@ export class GameboardComponent {
   }
 
   cloneBoard(s: Square, move: Move) {
-    let clone = [];
-    clone = Object.assign(clone, this.gb.board);
+    let clone = this.deepcopy(this.gb.board);
 
-    const currSquare = parser.getSquare(
-      s.file,
-      s.rank,
-      clone
-    );
+    const currSquare = parser.getSquare(s.file, s.rank, clone);
     const nextSquare = parser.getSquare(move.file, move.rank, clone);
-    if (!nextSquare) { 
+    if (!nextSquare) {
       // TODO: throw wrong square
       return;
     }
 
-    this.gb.moveFromTo(currSquare, nextSquare, new Set(), clone);
+    this.gb.moveFromTo(currSquare, nextSquare, new Set());
 
     // garbage collect
     clone = null;
@@ -98,6 +94,6 @@ export class GameboardComponent {
   }
 
   deepcopy(obj) {
-    return JSON.parse(JSON.stringify(obj));
+    return cloneDeep(obj);
   }
 }
