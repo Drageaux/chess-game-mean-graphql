@@ -44,9 +44,9 @@
           *ngIf="
             isAdmin &&
             ((gb.currTurn == 'white' &&
-              gb.attackMovesMap.black.has('' + s.file + s.rank)) ||
+              gb.attackMovesMaps.black.has('' + s.file + s.rank)) ||
               (gb.currTurn == 'black' &&
-                gb.attackMovesMap.white.has('' + s.file + s.rank)))
+                gb.attackMovesMaps.white.has('' + s.file + s.rank)))
           "
         ></div>
         <i
@@ -55,8 +55,8 @@
           [ngClass]="{
             white: s.piece?.color === 'white',
             black: s.piece?.color === 'black',
-            'white-turn': s.piece?.color === 'white' && currTurn === 'white',
-            'black-turn': s.piece?.color === 'black' && currTurn === 'black'
+            'white-turn': s.piece?.color === 'white' && gb.currTurn === 'white',
+            'black-turn': s.piece?.color === 'black' && gb.currTurn === 'black'
           }"
         ></i>
       </div>

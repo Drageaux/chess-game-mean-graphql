@@ -34,7 +34,7 @@ export class Gameboard {
   onChecked = new EventEmitter<'white' | 'black'>();
   onCheckedObs: Observable<any>[] = [];
   // opponent interactions
-  attackMovesMap: {
+  attackMovesMaps: {
     white: Map<string, Move>;
     black: Map<string, Move>;
   } = {
@@ -92,7 +92,9 @@ export class Gameboard {
 
     this.addTestPieces();
     // check for attack moves for 2nd player
-    this.getAttackMovesMap('black');
+    this.getAttackMovesMap('black').subscribe(movesMap => {
+      this.attackMovesMaps.black = movesMap;
+    });
   }
 
   /***************
@@ -208,8 +210,7 @@ export class Gameboard {
     // aggregate to attack enemy King
     this.getAttackMovesMap(attackingTeamColor).subscribe(
       movesMap => {
-        console.log(movesMap);
-        console.log(this.checkKing(attackingTeamColor, movesMap));
+        this.attackMovesMaps[attackingTeamColor] = movesMap;
         if (this.checkKing(attackingTeamColor, movesMap)) {
           // force defend
           if (attackingTeamColor === 'white') {
@@ -242,7 +243,7 @@ export class Gameboard {
   filterOutKingMoves(p: King, allPieceLegalMoves) {
     if (p.color === 'white') {
       allPieceLegalMoves = allPieceLegalMoves.filter(m => {
-        if (!this.attackMovesMap.black.has(`${m.file}${m.rank}`)) {
+        if (!this.attackMovesMaps.black.has(`${m.file}${m.rank}`)) {
           if (m.castle && this.whiteKingChecked) {
             return false;
           }
@@ -251,7 +252,7 @@ export class Gameboard {
       });
     } else if (p.color === 'black') {
       allPieceLegalMoves = allPieceLegalMoves.filter(m => {
-        if (!this.attackMovesMap.white.has(`${m.file}${m.rank}`)) {
+        if (!this.attackMovesMaps.white.has(`${m.file}${m.rank}`)) {
           if (m.castle && this.blackKingChecked) {
             return false;
           }
@@ -365,7 +366,7 @@ export class Gameboard {
         attackMovesArr.forEach(m =>
           newAttackMoveMaps.set(`${m.file}${m.rank}`, m)
         );
-        console.log(this.attackMovesMap);
+        console.log(this.attackMovesMaps);
         // console.timeEnd('getting attack moves');
         return newAttackMoveMaps;
       })
