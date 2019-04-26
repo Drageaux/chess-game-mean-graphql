@@ -17,6 +17,10 @@ export class King extends Piece {
     }
   }
 
+  get isKing(): boolean {
+    return true;
+  }
+
   get canCastle() {
     return this._canCastle;
   }

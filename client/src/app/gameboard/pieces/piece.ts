@@ -1,7 +1,7 @@
-import { Square, FileEnum } from '../square';
+import { Square } from '../square';
 import { Move } from '../move';
 import { Observable } from 'rxjs';
-import { filter, map } from 'rxjs/operators';
+import { map } from 'rxjs/operators';
 
 export abstract class Piece {
   name: string;
@@ -31,13 +31,13 @@ export abstract class Piece {
     rank: number,
     board: Square[][]
   ): Observable<Move[]> {
-    // let allLegalMoves: Observable<Move[]> = [];
-    // const allPossibleMoves =
     return this.getAllPossibleMoves(file, rank, board).pipe(
       map((moves: Move[]) => moves.filter(m => !m.onAlly))
     );
-    // allLegalMoves =
-    // return allLegalMoves;
+  }
+
+  get isKing(): boolean {
+    return false;
   }
 
   protected abstract getAllPossibleMoves(

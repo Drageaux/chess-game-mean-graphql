@@ -75,7 +75,7 @@ export default class MovesGetter {
           moveArr.push(newMove);
           // don't have to stop if the piece is enemy King
           // because if the enemy King moves anywhere in this line, it's still being attacked
-          if (s.piece instanceof King) {
+          if (s.piece.isKing) {
             return false;
           }
         } else {
