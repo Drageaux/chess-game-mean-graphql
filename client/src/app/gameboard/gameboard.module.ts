@@ -4,8 +4,6 @@ import { GameboardComponent } from './gameboard.component';
 
 @NgModule({
   declarations: [GameboardComponent],
-  imports: [
-    CommonModule
-  ]
+  imports: [CommonModule]
 })
-export class GameboardModule { }
+export class GameboardModule {}

@@ -30,6 +30,8 @@ export class Gameboard {
   // events
   onMoved = new EventEmitter<any>();
   onMovedObs: Observable<any>[] = [];
+  onChecked = new EventEmitter<'white' | 'black'>();
+  onCheckedObs: Observable<any>[] = [];
   // opponent interactions
   attackMovesMap: {
     white: Map<string, Move>;
@@ -44,8 +46,11 @@ export class Gameboard {
       this.board.push(this.addFileSquares(i + 1));
     }
 
+    // set up Kings first for Rooks to watch
     this.whiteKingPiece = new King('white');
     this.blackKingPiece = new King('black');
+    this.insertPiece('e', 1, this.whiteKingPiece);
+    this.insertPiece('e', 8, this.blackKingPiece);
 
     for (const rank of this.board) {
       for (const sq of rank) {
@@ -58,49 +63,28 @@ export class Gameboard {
           const f = sq.file;
           if (f === 'a' || f === 'h') {
             piece = new Rook('white');
-            const subscription: Subscription = (piece as Rook).hasMoved.subscribe(
-              $event => {
-                this.whiteKingPiece.hasMoved = $event;
-                subscription.unsubscribe();
-              }
-            );
           } else if (f === 'b' || f === 'g') {
             piece = new Knight('white');
           } else if (f === 'c' || f === 'f') {
             piece = new Bishop('white');
           } else if (f === 'd') {
             piece = new Queen('white');
-          } else if (f === 'e') {
-            piece = this.whiteKingPiece;
           }
         } else if (sq.rank === 8) {
           const f = sq.file;
           if (f === 'a' || f === 'h') {
             piece = new Rook('black');
-            const subscription: Subscription = (piece as Rook).hasMoved.subscribe(
-              $event => {
-                this.blackKingPiece.hasMoved = $event;
-                subscription.unsubscribe();
-              }
-            );
           } else if (f === 'b' || f === 'g') {
             piece = new Knight('black');
           } else if (f === 'c' || f === 'f') {
             piece = new Bishop('black');
           } else if (f === 'd') {
             piece = new Queen('black');
-          } else if (f === 'e') {
-            piece = this.blackKingPiece;
           }
         }
 
         if (piece) {
-          piece.myFile = sq.file;
-          piece.myRank = sq.rank;
-
-          this.configurePieceEvents(piece);
-
-          sq.piece = piece;
+          this.insertPiece(sq.file, sq.rank, piece);
         }
       }
     }
@@ -127,7 +111,6 @@ export class Gameboard {
     this.removePiece('b', 8);
     this.removePiece('c', 8);
     this.removePiece('d', 8);
-    this.removePiece('f', 7);
     this.removePiece('g', 8);
     this.insertPiece('a', 6, new Pawn('white'));
     this.insertPiece('d', 6, new Pawn('black'));
@@ -135,7 +118,7 @@ export class Gameboard {
     this.insertPiece('e', 3, new Pawn('black'));
     this.insertPiece('f', 3, new Pawn('white'));
     this.insertPiece('h', 6, new Bishop('white'));
-    this.insertPiece('f', 7, new Queen('white'));
+    this.insertPiece('f', 6, new Queen('white'));
   }
 
   /*******************
@@ -146,13 +129,31 @@ export class Gameboard {
    * On move, get [[Piece]]'s attack moves to check the enemy [[King]]
    */
   private configurePieceEvents(piece: Piece) {
+    if (piece instanceof Rook) {
+      if (piece.color === 'white') {
+        const whiteRookSubscription: Subscription = (piece as Rook).hasMoved.subscribe(
+          $event => {
+            this.whiteKingPiece.hasMoved = $event;
+            whiteRookSubscription.unsubscribe();
+          }
+        );
+      } else if (piece.color === 'black') {
+        const blackRookSubscription: Subscription = (piece as Rook).hasMoved.subscribe(
+          $event => {
+            this.blackKingPiece.hasMoved = $event;
+            blackRookSubscription.unsubscribe();
+          }
+        );
+      }
+    }
+
     // observing upon move; get moves that may be dangerous for the opposing King
-    const subscription: Subscription = this.onMoved.subscribe(
+    const attackSubscription: Subscription = this.onMoved.subscribe(
       ($event: 'white' | 'black') => {
         if (this.capturedPieces.has(piece)) {
           // free up resource every move
           // don't do any of this if captured
-          subscription.unsubscribe();
+          attackSubscription.unsubscribe();
           return;
         }
         if (piece.color === $event) {
@@ -161,6 +162,7 @@ export class Gameboard {
             piece
               .getAttackMoves(piece.myFile, piece.myRank, this.board)
               .subscribe((result: Move[]) => {
+                console.log(piece, result);
                 observer.next(result);
                 // free up resource after every attack moves update
                 // because this observable is remade every move
@@ -171,15 +173,43 @@ export class Gameboard {
         }
       }
     );
+
+    // on checked, find moves to defend the King
+    const defendSubscription = this.onChecked.subscribe(
+      ($event: 'white' | 'black') => {
+        if (this.capturedPieces.has(piece)) {
+          // free up resource every move
+          // don't do any of this if captured
+          defendSubscription.unsubscribe();
+          return;
+        }
+        if (piece.color === $event) {
+          // make aggregation observable
+          const observable = new Observable(observer => {
+            piece
+              .getAllLegalMoves(piece.myFile, piece.myRank, this.board)
+              .subscribe((result: Move[]) => {
+                observer.next(result);
+                // free up resource after every attack moves update
+                // because this observable is remade every move
+                observer.complete();
+              });
+          });
+          this.onCheckedObs.push(observable);
+        }
+      }
+    );
   }
 
   insertPiece(file: string, rank: number, piece: Piece): boolean {
     // check if a piece already exists
-    this.configurePieceEvents(piece);
     if (
       !parser.isOutOfBound(file, rank) &&
       !this.board[rank - 1][parser.fileStrToNum(file) - 1].piece
     ) {
+      piece.myFile = file;
+      piece.myRank = rank;
+      this.configurePieceEvents(piece);
       this.board[rank - 1][parser.fileStrToNum(file) - 1].piece = piece;
       return true;
     }
@@ -279,14 +309,20 @@ export class Gameboard {
     this.whiteKingChecked = this.attackMovesMap.black.has(
       `${this.whiteKingPiece.myFile}${this.whiteKingPiece.myRank}`
     );
-    this.defend();
     // TODO: force defend
+    if (this.blackKingChecked) {
+      this.defend('black');
+    } else if (this.whiteKingChecked) {
+      this.defend('white');
+    }
   }
 
-  private defend() {
-    let clone: Square[][] = [];
-    clone = Object.assign(clone, this.board);
-    console.log(this.board, clone);
+  private defend(color: 'white' | 'black') {
+    this.onChecked.emit(color);
+    zip(...this.onCheckedObs).subscribe((val: Move[][]) => {
+      const defendMoves: Move[] = [].concat.apply([], val);
+      console.log(defendMoves);
+    });
   }
 
   private stopMoving() {

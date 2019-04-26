@@ -82,10 +82,7 @@ export class King extends Piece {
       // left side castle
       const leftRookSquare = parser.getSquare(1, rank, board);
       let leftRoadClear = true;
-      if (
-        leftRookSquare.piece instanceof Piece &&
-        leftRookSquare.piece.color === this.color
-      ) {
+      if (leftRookSquare.piece && leftRookSquare.piece.color === this.color) {
         // check if road's clear
         for (let i = 2; i < FileEnum[file]; i++) {
           const sq = parser.getSquare(i, rank, board);
@@ -100,10 +97,7 @@ export class King extends Piece {
       }
       const rightRookSquare = parser.getSquare(8, rank, board);
       let rightRoadClear = true;
-      if (
-        rightRookSquare.piece instanceof Piece &&
-        rightRookSquare.piece.color === this.color
-      ) {
+      if (rightRookSquare.piece && rightRookSquare.piece.color === this.color) {
         // check if road's clear
         for (let i = 7; i > FileEnum[file]; i--) {
           const sq = parser.getSquare(i, rank, board);
