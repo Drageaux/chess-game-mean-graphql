@@ -164,8 +164,7 @@ export class Gameboard {
   moveFromTo(
     currSquare: Square,
     nextSquare: Square,
-    capturedPieces: Set<Piece>,
-    board: Square[][]
+    capturedPieces: Set<Piece>
   ) {
     if (nextSquare.piece) {
       capturedPieces.add(nextSquare.piece);
@@ -190,7 +189,7 @@ export class Gameboard {
     }
 
     // the "atomic" move
-    this.moveFromTo(s, nextSquare, this.capturedPieces, this.board);
+    this.moveFromTo(s, nextSquare, this.capturedPieces);
 
     // check for special conditions
     // TODO: prompt to promote
