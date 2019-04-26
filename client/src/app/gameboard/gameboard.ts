@@ -11,6 +11,7 @@ import { Queen } from './pieces/queen';
 import { King } from './pieces/king';
 import { Move } from './move';
 import { Observable, zip, Subscription } from 'rxjs';
+import { map } from 'rxjs/operators';
 
 export class Gameboard {
   // const
@@ -91,7 +92,7 @@ export class Gameboard {
 
     this.addTestPieces();
     // check for attack moves for 2nd player
-    this.aggregateAttackMoves('black');
+    this.getAttackMovesMap('black');
   }
 
   /***************
@@ -151,33 +152,43 @@ export class Gameboard {
     return false;
   }
 
+  tryMove(currSquare: Square, nextSquare: Square) {
+    // move piece to new position & update piece's knowledge of its position
+    nextSquare.piece = currSquare.piece;
+    nextSquare.piece.myFile = nextSquare.file;
+    nextSquare.piece.myRank = nextSquare.rank;
+    // remove piece from old position
+    currSquare.piece = null;
+
+    // check if making this move results in a check
+    this.getAttackMovesMap(nextSquare.piece.color).subscribe();
+  }
+
   /**
    * Moving a piece from one place to a destination, given an original Square object and the next Move
    * (check for special moves, update necessary properties)
    */
-  movePiece(s: Square, move: Move) {
+  movePieceProcess(s: Square, move: Move, board: Square[][] = this.board) {
     const nextSquare = parser.getSquare(move.file, move.rank, this.board);
     if (!nextSquare) {
       // TODO: throw wrong square
       return;
     }
+
+    // the "atomic" move
+    try {
+      this.tryMove(s, nextSquare);
+    } catch (e) {
+      console.error(e);
+    }
     // capture piece on destination
     if (nextSquare.piece) {
       this.capturedPieces.add(nextSquare.piece);
     }
-    // move piece to new position & update piece's knowledge of its position
-    nextSquare.piece = s.piece;
-    nextSquare.piece.myFile = nextSquare.file;
-    nextSquare.piece.myRank = nextSquare.rank;
-    // remove piece from old position
-    s.piece = null;
+
     // check for special conditions
-    if (nextSquare.piece instanceof Pawn) {
-      // TODO: prompt to promote
-      if (nextSquare.piece.color === 'white' && nextSquare.rank === 8) {
-      } else if (nextSquare.piece.color === 'black' && nextSquare.rank === 1) {
-      }
-    } else if (
+    // TODO: prompt to promote
+    if (
       // no longer able to castle
       nextSquare.piece instanceof Rook ||
       nextSquare.piece instanceof King
@@ -189,11 +200,12 @@ export class Gameboard {
       this.castle(move.file, nextSquare.piece.color);
       return;
     }
+
     const color: 'white' | 'black' = nextSquare.piece.color;
     // stop moving
     this.stopMoving();
     // aggregate to check
-    this.aggregateAttackMoves(color);
+    this.getAttackMovesMap(color);
     // switch player, making sure to compare colors based on the piece that just moved
     this.currTurn = color === 'white' ? 'black' : 'white';
   }
@@ -308,43 +320,44 @@ export class Gameboard {
    * In order to check enemy King, all ally Pieces must know
    * the Squares they are attacking
    */
-  private aggregateAttackMoves(color: 'white' | 'black') {
+  private getAttackMovesMap(currentTeam: 'white' | 'black') {
     // console.time('getting attack moves');
     // signals that this turn is over, trigger onMoved event
-    this.onMoved.emit(color);
+    this.onMoved.emit(currentTeam);
     // after onMoved and every of this color's attack moves is updated
     // aggregate attack moves to check the enemy King
-    zip(...this.onMovedObs).subscribe((val: Move[][]) => {
-      const attackMoves: Move[] = [].concat.apply([], val);
-      attackMoves.forEach(m =>
-        this.attackMovesMap[color].set(`${m.file}${m.rank}`, m)
-      );
-      // refresh moves maps and observables list
-      if (color === 'white') {
-        this.attackMovesMap.black.clear();
-      } else if (color === 'black') {
-        this.attackMovesMap.white.clear();
-      }
-      this.onMovedObs = [];
-      // is enemy king in ally Pieces' next moves?
-      this.checkKing();
-      // console.timeEnd('getting attack moves');
-    });
+    return zip(...this.onMovedObs).pipe(
+      map((val: Move[][]) => {
+        // refresh moves maps and observables list
+        this.onMovedObs = [];
+        const newAttackMoveMaps: Map<string, Move> = new Map();
+
+        const attackMovesArr: Move[] = [].concat.apply([], val);
+        attackMovesArr.forEach(m =>
+          newAttackMoveMaps[currentTeam].set(`${m.file}${m.rank}`, m)
+        );
+        // console.timeEnd('getting attack moves');
+        return newAttackMoveMaps;
+      })
+    );
   }
 
-  private checkKing() {
-    this.blackKingChecked = this.attackMovesMap.white.has(
-      `${this.blackKingPiece.myFile}${this.blackKingPiece.myRank}`
-    );
-    this.whiteKingChecked = this.attackMovesMap.black.has(
-      `${this.whiteKingPiece.myFile}${this.whiteKingPiece.myRank}`
-    );
-    // TODO: force defend
-    if (this.blackKingChecked) {
-      this.defend('black');
-    } else if (this.whiteKingChecked) {
-      this.defend('white');
+  private checkKing(color: 'white' | 'black'): boolean {
+    if (color === 'white') {
+      return this.attackMovesMap.white.has(
+        `${this.blackKingPiece.myFile}${this.blackKingPiece.myRank}`
+      );
+    } else {
+      return this.attackMovesMap.black.has(
+        `${this.whiteKingPiece.myFile}${this.whiteKingPiece.myRank}`
+      );
     }
+    // TODO: force defend
+    // if (this.blackKingChecked) {
+    //   this.defend('black');
+    // } else if (this.whiteKingChecked) {
+    //   this.defend('white');
+    // }
   }
 
   private defend(color: 'white' | 'black') {
@@ -382,7 +395,7 @@ export class Gameboard {
       m = movesGetter.makeMove('f', rank);
     }
     if (s && m) {
-      this.movePiece(s, m);
+      this.movePieceProcess(s, m);
     }
   }
 }

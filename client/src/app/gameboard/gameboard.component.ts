@@ -4,6 +4,8 @@ import { Gameboard } from './gameboard';
 import { Square } from './square';
 import { Piece } from './pieces/piece';
 import { King } from './pieces/king';
+import { Move } from './move';
+import { default as parser } from './board-parser';
 
 @Component({
   selector: 'app-gameboard',
@@ -35,7 +37,7 @@ export class GameboardComponent {
       this.gb.currMovesMap.has(`${s.file}${s.rank}`)
     ) {
       // if click empty tile while a piece is selected/moving, move
-      this.gb.movePiece(
+      this.gb.movePieceProcess(
         this.gb.currSquare,
         this.gb.currMovesMap.get(`${s.file}${s.rank}`)
       );
@@ -57,6 +59,7 @@ export class GameboardComponent {
               allPieceLegalMoves
             );
           }
+
           this.gb.currMovesMap.clear();
           allPieceLegalMoves.forEach(m => {
             this.gb.currMovesMap.set(`${m.file}${m.rank}`, m);
@@ -67,6 +70,18 @@ export class GameboardComponent {
           );
         }
       );
+    }
+  }
+
+  cloneBoard(s: Square, move: Move) {
+    let clone = [];
+    clone = Object.assign(clone, this.gb.board);
+
+    this.gb.movePieceProcess(s, move, clone);
+    const nextSquare = parser.getSquare(move.file, move.rank, clone);
+    if (!nextSquare) {
+      // TODO: throw wrong square
+      return;
     }
   }
 }
