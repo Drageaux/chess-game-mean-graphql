@@ -110,8 +110,11 @@ export class Gameboard {
     this.aggregateAttackMoves('black');
   }
 
+  /***************
+   * BASIC SETUP *
+   ***************/
   // board construction
-  addFileSquares(currRank: number): Square[] {
+  private addFileSquares(currRank: number): Square[] {
     const rank: Square[] = [];
     for (let i = 0; i < 8; i++) {
       rank.push(new Square(FileEnum[i + 1], currRank));
@@ -119,7 +122,7 @@ export class Gameboard {
     return rank;
   }
 
-  addTestPieces() {
+  private addTestPieces() {
     // for testing
     this.removePiece('b', 8);
     this.removePiece('c', 8);
@@ -269,14 +272,21 @@ export class Gameboard {
     });
   }
 
-  checkKing() {
+  private checkKing() {
     this.blackKingChecked = this.attackMovesMap.white.has(
       `${this.blackKingPiece.myFile}${this.blackKingPiece.myRank}`
     );
     this.whiteKingChecked = this.attackMovesMap.black.has(
       `${this.whiteKingPiece.myFile}${this.whiteKingPiece.myRank}`
     );
+    this.defend();
     // TODO: force defend
+  }
+
+  private defend() {
+    let clone: Square[][] = [];
+    clone = Object.assign(clone, this.board);
+    console.log(this.board, clone);
   }
 
   private stopMoving() {
