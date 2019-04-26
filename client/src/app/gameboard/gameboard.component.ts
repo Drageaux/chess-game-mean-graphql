@@ -18,6 +18,7 @@ export class GameboardComponent {
 
   // const
   gb = new Gameboard();
+  board2: Square[][] = [];
 
   constructor() {}
 
@@ -62,10 +63,11 @@ export class GameboardComponent {
 
           this.gb.currMovesMap.clear();
           allPieceLegalMoves.forEach(m => {
+            this.cloneBoard(s, m);
             this.gb.currMovesMap.set(`${m.file}${m.rank}`, m);
           });
           console.log(
-            `${s.piece} ${s.file}${s.rank} moves:`,
+            `Selected ${s.piece} ${s.file}${s.rank}\nmoves:`,
             this.gb.currMovesMap
           );
         }
@@ -77,11 +79,25 @@ export class GameboardComponent {
     let clone = [];
     clone = Object.assign(clone, this.gb.board);
 
-    this.gb.movePieceProcess(s, move, clone);
+    const currSquare = parser.getSquare(
+      s.file,
+      s.rank,
+      clone
+    );
     const nextSquare = parser.getSquare(move.file, move.rank, clone);
-    if (!nextSquare) {
+    if (!nextSquare) { 
       // TODO: throw wrong square
       return;
     }
+
+    this.gb.moveFromTo(currSquare, nextSquare, new Set(), clone);
+
+    // garbage collect
+    clone = null;
+    return;
+  }
+
+  deepcopy(obj) {
+    return JSON.parse(JSON.stringify(obj));
   }
 }

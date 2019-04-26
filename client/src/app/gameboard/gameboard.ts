@@ -92,8 +92,9 @@ export class Gameboard {
 
     this.addTestPieces();
     // check for attack moves for 2nd player
-    this.getAttackMovesMap('black').subscribe(movesMap => {
+    this.getAttackMovesMap('black', this.onMovedObs).subscribe(movesMap => {
       this.attackMovesMaps.black = movesMap;
+      this.onMovedObs = [];
     });
   }
 
@@ -127,7 +128,6 @@ export class Gameboard {
   /*******************
    * DATA MANAGEMENT *
    *******************/
-
   insertPiece(file: string, rank: number, piece: Piece): boolean {
     // check if a piece already exists
     if (
@@ -154,10 +154,21 @@ export class Gameboard {
     return false;
   }
 
-  tryMove(currSquare: Square, nextSquare: Square) {
-    // capture piece on destination
+  /**
+   * Update the passed in board & captured pieces,
+   * based on the starting point and destination
+   *
+   * @param capturedPieces - will have side effects
+   * @param board - will have side effects
+   */
+  moveFromTo(
+    currSquare: Square,
+    nextSquare: Square,
+    capturedPieces: Set<Piece>,
+    board: Square[][]
+  ) {
     if (nextSquare.piece) {
-      this.capturedPieces.add(nextSquare.piece);
+      capturedPieces.add(nextSquare.piece);
     }
     // move piece to new position & update piece's knowledge of its position
     nextSquare.piece = currSquare.piece;
@@ -165,31 +176,21 @@ export class Gameboard {
     nextSquare.piece.myRank = nextSquare.rank;
     // remove piece from old position
     currSquare.piece = null;
-
-    // check if making this move results in a check
-    const enemyColor = nextSquare.piece.color === 'white' ? 'black' : 'white';
-    this.getAttackMovesMap(enemyColor).subscribe(movesMap => {
-      // if
-    });
   }
 
   /**
    * Moving a piece from one place to a destination, given an original Square object and the next Move
    * (check for special moves, update necessary properties)
    */
-  movePieceProcess(s: Square, move: Move, board: Square[][] = this.board) {
+  movePieceProcess(s: Square, move: Move) {
     const nextSquare = parser.getSquare(move.file, move.rank, this.board);
     if (!nextSquare) {
-      // TODO: throw wrong square
+      // TODO: throw invalid/out of bound square
       return;
     }
 
     // the "atomic" move
-    try {
-      this.tryMove(s, nextSquare);
-    } catch (e) {
-      console.error(e);
-    }
+    this.moveFromTo(s, nextSquare, this.capturedPieces, this.board);
 
     // check for special conditions
     // TODO: prompt to promote
@@ -207,10 +208,16 @@ export class Gameboard {
     }
 
     const attackingTeamColor: 'white' | 'black' = nextSquare.piece.color;
+    this.attackMovesMaps[
+      attackingTeamColor === 'white' ? 'black' : 'white'
+    ].clear();
     // aggregate to attack enemy King
-    this.getAttackMovesMap(attackingTeamColor).subscribe(
+    this.getAttackMovesMap(attackingTeamColor, this.onMovedObs).subscribe(
       movesMap => {
         this.attackMovesMaps[attackingTeamColor] = movesMap;
+        this.attackMovesMaps[
+          attackingTeamColor === 'white' ? 'black' : 'white'
+        ].clear();
         if (this.checkKing(attackingTeamColor, movesMap)) {
           // force defend
           if (attackingTeamColor === 'white') {
@@ -230,6 +237,7 @@ export class Gameboard {
       },
       err => console.error(err),
       () => {
+        this.onMovedObs = [];
         // stop moving
         this.stopMoving();
         // switch player, making sure to compare colors based on the piece that just moved
@@ -349,24 +357,22 @@ export class Gameboard {
    * the Squares they are attacking
    */
   private getAttackMovesMap(
-    attackTeamColor: 'white' | 'black'
+    attackTeamColor: 'white' | 'black',
+    onMovedObs: Observable<any>[]
   ): Observable<Map<string, Move>> {
     // console.time('getting attack moves');
     // signals that this turn is over, trigger onMoved event
     this.onMoved.emit(attackTeamColor);
     // after onMoved and every of this color's attack moves is updated
     // aggregate attack moves to check the enemy King
-    return zip(...this.onMovedObs).pipe(
+    return zip(...onMovedObs).pipe(
       map((val: Move[][]) => {
-        // refresh moves maps and observables list
-        this.onMovedObs = [];
         const newAttackMoveMaps: Map<string, Move> = new Map();
 
         const attackMovesArr: Move[] = [].concat.apply([], val);
         attackMovesArr.forEach(m =>
           newAttackMoveMaps.set(`${m.file}${m.rank}`, m)
         );
-        console.log(this.attackMovesMaps);
         // console.timeEnd('getting attack moves');
         return newAttackMoveMaps;
       })
@@ -392,7 +398,6 @@ export class Gameboard {
     this.onChecked.emit(color);
     zip(...this.onCheckedObs).subscribe((val: Move[][]) => {
       const defendMoves: Move[] = [].concat.apply([], val);
-      console.log(defendMoves);
     });
   }
 
