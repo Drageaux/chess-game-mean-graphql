@@ -124,84 +124,6 @@ export class Gameboard {
   /*******************
    * DATA MANAGEMENT *
    *******************/
-  /**
-   * Adds event subscription, etc., to the [[Piece]]
-   * On move, get [[Piece]]'s attack moves to check the enemy [[King]]
-   * On checked, get [[Piece]]'s defend moves to defend the ally [[King]]
-   */
-  private configurePieceEvents(piece: Piece) {
-    // on Rook's has moved, King can't castle anymore
-    if (piece instanceof Rook) {
-      if (piece.color === 'white') {
-        const whiteRookSubscription: Subscription = (piece as Rook).hasMoved.subscribe(
-          $event => {
-            this.whiteKingPiece.hasMoved = $event;
-            whiteRookSubscription.unsubscribe();
-          }
-        );
-      } else if (piece.color === 'black') {
-        const blackRookSubscription: Subscription = (piece as Rook).hasMoved.subscribe(
-          $event => {
-            this.blackKingPiece.hasMoved = $event;
-            blackRookSubscription.unsubscribe();
-          }
-        );
-      }
-    }
-
-    // observing upon move; get moves that may be dangerous for the opposing King
-    const attackSubscription: Subscription = this.onMoved.subscribe(
-      ($event: 'white' | 'black') => {
-        if (this.capturedPieces.has(piece)) {
-          // free up resource every move
-          // don't do any of this if captured
-          attackSubscription.unsubscribe();
-          return;
-        }
-        if (piece.color === $event) {
-          // make aggregation observable
-          const observable = new Observable(observer => {
-            piece
-              .getAttackMoves(piece.myFile, piece.myRank, this.board)
-              .subscribe((result: Move[]) => {
-                console.log(piece, result);
-                observer.next(result);
-                // free up resource after every attack moves update
-                // because this observable is remade every move
-                observer.complete();
-              });
-          });
-          this.onMovedObs.push(observable);
-        }
-      }
-    );
-
-    // on checked, find moves to defend the King
-    const defendSubscription = this.onChecked.subscribe(
-      ($event: 'white' | 'black') => {
-        if (this.capturedPieces.has(piece)) {
-          // free up resource every move
-          // don't do any of this if captured
-          defendSubscription.unsubscribe();
-          return;
-        }
-        if (piece.color === $event) {
-          // make aggregation observable
-          const observable = new Observable(observer => {
-            piece
-              .getAllLegalMoves(piece.myFile, piece.myRank, this.board)
-              .subscribe((result: Move[]) => {
-                observer.next(result);
-                // free up resource after every attack moves update
-                // because this observable is remade every move
-                observer.complete();
-              });
-          });
-          this.onCheckedObs.push(observable);
-        }
-      }
-    );
-  }
 
   insertPiece(file: string, rank: number, piece: Piece): boolean {
     // check if a piece already exists
@@ -274,6 +196,112 @@ export class Gameboard {
     this.aggregateAttackMoves(color);
     // switch player, making sure to compare colors based on the piece that just moved
     this.currTurn = color === 'white' ? 'black' : 'white';
+  }
+
+  aggregateAllLegalMoves() {}
+
+  filterOutKingMoves(p: King, allPieceLegalMoves) {
+    if (p.color === 'white') {
+      allPieceLegalMoves = allPieceLegalMoves.filter(m => {
+        if (!this.attackMovesMap.black.has(`${m.file}${m.rank}`)) {
+          if (m.castle && this.whiteKingChecked) {
+            return false;
+          }
+          return true;
+        }
+      });
+    } else if (p.color === 'black') {
+      allPieceLegalMoves = allPieceLegalMoves.filter(m => {
+        if (!this.attackMovesMap.white.has(`${m.file}${m.rank}`)) {
+          if (m.castle && this.blackKingChecked) {
+            return false;
+          }
+          return true;
+        }
+      });
+    }
+    return allPieceLegalMoves;
+  }
+
+  /**
+   * Adds event subscription, etc., to the [[Piece]]
+   * On move, get [[Piece]]'s attack moves to check the enemy [[King]]
+   * On checked, get [[Piece]]'s defend moves to defend the ally [[King]]
+   */
+  private configurePieceEvents(piece: Piece) {
+    // on Rook's has moved, King can't castle anymore
+    if (piece instanceof Rook) {
+      if (piece.color === 'white') {
+        const whiteRookSubscription: Subscription = (piece as Rook).hasMoved.subscribe(
+          $event => {
+            this.whiteKingPiece.hasMoved = $event;
+            whiteRookSubscription.unsubscribe();
+          }
+        );
+      } else if (piece.color === 'black') {
+        const blackRookSubscription: Subscription = (piece as Rook).hasMoved.subscribe(
+          $event => {
+            this.blackKingPiece.hasMoved = $event;
+            blackRookSubscription.unsubscribe();
+          }
+        );
+      }
+    }
+
+    // observing upon move; get moves that may be dangerous for the opposing King
+    const attackSubscription: Subscription = this.onMoved.subscribe(
+      ($event: 'white' | 'black') => {
+        if (this.capturedPieces.has(piece)) {
+          // free up resource every move
+          // don't do any of this if captured
+          attackSubscription.unsubscribe();
+          return;
+        }
+        if (piece.color === $event) {
+          // make aggregation observable
+          const observable = new Observable(observer => {
+            piece
+              .getAttackMoves(piece.myFile, piece.myRank, this.board)
+              .subscribe((result: Move[]) => {
+                observer.next(result);
+                // free up resource after every attack moves update
+                // because this observable is remade every move
+                observer.complete();
+              });
+          });
+          this.onMovedObs.push(observable);
+        }
+      }
+    );
+
+    // on checked, find moves to defend the King
+    const defendSubscription = this.onChecked.subscribe(
+      ($event: 'white' | 'black') => {
+        if (this.capturedPieces.has(piece)) {
+          // free up resource every move
+          // don't do any of this if captured
+          defendSubscription.unsubscribe();
+          return;
+        }
+        if (piece.color === $event) {
+          // make aggregation observable
+          const observable = new Observable(observer => {
+            piece
+              .getAllLegalMoves(piece.myFile, piece.myRank, this.board)
+              .subscribe((result: Move[]) => {
+                if (piece instanceof King) {
+                  result = this.filterOutKingMoves(piece, result);
+                }
+                observer.next(result);
+                // free up resource after every attack moves update
+                // because this observable is remade every move
+                observer.complete();
+              });
+          });
+          this.onCheckedObs.push(observable);
+        }
+      }
+    );
   }
 
   /**

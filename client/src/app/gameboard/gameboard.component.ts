@@ -1,3 +1,4 @@
+import { Subscription } from 'rxjs';
 import { Component } from '@angular/core';
 import { Gameboard } from './gameboard';
 import { Square } from './square';
@@ -51,25 +52,10 @@ export class GameboardComponent {
           // if is king, filter out dangerous moves
           // also filter out castling moves if currently checked
           if (p instanceof King) {
-            if (p.color === 'white') {
-              allPieceLegalMoves = allPieceLegalMoves.filter(m => {
-                if (!this.gb.attackMovesMap.black.has(`${m.file}${m.rank}`)) {
-                  if (m.castle && this.gb.whiteKingChecked) {
-                    return false;
-                  }
-                  return true;
-                }
-              });
-            } else if (p.color === 'black') {
-              allPieceLegalMoves = allPieceLegalMoves.filter(m => {
-                if (!this.gb.attackMovesMap.white.has(`${m.file}${m.rank}`)) {
-                  if (m.castle && this.gb.blackKingChecked) {
-                    return false;
-                  }
-                  return true;
-                }
-              });
-            }
+            allPieceLegalMoves = this.gb.filterOutKingMoves(
+              p,
+              allPieceLegalMoves
+            );
           }
           this.gb.currMovesMap.clear();
           allPieceLegalMoves.forEach(m => {
