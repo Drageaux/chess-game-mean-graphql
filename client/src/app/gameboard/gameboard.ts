@@ -46,7 +46,7 @@ export class Gameboard {
       this.board.push(this.addFileSquares(i + 1));
     }
 
-    // set up Kings first for Rooks to watch
+    // set up Kings first to watch Rooks on move
     this.whiteKingPiece = new King('white');
     this.blackKingPiece = new King('black');
     this.insertPiece('e', 1, this.whiteKingPiece);
@@ -127,8 +127,10 @@ export class Gameboard {
   /**
    * Adds event subscription, etc., to the [[Piece]]
    * On move, get [[Piece]]'s attack moves to check the enemy [[King]]
+   * On checked, get [[Piece]]'s defend moves to defend the ally [[King]]
    */
   private configurePieceEvents(piece: Piece) {
+    // on Rook's has moved, King can't castle anymore
     if (piece instanceof Rook) {
       if (piece.color === 'white') {
         const whiteRookSubscription: Subscription = (piece as Rook).hasMoved.subscribe(

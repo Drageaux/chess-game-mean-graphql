@@ -11,7 +11,6 @@ export class Pawn extends Piece {
   }
 
   // we only care about dangerous moves
-
   getAttackMoves(
     file: string,
     rank: number,
@@ -118,7 +117,7 @@ export class Pawn extends Piece {
     // check both right and left square diagonally in front
     if (rightFile) {
       const sq = parser.getSquare(rightFile, forwardRank, board);
-      if (sq && ((sq.piece && sq.piece.color !== this.color) || !sq.piece)) {
+      if (sq) {
         movesGetter.appendPossibleMove(
           this,
           result,
@@ -130,7 +129,7 @@ export class Pawn extends Piece {
     }
     if (leftFile) {
       const sq = parser.getSquare(leftFile, forwardRank, board);
-      if (sq && ((sq.piece && sq.piece.color !== this.color) || !sq.piece)) {
+      if (sq) {
         movesGetter.appendPossibleMove(
           this,
           result,
