@@ -207,9 +207,7 @@ export class Gameboard {
     }
 
     const attackingTeamColor: 'white' | 'black' = nextSquare.piece.color;
-    this.attackMovesMaps[
-      attackingTeamColor === 'white' ? 'black' : 'white'
-    ].clear();
+
     // aggregate to attack enemy King
     this.getAttackMovesMap(attackingTeamColor, this.onMovedObs).subscribe(
       movesMap => {
