@@ -349,7 +349,7 @@ export class Gameboard {
     attackTeamColor: 'white' | 'black',
     inputBoard: Square[][] = this.board
   ): Observable<Map<string, Move>> {
-    console.time('getting attack moves');
+    // console.time('getting attack moves');
     // signals that this turn is over, trigger onMoved event
     const justMovedObs: Observable<any>[] = [];
     this.justMoved.emit({
@@ -357,7 +357,6 @@ export class Gameboard {
       board: inputBoard,
       obs: justMovedObs
     });
-    console.log(justMovedObs);
     // after onMoved and every of this color's attack moves is updated
     // aggregate attack moves to check the enemy King
     return zip(...justMovedObs).pipe(
@@ -367,7 +366,7 @@ export class Gameboard {
         attackMovesArr.forEach(m =>
           newAttackMovesMap.set(`${m.file}${m.rank}`, m)
         );
-        console.timeEnd('getting attack moves');
+        // console.timeEnd('getting attack moves');
         return newAttackMovesMap;
       })
     );
@@ -389,6 +388,7 @@ export class Gameboard {
         return zip(...toSimulate);
       }),
       map(moves => {
+        console.log('simulated moves:', moves);
         const newDefendMovesMap: Map<string, Move> = new Map();
         moves
           .filter(m => m !== null)
@@ -429,24 +429,31 @@ export class Gameboard {
       defendTeamColor === 'white' ? 'black' : 'white';
     const defendKingPiece =
       defendTeamColor === 'white' ? this.whiteKingPiece : this.blackKingPiece;
-    const clone = this.deepcopy(this.board);
 
+    const clone = this.deepcopy(this.board);
     const currSquare = parser.getSquare(move.fromFile, move.fromRank, clone);
     const nextSquare = parser.getSquare(move.file, move.rank, clone);
+    // refer to the King on the cloned board
+    const cloneKingPiece: Piece = parser.getSquare(
+      defendKingPiece.myFile,
+      defendKingPiece.myRank,
+      clone
+    ).piece;
     if (!nextSquare) {
       // TODO: throw wrong square
       return;
     }
 
     this.moveFromTo(currSquare, nextSquare, new Set());
-    this.boards.push(clone);
 
     return this.getAttackMovesMap(attackTeamColor, clone).pipe(
-      map(moves =>
-        !moves.has(`${defendKingPiece.myFile}${defendKingPiece.myRank}`)
-          ? move
-          : null
-      )
+      map((movesMap: Map<string, Move>) => {
+        if (!movesMap.has(`${cloneKingPiece.myFile}${cloneKingPiece.myRank}`)) {
+          return move;
+        } else {
+          return null;
+        }
+      })
     );
   }
 

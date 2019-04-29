@@ -1,6 +1,6 @@
 <div class="text-center">
   <h4>current turn: {{ gb.currTurn }}</h4>
-  <h5>{{ gb.whiteKingChecked || gb.blackKingChecked ? 'checked' : '' }}</h5>
+  <h5>{{ gb.checked.white || gb.checked.black ? 'checked' : '' }}</h5>
   <div class="board d-table mx-auto">
     <div
       *ngFor="
@@ -74,10 +74,10 @@
     ></i>
   </p>
 
-  <div *ngIf="board2?.length !== 0" class="board d-table mx-auto">
+  <div *ngFor="let board of gb?.boards" class="board d-table mx-auto">
     <div
       *ngFor="
-        let r of board2?.slice().reverse();
+        let r of board?.slice().reverse();
         let r_index = index;
         let r_odd = odd;
         let r_even = even
@@ -111,5 +111,6 @@
         ></i>
       </div>
     </div>
+    <br />
   </div>
 </div>

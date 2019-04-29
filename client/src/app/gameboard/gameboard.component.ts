@@ -6,7 +6,6 @@ import { Piece } from './pieces/piece';
 import { King } from './pieces/king';
 import { Move } from './move';
 import { default as parser } from './board-parser';
-import { cloneDeep } from 'lodash';
 
 @Component({
   selector: 'app-gameboard',
@@ -64,8 +63,15 @@ export class GameboardComponent {
 
           this.gb.currMovesMap.clear();
           allPieceLegalMoves.forEach(m => {
-            this.cloneBoard(s, m);
-            this.gb.currMovesMap.set(`${m.file}${m.rank}`, m);
+            // if not checked
+            // or if checked but move is legal (in the list of defensive moves)
+            if (
+              !this.gb.checked[p.color] ||
+              (this.gb.checked[p.color] &&
+                this.gb.defendMovesMaps[p.color].has(`${m.file}${m.rank}`))
+            ) {
+              this.gb.currMovesMap.set(`${m.file}${m.rank}`, m);
+            }
           });
           console.log(
             `Selected ${s.piece} ${s.file}${s.rank}\nmoves:`,
@@ -74,26 +80,5 @@ export class GameboardComponent {
         }
       );
     }
-  }
-
-  cloneBoard(s: Square, move: Move) {
-    let clone = this.deepcopy(this.gb.board);
-
-    const currSquare = parser.getSquare(s.file, s.rank, clone);
-    const nextSquare = parser.getSquare(move.file, move.rank, clone);
-    if (!nextSquare) {
-      // TODO: throw wrong square
-      return;
-    }
-
-    this.gb.moveFromTo(currSquare, nextSquare, new Set());
-
-    // garbage collect
-    clone = null;
-    return;
-  }
-
-  deepcopy(obj) {
-    return cloneDeep(obj);
   }
 }
