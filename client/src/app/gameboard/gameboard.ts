@@ -12,6 +12,7 @@ import { King } from './pieces/king';
 import { Move } from './move';
 import { Observable, zip, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
+import cloneDeep = require('lodash/cloneDeep');
 
 export class Gameboard {
   // const
@@ -26,8 +27,12 @@ export class Gameboard {
   capturedPieces: Set<Piece> = new Set();
   whiteKingPiece: King;
   blackKingPiece: King;
-  whiteKingChecked = false;
+  checked['white'] = false;
   blackKingChecked = false;
+  checked: { white: boolean; black: boolean } = {
+    white: false,
+    black: false
+  };
   // events
   onMoved = new EventEmitter<any>();
   onMovedObs: Observable<any>[] = [];
@@ -35,6 +40,13 @@ export class Gameboard {
   onCheckedObs: Observable<any>[] = [];
   // opponent interactions
   attackMovesMaps: {
+    white: Map<string, Move>;
+    black: Map<string, Move>;
+  } = {
+    white: new Map(),
+    black: new Map()
+  };
+  defendMovesMaps: {
     white: Map<string, Move>;
     black: Map<string, Move>;
   } = {
@@ -211,24 +223,16 @@ export class Gameboard {
     this.getAttackMovesMap(attackingTeamColor, this.onMovedObs).subscribe(
       movesMap => {
         this.attackMovesMaps[attackingTeamColor] = movesMap;
+        const defendingTeamColor: 'white' | 'black' = attackingTeamColor === 'white' ? 'black' : 'white';
         this.attackMovesMaps[
-          attackingTeamColor === 'white' ? 'black' : 'white'
+          defendingTeamColor
         ].clear();
         if (this.checkKing(attackingTeamColor, movesMap)) {
           // force defend
-          if (attackingTeamColor === 'white') {
-            this.blackKingChecked = true;
-            this.defend('black');
-          } else {
-            this.whiteKingChecked = true;
-            this.defend('white');
-          }
+          this.checked[defendingTeamColor] = true;
+          this.getDefendMovesMap(defendingTeamColor);
         } else {
-          if (attackingTeamColor === 'white') {
-            this.blackKingChecked = false;
-          } else {
-            this.whiteKingChecked = false;
-          }
+          this.checked[defendingTeamColor] = false;
         }
       },
       err => console.error(err),
@@ -242,28 +246,16 @@ export class Gameboard {
     );
   }
 
-  aggregateAllLegalMoves() {}
-
   filterOutKingMoves(p: King, allPieceLegalMoves) {
-    if (p.color === 'white') {
-      allPieceLegalMoves = allPieceLegalMoves.filter(m => {
-        if (!this.attackMovesMaps.black.has(`${m.file}${m.rank}`)) {
-          if (m.castle && this.whiteKingChecked) {
-            return false;
-          }
-          return true;
+    const attackingTeamColor: 'white' | 'black' = p.color === 'white' ? 'black' : 'white';
+    allPieceLegalMoves = allPieceLegalMoves.filter(m => {
+      if (!this.attackMovesMaps[attackingTeamColor].has(`${m.file}${m.rank}`)) {
+        if (m.castle && this.checked[p.color]) {
+          return false;
         }
-      });
-    } else if (p.color === 'black') {
-      allPieceLegalMoves = allPieceLegalMoves.filter(m => {
-        if (!this.attackMovesMaps.white.has(`${m.file}${m.rank}`)) {
-          if (m.castle && this.blackKingChecked) {
-            return false;
-          }
-          return true;
-        }
-      });
-    }
+        return true;
+      }
+    });
     return allPieceLegalMoves;
   }
 
@@ -334,6 +326,11 @@ export class Gameboard {
                 if (piece instanceof King) {
                   result = this.filterOutKingMoves(piece, result);
                 }
+                result = result.map(m => {
+                  m.fromFile = piece.myFile;
+                  m.fromRank = piece.myRank;
+                  return m;
+                });
                 observer.next(result);
                 // free up resource after every attack moves update
                 // because this observable is remade every move
@@ -374,6 +371,20 @@ export class Gameboard {
     );
   }
 
+  private getDefendMovesMap(color: 'white' | 'black') {
+    this.onChecked.emit(color);
+    return zip(...this.onCheckedObs).pipe(
+      map((val: Move[][]) => {
+        const newDefendMoveMaps: Move[] = [].concat.apply([], val);
+        const defendMovesArr: Move[] = [].concat.apply([], val);
+        defendMovesArr.forEach(m => {
+          this.simulateMove();
+        });
+        return newDefendMoveMaps;
+      })
+    );
+  }
+
   private checkKing(
     attackTeamColor: 'white' | 'black',
     movesMap: Map<string, Move>
@@ -389,16 +400,33 @@ export class Gameboard {
     }
   }
 
-  private defend(color: 'white' | 'black') {
-    // this.onChecked.emit(color);
-    // zip(...this.onCheckedObs).subscribe((val: Move[][]) => {
-    //   const defendMoves: Move[] = [].concat.apply([], val);
-    // });
-  }
-
   private stopMoving() {
     this.currMovesMap.clear();
     this.moving = false;
+  }
+
+  boards: Square[][][];
+  simulateMove(move: Move) {
+    let clone = this.deepcopy(this.board);
+
+    const currSquare = parser.getSquare(move.fromFile, move.fromRank, clone);
+    const nextSquare = parser.getSquare(move.file, move.rank, clone);
+    if (!nextSquare) {
+      // TODO: throw wrong square
+      return;
+    }
+
+    this.moveFromTo(currSquare, nextSquare, new Set());
+    this.boards.push(clone);
+    // return zip(...onMovedObs).pipe()
+
+    // garbage collect
+    clone = null;
+    return;
+  }
+
+  deepcopy(obj) {
+    return cloneDeep(obj);
   }
 
   /*****************
@@ -406,7 +434,7 @@ export class Gameboard {
    *****************/
   private castle(destination: string, color: 'white' | 'black'): void {
     if (
-      (color === 'white' && this.whiteKingChecked) ||
+      (color === 'white' && this.checked['white']) ||
       (color === 'black' && this.blackKingChecked)
     ) {
       return;
