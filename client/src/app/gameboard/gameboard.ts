@@ -10,8 +10,8 @@ import { Knight } from './pieces/knight';
 import { Queen } from './pieces/queen';
 import { King } from './pieces/king';
 import { Move } from './move';
-import { Observable, zip, Subscription } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable, zip, Subscription, forkJoin } from 'rxjs';
+import { map, tap, switchMap, filter } from 'rxjs/operators';
 import cloneDeep = require('lodash/cloneDeep');
 
 export class Gameboard {
@@ -346,14 +346,15 @@ export class Gameboard {
    * the Squares they are attacking
    */
   private getAttackMovesMap(
-    attackTeamColor: 'white' | 'black'
+    attackTeamColor: 'white' | 'black',
+    inputBoard: Square[][] = this.board
   ): Observable<Map<string, Move>> {
     console.time('getting attack moves');
     // signals that this turn is over, trigger onMoved event
     const justMovedObs: Observable<any>[] = [];
     this.justMoved.emit({
       color: attackTeamColor,
-      board: this.board,
+      board: inputBoard,
       obs: justMovedObs
     });
     console.log(justMovedObs);
@@ -361,29 +362,40 @@ export class Gameboard {
     // aggregate attack moves to check the enemy King
     return zip(...justMovedObs).pipe(
       map((val: Move[][]) => {
-        const newAttackMoveMaps: Map<string, Move> = new Map();
+        const newAttackMovesMap: Map<string, Move> = new Map();
         const attackMovesArr: Move[] = [].concat.apply([], val);
         attackMovesArr.forEach(m =>
-          newAttackMoveMaps.set(`${m.file}${m.rank}`, m)
+          newAttackMovesMap.set(`${m.file}${m.rank}`, m)
         );
         console.timeEnd('getting attack moves');
-        return newAttackMoveMaps;
+        return newAttackMovesMap;
       })
     );
   }
 
-  private getDefendMovesMap(color: 'white' | 'black') {
+  private getDefendMovesMap(
+    color: 'white' | 'black'
+  ): Observable<Map<string, Move>> {
     this.onChecked.emit(color);
     return zip(...this.onCheckedObs).pipe(
-      map((val: Move[][]) => {
-        const newDefendMoveMaps: Map<string, Move> = new Map();
+      switchMap((val: Move[][]) => {
         const defendMovesArr: Move[] = [].concat.apply([], val);
-        defendMovesArr.forEach(m => {
-          this.simulateMove(color, m);
-          newDefendMoveMaps.set(`${m.file}${m.rank}`, m);
-        });
         this.onCheckedObs = [];
-        return newDefendMoveMaps;
+
+        const toSimulate: Observable<Move>[] = [];
+        defendMovesArr.forEach(m => {
+          toSimulate.push(this.simulateMove(color, m));
+        });
+        return zip(...toSimulate);
+      }),
+      map(moves => {
+        const newDefendMovesMap: Map<string, Move> = new Map();
+        moves
+          .filter(m => m !== null)
+          .forEach(move =>
+            newDefendMovesMap.set(`${move.file}${move.rank}`, move)
+          );
+        return newDefendMovesMap;
       })
     );
   }
@@ -409,8 +421,15 @@ export class Gameboard {
   }
 
   boards: Square[][][] = [];
-  simulateMove(defendTeamColor: string, move: Move) {
-    let clone = this.deepcopy(this.board);
+  /**
+   * Simulate Move to find out if it's legal while defending
+   */
+  simulateMove(defendTeamColor: string, move: Move): Observable<Move> {
+    const attackTeamColor: 'white' | 'black' =
+      defendTeamColor === 'white' ? 'black' : 'white';
+    const defendKingPiece =
+      defendTeamColor === 'white' ? this.whiteKingPiece : this.blackKingPiece;
+    const clone = this.deepcopy(this.board);
 
     const currSquare = parser.getSquare(move.fromFile, move.fromRank, clone);
     const nextSquare = parser.getSquare(move.file, move.rank, clone);
@@ -421,12 +440,14 @@ export class Gameboard {
 
     this.moveFromTo(currSquare, nextSquare, new Set());
     this.boards.push(clone);
-    console.log('test');
-    // return zip(...onMovedObs).pipe()
 
-    // garbage collect
-    clone = null;
-    return;
+    return this.getAttackMovesMap(attackTeamColor, clone).pipe(
+      map(moves =>
+        !moves.has(`${defendKingPiece.myFile}${defendKingPiece.myRank}`)
+          ? move
+          : null
+      )
+    );
   }
 
   deepcopy(obj) {
