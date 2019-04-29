@@ -27,8 +27,6 @@ export class Gameboard {
   capturedPieces: Set<Piece> = new Set();
   whiteKingPiece: King;
   blackKingPiece: King;
-  checked['white'] = false;
-  blackKingChecked = false;
   checked: { white: boolean; black: boolean } = {
     white: false,
     black: false
@@ -223,10 +221,9 @@ export class Gameboard {
     this.getAttackMovesMap(attackingTeamColor, this.onMovedObs).subscribe(
       movesMap => {
         this.attackMovesMaps[attackingTeamColor] = movesMap;
-        const defendingTeamColor: 'white' | 'black' = attackingTeamColor === 'white' ? 'black' : 'white';
-        this.attackMovesMaps[
-          defendingTeamColor
-        ].clear();
+        const defendingTeamColor: 'white' | 'black' =
+          attackingTeamColor === 'white' ? 'black' : 'white';
+        this.attackMovesMaps[defendingTeamColor].clear();
         if (this.checkKing(attackingTeamColor, movesMap)) {
           // force defend
           this.checked[defendingTeamColor] = true;
@@ -247,7 +244,8 @@ export class Gameboard {
   }
 
   filterOutKingMoves(p: King, allPieceLegalMoves) {
-    const attackingTeamColor: 'white' | 'black' = p.color === 'white' ? 'black' : 'white';
+    const attackingTeamColor: 'white' | 'black' =
+      p.color === 'white' ? 'black' : 'white';
     allPieceLegalMoves = allPieceLegalMoves.filter(m => {
       if (!this.attackMovesMaps[attackingTeamColor].has(`${m.file}${m.rank}`)) {
         if (m.castle && this.checked[p.color]) {
@@ -434,8 +432,8 @@ export class Gameboard {
    *****************/
   private castle(destination: string, color: 'white' | 'black'): void {
     if (
-      (color === 'white' && this.checked['white']) ||
-      (color === 'black' && this.blackKingChecked)
+      (color === 'white' && this.checked[color]) ||
+      (color === 'black' && this.checked[color])
     ) {
       return;
     }
