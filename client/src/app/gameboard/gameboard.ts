@@ -229,6 +229,7 @@ export class Gameboard {
           this.checked[defendingTeamColor] = true;
           this.getDefendMovesMap(defendingTeamColor).subscribe(dMovesMap => {
             this.defendMovesMaps[defendingTeamColor] = dMovesMap;
+            console.log(this.defendMovesMaps[defendingTeamColor]);
           });
         } else {
           this.checked[defendingTeamColor] = false;
@@ -393,7 +394,10 @@ export class Gameboard {
         moves
           .filter(m => m !== null)
           .forEach(move =>
-            newDefendMovesMap.set(`${move.file}${move.rank}`, move)
+            newDefendMovesMap.set(
+              `${move.fromFile}${move.fromRank}${move.file}${move.rank}`,
+              move
+            )
           );
         return newDefendMovesMap;
       })

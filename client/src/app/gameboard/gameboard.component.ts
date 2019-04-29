@@ -68,7 +68,9 @@ export class GameboardComponent {
             if (
               !this.gb.checked[p.color] ||
               (this.gb.checked[p.color] &&
-                this.gb.defendMovesMaps[p.color].has(`${m.file}${m.rank}`))
+                this.gb.defendMovesMaps[p.color].has(
+                  `${p.myFile}${p.myRank}${m.file}${m.rank}`
+                ))
             ) {
               this.gb.currMovesMap.set(`${m.file}${m.rank}`, m);
             }
