@@ -32,8 +32,8 @@ export class Gameboard {
     black: false
   };
   // events
-  onMoved = new EventEmitter<any>();
-  onMovedObs: Observable<any>[] = [];
+  justMoved = new EventEmitter<any>();
+  justMovedObs: Observable<any>[] = [];
   onChecked = new EventEmitter<'white' | 'black'>();
   onCheckedObs: Observable<any>[] = [];
   // opponent interactions
@@ -102,9 +102,8 @@ export class Gameboard {
 
     this.addTestPieces();
     // check for attack moves for 2nd player
-    this.getAttackMovesMap('black', this.onMovedObs).subscribe(movesMap => {
+    this.getAttackMovesMap('black').subscribe(movesMap => {
       this.attackMovesMaps.black = movesMap;
-      this.onMovedObs = [];
     });
   }
 
@@ -218,23 +217,25 @@ export class Gameboard {
 
     const attackingTeamColor: 'white' | 'black' = nextSquare.piece.color;
     // aggregate to attack enemy King
-    this.getAttackMovesMap(attackingTeamColor, this.onMovedObs).subscribe(
-      movesMap => {
-        this.attackMovesMaps[attackingTeamColor] = movesMap;
+    this.getAttackMovesMap(attackingTeamColor).subscribe(
+      aMovesMap => {
+        this.attackMovesMaps[attackingTeamColor] = aMovesMap;
         const defendingTeamColor: 'white' | 'black' =
           attackingTeamColor === 'white' ? 'black' : 'white';
         this.attackMovesMaps[defendingTeamColor].clear();
-        if (this.checkKing(attackingTeamColor, movesMap)) {
+        // if checked
+        if (this.checkKing(attackingTeamColor, aMovesMap)) {
           // force defend
           this.checked[defendingTeamColor] = true;
-          this.getDefendMovesMap(defendingTeamColor);
+          this.getDefendMovesMap(defendingTeamColor).subscribe(dMovesMap => {
+            this.defendMovesMaps[defendingTeamColor] = dMovesMap;
+          });
         } else {
           this.checked[defendingTeamColor] = false;
         }
       },
       err => console.error(err),
       () => {
-        this.onMovedObs = [];
         // stop moving
         this.stopMoving();
         // switch player, making sure to compare colors based on the piece that just moved
@@ -283,37 +284,36 @@ export class Gameboard {
     }
 
     // observing upon move; get moves that may be dangerous for the opposing King
-    const attackSubscription: Subscription = this.onMoved.subscribe($event => {
-      if (this.capturedPieces.has(piece)) {
-        // free up resource every move
+    // receive a current color and a board, get attackMoves based on those 2 vars
+    const attackSubscription: Subscription = this.justMoved.subscribe(
+      $event => {
         // don't do any of this if captured
-        attackSubscription.unsubscribe();
-        return;
+        if (this.capturedPieces.has(piece)) {
+          return attackSubscription.unsubscribe(); // free up resource every move
+        }
+        if (piece.color === $event.color) {
+          // make aggregation observable
+          const observable = new Observable(observer => {
+            piece
+              .getAttackMoves(piece.myFile, piece.myRank, $event.board)
+              .subscribe((result: Move[]) => {
+                observer.next(result);
+                // free up resource after every attack moves update
+                // because this observable is remade every move
+                observer.complete();
+              });
+          });
+          $event.obs.push(observable);
+        }
       }
-      if (piece.color === $event.color) {
-        // make aggregation observable
-        const observable = new Observable(observer => {
-          piece
-            .getAttackMoves(piece.myFile, piece.myRank, $event.board)
-            .subscribe((result: Move[]) => {
-              observer.next(result);
-              // free up resource after every attack moves update
-              // because this observable is remade every move
-              observer.complete();
-            });
-        });
-        this.onMovedObs.push(observable);
-      }
-    });
+    );
 
     // on checked, find moves to defend the King
     const defendSubscription = this.onChecked.subscribe(
       ($event: 'white' | 'black') => {
+        // free up resource every move
         if (this.capturedPieces.has(piece)) {
-          // free up resource every move
-          // don't do any of this if captured
-          defendSubscription.unsubscribe();
-          return;
+          return defendSubscription.unsubscribe(); // don't do any of this if captured
         }
         if (piece.color === $event) {
           // make aggregation observable
@@ -346,23 +346,26 @@ export class Gameboard {
    * the Squares they are attacking
    */
   private getAttackMovesMap(
-    attackTeamColor: 'white' | 'black',
-    onMovedObs: Observable<any>[]
+    attackTeamColor: 'white' | 'black'
   ): Observable<Map<string, Move>> {
     console.time('getting attack moves');
     // signals that this turn is over, trigger onMoved event
-    this.onMoved.emit({ color: attackTeamColor, board: this.board });
+    const justMovedObs: Observable<any>[] = [];
+    this.justMoved.emit({
+      color: attackTeamColor,
+      board: this.board,
+      obs: justMovedObs
+    });
+    console.log(justMovedObs);
     // after onMoved and every of this color's attack moves is updated
     // aggregate attack moves to check the enemy King
-    return zip(...onMovedObs).pipe(
+    return zip(...justMovedObs).pipe(
       map((val: Move[][]) => {
         const newAttackMoveMaps: Map<string, Move> = new Map();
-
         const attackMovesArr: Move[] = [].concat.apply([], val);
         attackMovesArr.forEach(m =>
           newAttackMoveMaps.set(`${m.file}${m.rank}`, m)
         );
-        this.onMovedObs = [];
         console.timeEnd('getting attack moves');
         return newAttackMoveMaps;
       })
@@ -373,11 +376,13 @@ export class Gameboard {
     this.onChecked.emit(color);
     return zip(...this.onCheckedObs).pipe(
       map((val: Move[][]) => {
-        const newDefendMoveMaps: Move[] = [].concat.apply([], val);
+        const newDefendMoveMaps: Map<string, Move> = new Map();
         const defendMovesArr: Move[] = [].concat.apply([], val);
         defendMovesArr.forEach(m => {
-          this.simulateMove();
+          this.simulateMove(color, m);
+          newDefendMoveMaps.set(`${m.file}${m.rank}`, m);
         });
+        this.onCheckedObs = [];
         return newDefendMoveMaps;
       })
     );
@@ -403,8 +408,8 @@ export class Gameboard {
     this.moving = false;
   }
 
-  boards: Square[][][];
-  simulateMove(move: Move) {
+  boards: Square[][][] = [];
+  simulateMove(defendTeamColor: string, move: Move) {
     let clone = this.deepcopy(this.board);
 
     const currSquare = parser.getSquare(move.fromFile, move.fromRank, clone);
@@ -416,6 +421,7 @@ export class Gameboard {
 
     this.moveFromTo(currSquare, nextSquare, new Set());
     this.boards.push(clone);
+    console.log('test');
     // return zip(...onMovedObs).pipe()
 
     // garbage collect
