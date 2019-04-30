@@ -285,8 +285,9 @@ export class Gameboard {
     // receive a current color and a board, get attackMoves based on those 2 vars
     const attackSubscription: Subscription = this.justMoved.subscribe(
       $event => {
+        console.log($event.capturedPieces);
         // don't do any of this if captured
-        if ($event.capturedPieces.has(piece)) {
+        if ($event.capturedPieces.map(p => p.id === piece.id)) {
           return attackSubscription.unsubscribe(); // free up resource every move
         }
         if (piece.color === $event.color) {
