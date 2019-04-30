@@ -75,10 +75,10 @@ export class GameboardComponent {
               this.gb.currMovesMap.set(`${m.file}${m.rank}`, m);
             }
           });
-          console.log(
-            `Selected ${s.piece} ${s.file}${s.rank}\nmoves:`,
-            this.gb.currMovesMap
-          );
+          // console.log(
+          //   `Selected ${s.piece} ${s.file}${s.rank}\nmoves:`,
+          //   this.gb.currMovesMap
+          // );
         }
       );
     }

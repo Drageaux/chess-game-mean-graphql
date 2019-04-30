@@ -1,5 +1,6 @@
 import { Square, FileEnum } from './square';
 import { Move } from './move';
+import { Piece } from './pieces/piece';
 
 export default class BoardParser {
   static getSquare(
@@ -40,5 +41,9 @@ export default class BoardParser {
     const fileEnum = this.fileStrToNum(file);
 
     return rank < 1 || rank > 8 || fileEnum < 1 || fileEnum > 8;
+  }
+
+  static isCaptured(piece: Piece, captured: Set<Piece>): boolean {
+    return Array.from(captured).find(p => piece.id === p.id) != null;
   }
 }
