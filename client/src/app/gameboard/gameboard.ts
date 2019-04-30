@@ -234,8 +234,7 @@ export class Gameboard {
       },
       err => console.error(err),
       () => {
-        // stop moving
-        this.stopMoving();
+        this.stopMoving(); // idempotent - finish up moving
         // switch player, making sure to compare colors based on the piece that just moved
         this.currTurn = attackingTeamColor === 'white' ? 'black' : 'white';
       }
@@ -285,10 +284,13 @@ export class Gameboard {
     // receive a current color and a board, get attackMoves based on those 2 vars
     const attackSubscription: Subscription = this.justMoved.subscribe(
       $event => {
-        console.log($event.capturedPieces);
         // don't do any of this if captured
-        if ($event.capturedPieces.map(p => p.id === piece.id)) {
-          return attackSubscription.unsubscribe(); // free up resource every move
+        if (parser.isCaptured(piece, $event.capturedPieces)) {
+          if ($event.capturedPieces === this.capturedPieces) {
+            return attackSubscription.unsubscribe(); // free up resource every move
+          } else {
+            return;
+          }
         }
         if (piece.color === $event.color) {
           // make aggregation observable
