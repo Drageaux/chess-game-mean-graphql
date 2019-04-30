@@ -34,8 +34,8 @@ export class Gameboard {
   // events
   justMoved = new EventEmitter<any>(); // synchronously deliver events
   justMovedObs: Observable<any>[] = [];
-  onChecked = new EventEmitter<'white' | 'black'>();
-  onCheckedObs: Observable<any>[] = [];
+  onPrepare = new EventEmitter<'white' | 'black'>();
+  onPrepareObs: Observable<any>[] = [];
   // opponent interactions
   attackMovesMaps: {
     white: Map<string, Move>;
@@ -269,7 +269,7 @@ export class Gameboard {
   /**
    * Adds event subscription, etc., to the [[Piece]]
    * On move, get [[Piece]]'s attack moves to check the enemy [[King]]
-   * On checked, get [[Piece]]'s defend moves to defend the ally [[King]]
+   *
    */
   private configurePieceEvents(piece: Piece) {
     // on Rook's has moved, King can't castle anymore
@@ -312,14 +312,14 @@ export class Gameboard {
     );
 
     // on checked, find moves to defend the King
-    const defendSubscription = this.onChecked.subscribe(
+    const defendSubscription = this.onPrepare.subscribe(
       ($event: 'white' | 'black') => {
         // free up resource every move
         if (this.capturedPieces.has(piece)) {
           return defendSubscription.unsubscribe(); // don't do any of this if captured
         }
         if (piece.color === $event) {
-          this.onCheckedObs.push(
+          this.onPrepareObs.push(
             piece.getAllLegalMoves(piece.myFile, piece.myRank, this.board).pipe(
               map((result: Move[]) => {
                 if (piece instanceof King) {
@@ -377,11 +377,11 @@ export class Gameboard {
   private getLegalMovesMap(
     color: 'white' | 'black'
   ): Observable<Map<string, Move>> {
-    this.onChecked.emit(color);
-    return zip(...this.onCheckedObs).pipe(
+    this.onPrepare.emit(color);
+    return zip(...this.onPrepareObs).pipe(
       switchMap((val: Move[][]) => {
         const defendMovesArr: Move[] = [].concat.apply([], val);
-        this.onCheckedObs = [];
+        this.onPrepareObs = [];
 
         const toSimulate: Observable<Move>[] = [];
         defendMovesArr.forEach(m => {
