@@ -231,12 +231,11 @@ export class Gameboard {
           this.attackMovesMaps[attackingTeamColor] = aMovesMap;
           this.attackMovesMaps[defendingTeamColor].clear();
           // if checked
-          if (this.checkKing(attackingTeamColor, aMovesMap)) {
-            // force defend
-            this.checked[defendingTeamColor] = true;
-          } else {
-            this.checked[defendingTeamColor] = false;
-          }
+          // force defend
+          this.checked[defendingTeamColor] = this.checkKing(
+            attackingTeamColor,
+            aMovesMap
+          );
           return this.getLegalMovesMap(defendingTeamColor);
         })
       )
@@ -311,7 +310,7 @@ export class Gameboard {
       }
     );
 
-    // on checked, find moves to defend the King
+    // before a move, find moves to defend the King
     const defendSubscription = this.onPrepare.subscribe(
       ($event: 'white' | 'black') => {
         // free up resource every move

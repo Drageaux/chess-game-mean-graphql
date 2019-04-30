@@ -49,6 +49,7 @@ export class GameboardComponent {
     this.gb.currSquare = s;
     const p: Piece = s.piece;
     if (p) {
+      // console.time('select piece');
       this.gb.moving = true;
       p.getAllLegalMoves(s.file, s.rank, this.gb.board).subscribe(
         allPieceLegalMoves => {
@@ -66,7 +67,7 @@ export class GameboardComponent {
             // if not checked
             // or if checked but move is legal (in the list of defensive moves)
             if (
-              this.gb.defendMovesMaps[p.color].has(
+              this.gb.legalMovesMaps[p.color].has(
                 `${p.myFile}${p.myRank}${m.file}${m.rank}`
               )
             ) {
@@ -77,6 +78,8 @@ export class GameboardComponent {
             `Selected ${s.piece} ${s.file}${s.rank}\nmoves:`,
             this.gb.currMovesMap
           );
+
+          // console.timeEnd('select piece');
         }
       );
     }
