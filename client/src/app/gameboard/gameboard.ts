@@ -32,7 +32,7 @@ export class Gameboard {
     black: false
   };
   // events
-  justMoved = new EventEmitter<any>();
+  justMoved = new EventEmitter<any>(); // synchronously deliver events
   justMovedObs: Observable<any>[] = [];
   onChecked = new EventEmitter<'white' | 'black'>();
   onCheckedObs: Observable<any>[] = [];
@@ -102,13 +102,17 @@ export class Gameboard {
 
     this.addTestPieces();
     // check for attack moves for 2nd player
-    this.getAttackMovesMap('black').subscribe(movesMap => {
-      this.attackMovesMaps.black = movesMap;
-      this.getDefendMovesMap('white').subscribe(dMovesMap => {
+    this.getAttackMovesMap('black')
+      .pipe(
+        switchMap(movesMap => {
+          this.attackMovesMaps.black = movesMap;
+          return this.getDefendMovesMap('white');
+        })
+      )
+      .subscribe(dMovesMap => {
         console.log(`legal ${'white'} moves`, dMovesMap);
         this.defendMovesMaps.white = dMovesMap;
       });
-    });
   }
 
   /***************
@@ -300,18 +304,9 @@ export class Gameboard {
           }
         }
         if (piece.color === $event.color) {
-          // make aggregation observable
-          const observable = new Observable(observer => {
-            piece
-              .getAttackMoves(piece.myFile, piece.myRank, $event.board)
-              .subscribe((result: Move[]) => {
-                observer.next(result);
-                // free up resource after every attack moves update
-                // because this observable is remade every move
-                observer.complete();
-              });
-          });
-          $event.obs.push(observable);
+          $event.obs.push(
+            piece.getAttackMoves(piece.myFile, piece.myRank, $event.board)
+          );
         }
       }
     );
