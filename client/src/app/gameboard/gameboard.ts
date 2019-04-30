@@ -319,26 +319,22 @@ export class Gameboard {
           return defendSubscription.unsubscribe(); // don't do any of this if captured
         }
         if (piece.color === $event) {
-          // make aggregation observable
-          const observable = new Observable(observer => {
-            piece
-              .getAllLegalMoves(piece.myFile, piece.myRank, this.board)
-              .subscribe((result: Move[]) => {
+          this.onCheckedObs.push(
+            piece.getAllLegalMoves(piece.myFile, piece.myRank, this.board).pipe(
+              map((result: Move[]) => {
                 if (piece instanceof King) {
                   result = this.filterOutKingMoves(piece, result);
                 }
+                // adding origin coordinates to help simulate moves
                 result = result.map(m => {
                   m.fromFile = piece.myFile;
                   m.fromRank = piece.myRank;
                   return m;
                 });
-                observer.next(result);
-                // free up resource after every attack moves update
-                // because this observable is remade every move
-                observer.complete();
-              });
-          });
-          this.onCheckedObs.push(observable);
+                return result;
+              })
+            )
+          );
         }
       }
     );
