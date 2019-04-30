@@ -121,8 +121,6 @@ export class Gameboard {
 
   private addTestPieces() {
     // for testing
-    this.removePiece('b', 8);
-    this.removePiece('c', 8);
     this.removePiece('d', 8);
     this.removePiece('g', 8);
     this.insertPiece('a', 6, new Pawn('white'));
@@ -229,7 +227,6 @@ export class Gameboard {
           this.checked[defendingTeamColor] = true;
           this.getDefendMovesMap(defendingTeamColor).subscribe(dMovesMap => {
             this.defendMovesMaps[defendingTeamColor] = dMovesMap;
-            console.log(this.defendMovesMaps[defendingTeamColor]);
           });
         } else {
           this.checked[defendingTeamColor] = false;
@@ -289,7 +286,7 @@ export class Gameboard {
     const attackSubscription: Subscription = this.justMoved.subscribe(
       $event => {
         // don't do any of this if captured
-        if (this.capturedPieces.has(piece)) {
+        if ($event.capturedPieces.has(piece)) {
           return attackSubscription.unsubscribe(); // free up resource every move
         }
         if (piece.color === $event.color) {
@@ -348,14 +345,17 @@ export class Gameboard {
    */
   private getAttackMovesMap(
     attackTeamColor: 'white' | 'black',
-    inputBoard: Square[][] = this.board
+    board: Square[][] = this.board,
+    capturedPieces: Set<Piece> = this.capturedPieces
   ): Observable<Map<string, Move>> {
     // console.time('getting attack moves');
     // signals that this turn is over, trigger onMoved event
     const justMovedObs: Observable<any>[] = [];
+    // gather all the Observables for Pieces using subscribing to justMoved
     this.justMoved.emit({
       color: attackTeamColor,
-      board: inputBoard,
+      board,
+      capturedPieces,
       obs: justMovedObs
     });
     // after onMoved and every of this color's attack moves is updated
@@ -389,7 +389,6 @@ export class Gameboard {
         return zip(...toSimulate);
       }),
       map(moves => {
-        console.log('simulated moves:', moves);
         const newDefendMovesMap: Map<string, Move> = new Map();
         moves
           .filter(m => m !== null)
@@ -443,14 +442,19 @@ export class Gameboard {
       defendKingPiece.myRank,
       clone
     ).piece;
+    const cloneCapturedPieces: Set<Piece> = this.deepcopy(this.capturedPieces);
     if (!nextSquare) {
       // TODO: throw wrong square
       return;
     }
 
-    this.moveFromTo(currSquare, nextSquare, new Set());
+    this.moveFromTo(currSquare, nextSquare, cloneCapturedPieces);
 
-    return this.getAttackMovesMap(attackTeamColor, clone).pipe(
+    return this.getAttackMovesMap(
+      attackTeamColor,
+      clone,
+      cloneCapturedPieces
+    ).pipe(
       map((movesMap: Map<string, Move>) => {
         if (!movesMap.has(`${cloneKingPiece.myFile}${cloneKingPiece.myRank}`)) {
           return move;
