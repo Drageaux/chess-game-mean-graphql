@@ -44,7 +44,7 @@ export class Gameboard {
     white: new Map(),
     black: new Map()
   };
-  defendMovesMaps: {
+  legalMovesMaps: {
     white: Map<string, Move>;
     black: Map<string, Move>;
   } = {
@@ -106,12 +106,12 @@ export class Gameboard {
       .pipe(
         switchMap(movesMap => {
           this.attackMovesMaps.black = movesMap;
-          return this.getDefendMovesMap('white');
+          return this.getLegalMovesMap('white');
         })
       )
       .subscribe(dMovesMap => {
         console.log(`legal ${'white'} moves`, dMovesMap);
-        this.defendMovesMaps.white = dMovesMap;
+        this.legalMovesMaps.white = dMovesMap;
       });
   }
 
@@ -237,13 +237,13 @@ export class Gameboard {
           } else {
             this.checked[defendingTeamColor] = false;
           }
-          return this.getDefendMovesMap(defendingTeamColor);
+          return this.getLegalMovesMap(defendingTeamColor);
         })
       )
       .subscribe(
         dMovesMap => {
           console.log(`legal ${defendingTeamColor} moves`, dMovesMap);
-          this.defendMovesMaps[defendingTeamColor] = dMovesMap;
+          this.legalMovesMaps[defendingTeamColor] = dMovesMap;
           this.stopMoving(); // idempotent - finish up moving
           // switch player, making sure to compare colors based on the piece that just moved
           this.currTurn = attackingTeamColor === 'white' ? 'black' : 'white';
@@ -374,7 +374,7 @@ export class Gameboard {
     );
   }
 
-  private getDefendMovesMap(
+  private getLegalMovesMap(
     color: 'white' | 'black'
   ): Observable<Map<string, Move>> {
     this.onChecked.emit(color);
