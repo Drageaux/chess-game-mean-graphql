@@ -66,19 +66,17 @@ export class GameboardComponent {
             // if not checked
             // or if checked but move is legal (in the list of defensive moves)
             if (
-              !this.gb.checked[p.color] ||
-              (this.gb.checked[p.color] &&
-                this.gb.defendMovesMaps[p.color].has(
-                  `${p.myFile}${p.myRank}${m.file}${m.rank}`
-                ))
+              this.gb.defendMovesMaps[p.color].has(
+                `${p.myFile}${p.myRank}${m.file}${m.rank}`
+              )
             ) {
               this.gb.currMovesMap.set(`${m.file}${m.rank}`, m);
             }
           });
-          // console.log(
-          //   `Selected ${s.piece} ${s.file}${s.rank}\nmoves:`,
-          //   this.gb.currMovesMap
-          // );
+          console.log(
+            `Selected ${s.piece} ${s.file}${s.rank}\nmoves:`,
+            this.gb.currMovesMap
+          );
         }
       );
     }

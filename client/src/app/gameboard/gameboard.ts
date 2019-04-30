@@ -104,6 +104,10 @@ export class Gameboard {
     // check for attack moves for 2nd player
     this.getAttackMovesMap('black').subscribe(movesMap => {
       this.attackMovesMaps.black = movesMap;
+      this.getDefendMovesMap('white').subscribe(dMovesMap => {
+        console.log(`legal ${'white'} moves`, dMovesMap);
+        this.defendMovesMaps.white = dMovesMap;
+      });
     });
   }
 
@@ -225,12 +229,13 @@ export class Gameboard {
         if (this.checkKing(attackingTeamColor, aMovesMap)) {
           // force defend
           this.checked[defendingTeamColor] = true;
-          this.getDefendMovesMap(defendingTeamColor).subscribe(dMovesMap => {
-            this.defendMovesMaps[defendingTeamColor] = dMovesMap;
-          });
         } else {
           this.checked[defendingTeamColor] = false;
         }
+        this.getDefendMovesMap(defendingTeamColor).subscribe(dMovesMap => {
+          console.log(`legal ${defendingTeamColor} moves`, dMovesMap);
+          this.defendMovesMaps[defendingTeamColor] = dMovesMap;
+        });
       },
       err => console.error(err),
       () => {
