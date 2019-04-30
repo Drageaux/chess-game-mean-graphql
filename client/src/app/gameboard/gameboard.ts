@@ -218,32 +218,34 @@ export class Gameboard {
     }
 
     const attackingTeamColor: 'white' | 'black' = nextSquare.piece.color;
+    const defendingTeamColor: 'white' | 'black' =
+      attackingTeamColor === 'white' ? 'black' : 'white';
     // aggregate to attack enemy King
-    this.getAttackMovesMap(attackingTeamColor).subscribe(
-      aMovesMap => {
-        this.attackMovesMaps[attackingTeamColor] = aMovesMap;
-        const defendingTeamColor: 'white' | 'black' =
-          attackingTeamColor === 'white' ? 'black' : 'white';
-        this.attackMovesMaps[defendingTeamColor].clear();
-        // if checked
-        if (this.checkKing(attackingTeamColor, aMovesMap)) {
-          // force defend
-          this.checked[defendingTeamColor] = true;
-        } else {
-          this.checked[defendingTeamColor] = false;
-        }
-        this.getDefendMovesMap(defendingTeamColor).subscribe(dMovesMap => {
+    this.getAttackMovesMap(attackingTeamColor)
+      .pipe(
+        switchMap(aMovesMap => {
+          this.attackMovesMaps[attackingTeamColor] = aMovesMap;
+          this.attackMovesMaps[defendingTeamColor].clear();
+          // if checked
+          if (this.checkKing(attackingTeamColor, aMovesMap)) {
+            // force defend
+            this.checked[defendingTeamColor] = true;
+          } else {
+            this.checked[defendingTeamColor] = false;
+          }
+          return this.getDefendMovesMap(defendingTeamColor);
+        })
+      )
+      .subscribe(
+        dMovesMap => {
           console.log(`legal ${defendingTeamColor} moves`, dMovesMap);
           this.defendMovesMaps[defendingTeamColor] = dMovesMap;
-        });
-      },
-      err => console.error(err),
-      () => {
-        this.stopMoving(); // idempotent - finish up moving
-        // switch player, making sure to compare colors based on the piece that just moved
-        this.currTurn = attackingTeamColor === 'white' ? 'black' : 'white';
-      }
-    );
+          this.stopMoving(); // idempotent - finish up moving
+          // switch player, making sure to compare colors based on the piece that just moved
+          this.currTurn = attackingTeamColor === 'white' ? 'black' : 'white';
+        },
+        err => console.error(err)
+      );
   }
 
   filterOutKingMoves(p: King, allPieceLegalMoves) {
@@ -294,7 +296,7 @@ export class Gameboard {
           if ($event.capturedPieces === this.capturedPieces) {
             return attackSubscription.unsubscribe(); // free up resource every move
           } else {
-            return;
+            return; // don't have to free up resource if simulating (js does this auto)
           }
         }
         if (piece.color === $event.color) {
