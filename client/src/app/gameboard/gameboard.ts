@@ -224,7 +224,7 @@ export class Gameboard {
     const attackingTeamColor: 'white' | 'black' = nextSquare.piece.color;
     const defendingTeamColor: 'white' | 'black' =
       attackingTeamColor === 'white' ? 'black' : 'white';
-    // aggregate to attack enemy King
+    // aggregate to attack enemy King, while also not leaving ally King vulnerable
     this.getAttackMovesMap(attackingTeamColor)
       .pipe(
         switchMap(aMovesMap => {
