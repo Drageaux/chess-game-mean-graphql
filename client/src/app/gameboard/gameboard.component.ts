@@ -62,7 +62,7 @@ export class GameboardComponent {
             );
           }
 
-          this.gb.currMovesMap.clear();
+          this.gb.currMovesMap.clear(); // clear before getting new moves map
           allPieceLegalMoves.forEach(m => {
             // if not checked
             // or if checked but move is legal (in the list of defensive moves)
@@ -74,10 +74,10 @@ export class GameboardComponent {
               this.gb.currMovesMap.set(`${m.file}${m.rank}`, m);
             }
           });
-          console.log(
-            `Selected ${s.piece} ${s.file}${s.rank}\nmoves:`,
-            this.gb.currMovesMap
-          );
+          // console.log(
+          //   `Selected ${s.piece} ${s.file}${s.rank}\nmoves:`,
+          //   this.gb.currMovesMap
+          // );
 
           // console.timeEnd('select piece');
         }

@@ -236,6 +236,7 @@ export class Gameboard {
     this.getAllAttackMoves(attackingTeamColor)
       .pipe(
         switchMap(aMovesArr => {
+          // update current attack moves to check
           this.attackMovesMaps[attackingTeamColor].clear(); // clear before compiling new
           aMovesArr.forEach(m =>
             this.attackMovesMaps[attackingTeamColor].set(
@@ -243,7 +244,7 @@ export class Gameboard {
               m
             )
           );
-          // if checked, force defend
+          // if checking enemy King, force them defend
           this.checked[defendingTeamColor] = this.checkKing(
             attackingTeamColor,
             this.attackMovesMaps[attackingTeamColor]
@@ -252,7 +253,8 @@ export class Gameboard {
         })
       )
       .subscribe(
-        dMovesArr => {
+        (dMovesArr: Move[]) => {
+          this.legalMovesMaps[defendingTeamColor].clear(); // important - clear previous legal moves
           dMovesArr.forEach(m =>
             this.legalMovesMaps[defendingTeamColor].set(
               `${m.fromFile}${m.fromRank}${m.file}${m.rank}`,
@@ -399,7 +401,9 @@ export class Gameboard {
         });
         return zip(...toSimulate);
       }),
-      map(moves => moves.filter(m => m !== null))
+      map(moves => {
+        return moves.filter(m => m != null);
+      })
     );
   }
 
