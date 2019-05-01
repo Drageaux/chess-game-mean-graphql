@@ -315,15 +315,15 @@ export class Gameboard {
     // receive a current color and a board, get attackMoves based on those 2 vars
     const attackSubscription: Subscription = this.justMoved.subscribe(
       $event => {
-        // don't do any of this if captured
-        if (parser.isCaptured(piece, $event.capturedPieces)) {
-          if ($event.capturedPieces === this.capturedPieces) {
-            return attackSubscription.unsubscribe(); // free up resource every move
-          } else {
-            return; // don't have to free up resource if simulating (js does this auto)
-          }
-        }
         if (piece.color === $event.color) {
+          // don't do any of this if captured
+          if (parser.isCaptured(piece, $event.capturedPieces)) {
+            if ($event.capturedPieces === this.capturedPieces) {
+              return attackSubscription.unsubscribe(); // free up resource every move
+            } else {
+              return; // don't have to free up resource if simulating (js does this auto)
+            }
+          }
           $event.obs.push(
             piece.getAttackMoves(piece.myFile, piece.myRank, $event.board)
           );
@@ -371,7 +371,7 @@ export class Gameboard {
   ): Observable<Move[]> {
     // console.time('getting attack moves');
     // signals that this turn is over, trigger onMoved event
-    const justMovedObs: Observable<any>[] = [];
+    const justMovedObs: Observable<Move[]>[] = [];
     // gather all the Observables for Pieces using subscribing to justMoved
     this.justMoved.emit({
       color: attackTeamColor,
@@ -439,6 +439,7 @@ export class Gameboard {
 
     const clone = this.deepcopy(this.board);
     const currSquare = parser.getSquare(move.fromFile, move.fromRank, clone);
+
     const nextSquare = parser.getSquare(move.file, move.rank, clone);
     // refer to the King on the cloned board
     const cloneKingPiece: Piece = parser.getSquare(
