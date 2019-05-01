@@ -101,7 +101,7 @@ export class Gameboard {
       }
     }
 
-    this.addTestPieces();
+    // this.addTestPieces();
     // check for attack moves for 2nd player
     this.getAllAttackMoves('black')
       .pipe(
@@ -226,6 +226,7 @@ export class Gameboard {
     // castling
     if (move.castle) {
       this.castle(move.file, nextSquare.piece.color);
+      console.timeEnd('move piece process benchmark');
       return;
     }
 
@@ -459,12 +460,16 @@ export class Gameboard {
       cloneCapturedPieces
     ).pipe(
       map((moves: Move[]) => {
-        const movesMap: Map<string, Move> = new Map();
-        moves.forEach(m => movesMap.set(`${m.file}${m.rank}`, m));
-        if (!movesMap.has(`${cloneKingPiece.myFile}${cloneKingPiece.myRank}`)) {
-          return move;
-        } else {
+        if (
+          moves.find(
+            m =>
+              `${m.file}${m.rank}` ===
+              `${cloneKingPiece.myFile}${cloneKingPiece.myRank}`
+          )
+        ) {
           return null;
+        } else {
+          return move;
         }
       })
     );
