@@ -49,7 +49,7 @@ export class GameboardComponent {
     this.gb.currSquare = s;
     const p: Piece = s.piece;
     if (p) {
-      // console.time('select piece');
+      console.time('select piece');
       this.gb.moving = true;
       p.getAllLegalMoves(s.file, s.rank, this.gb.board).subscribe(
         allPieceLegalMoves => {
@@ -79,7 +79,7 @@ export class GameboardComponent {
             this.gb.currMovesMap
           );
 
-          // console.timeEnd('select piece');
+          console.timeEnd('select piece');
         }
       );
     }

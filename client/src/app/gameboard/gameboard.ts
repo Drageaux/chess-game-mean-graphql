@@ -104,8 +104,10 @@ export class Gameboard {
     // check for attack moves for 2nd player
     this.getAttackMovesMap('black')
       .pipe(
-        switchMap(movesMap => {
-          this.attackMovesMaps.black = movesMap;
+        switchMap(movesArr => {
+          movesArr.forEach(m =>
+            this.attackMovesMaps.black.set(`${m.file}${m.rank}`, m)
+          );
           return this.getLegalMovesMap('white');
         })
       )
@@ -227,14 +229,19 @@ export class Gameboard {
     // aggregate to attack enemy King, while also not leaving ally King vulnerable
     this.getAttackMovesMap(attackingTeamColor)
       .pipe(
-        switchMap(aMovesMap => {
-          this.attackMovesMaps[attackingTeamColor] = aMovesMap;
+        switchMap(aMovesArr => {
+          aMovesArr.forEach(m =>
+            this.attackMovesMaps[attackingTeamColor].set(
+              `${m.file}${m.rank}`,
+              m
+            )
+          );
           this.attackMovesMaps[defendingTeamColor].clear();
           // if checked
           // force defend
           this.checked[defendingTeamColor] = this.checkKing(
             attackingTeamColor,
-            aMovesMap
+            this.attackMovesMaps[attackingTeamColor]
           );
           return this.getLegalMovesMap(defendingTeamColor);
         })
@@ -347,7 +354,7 @@ export class Gameboard {
     attackTeamColor: 'white' | 'black',
     board: Square[][] = this.board,
     capturedPieces: Set<Piece> = this.capturedPieces
-  ): Observable<Map<string, Move>> {
+  ): Observable<Move[]> {
     // console.time('getting attack moves');
     // signals that this turn is over, trigger onMoved event
     const justMovedObs: Observable<any>[] = [];
@@ -360,15 +367,16 @@ export class Gameboard {
     });
     // after onMoved and every of this color's attack moves is updated
     // aggregate attack moves to check the enemy King
-    return zip(...justMovedObs).pipe(
-      map((val: Move[][]) => {
+    return zip<Move[][]>(...justMovedObs).pipe(
+      map((values: Move[][]) => {
         const newAttackMovesMap: Map<string, Move> = new Map();
-        const attackMovesArr: Move[] = [].concat.apply([], val);
+        const attackMovesArr: Move[] = [].concat.apply([], values);
         attackMovesArr.forEach(m =>
           newAttackMovesMap.set(`${m.file}${m.rank}`, m)
         );
         // console.timeEnd('getting attack moves');
-        return newAttackMovesMap;
+        console.log(values);
+        return attackMovesArr;
       })
     );
   }
@@ -455,7 +463,9 @@ export class Gameboard {
       clone,
       cloneCapturedPieces
     ).pipe(
-      map((movesMap: Map<string, Move>) => {
+      map((moves: Move[]) => {
+        const movesMap: Map<string, Move> = new Map();
+        moves.forEach(m => movesMap.set(`${m.file}${m.rank}`, m));
         if (!movesMap.has(`${cloneKingPiece.myFile}${cloneKingPiece.myRank}`)) {
           return move;
         } else {
