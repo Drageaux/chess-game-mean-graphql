@@ -19,6 +19,7 @@ export class Gameboard {
   BOARD_SIZE = 8;
   // game board structure
   board: Square[][] = [];
+  boards: Square[][][] = []; // testing
   // game status
   moving = false;
   currMovesMap: Map<string, Move> = new Map();
@@ -102,18 +103,22 @@ export class Gameboard {
 
     this.addTestPieces();
     // check for attack moves for 2nd player
-    this.getAttackMovesMap('black')
+    this.getAllAttackMoves('black')
       .pipe(
         switchMap(movesArr => {
           movesArr.forEach(m =>
             this.attackMovesMaps.black.set(`${m.file}${m.rank}`, m)
           );
-          return this.getLegalMovesMap('white');
+          return this.getAllLegalMoves('white');
         })
       )
-      .subscribe(dMovesMap => {
-        console.log(`legal ${'white'} moves`, dMovesMap);
-        this.legalMovesMaps.white = dMovesMap;
+      .subscribe(movesArr => {
+        movesArr.forEach(m =>
+          this.legalMovesMaps.white.set(
+            `${m.fromFile}${m.fromRank}${m.file}${m.rank}`,
+            m
+          )
+        );
       });
   }
 
@@ -199,6 +204,7 @@ export class Gameboard {
    * (check for special moves, update necessary properties)
    */
   movePieceProcess(s: Square, move: Move) {
+    console.time('move piece process benchmark');
     const nextSquare = parser.getSquare(move.file, move.rank, this.board);
     if (!nextSquare) {
       // TODO: throw invalid/out of bound square
@@ -227,34 +233,39 @@ export class Gameboard {
     const defendingTeamColor: 'white' | 'black' =
       attackingTeamColor === 'white' ? 'black' : 'white';
     // aggregate to attack enemy King, while also not leaving ally King vulnerable
-    this.getAttackMovesMap(attackingTeamColor)
+    this.getAllAttackMoves(attackingTeamColor)
       .pipe(
         switchMap(aMovesArr => {
+          this.attackMovesMaps[attackingTeamColor].clear(); // clear before compiling new
           aMovesArr.forEach(m =>
             this.attackMovesMaps[attackingTeamColor].set(
               `${m.file}${m.rank}`,
               m
             )
           );
-          this.attackMovesMaps[defendingTeamColor].clear();
-          // if checked
-          // force defend
+          // if checked, force defend
           this.checked[defendingTeamColor] = this.checkKing(
             attackingTeamColor,
             this.attackMovesMaps[attackingTeamColor]
           );
-          return this.getLegalMovesMap(defendingTeamColor);
+          return this.getAllLegalMoves(defendingTeamColor); // compose legal moves for the next team
         })
       )
       .subscribe(
-        dMovesMap => {
-          console.log(`legal ${defendingTeamColor} moves`, dMovesMap);
-          this.legalMovesMaps[defendingTeamColor] = dMovesMap;
+        dMovesArr => {
+          dMovesArr.forEach(m =>
+            this.legalMovesMaps[defendingTeamColor].set(
+              `${m.fromFile}${m.fromRank}${m.file}${m.rank}`,
+              m
+            )
+          );
+          // only stop moving when everything is valid
           this.stopMoving(); // idempotent - finish up moving
-          // switch player, making sure to compare colors based on the piece that just moved
-          this.currTurn = attackingTeamColor === 'white' ? 'black' : 'white';
+          this.checked[attackingTeamColor] = false; // assume making a valid move means not exposing king
+          this.currTurn = attackingTeamColor === 'white' ? 'black' : 'white'; // switch player
         },
-        err => console.error(err)
+        err => console.error(err),
+        () => console.timeEnd('move piece process benchmark')
       );
   }
 
@@ -350,7 +361,7 @@ export class Gameboard {
    * In order to check enemy King, all ally Pieces must know
    * the Squares they are attacking
    */
-  private getAttackMovesMap(
+  private getAllAttackMoves(
     attackTeamColor: 'white' | 'black',
     board: Square[][] = this.board,
     capturedPieces: Set<Piece> = this.capturedPieces
@@ -369,21 +380,13 @@ export class Gameboard {
     // aggregate attack moves to check the enemy King
     return zip<Move[][]>(...justMovedObs).pipe(
       map((values: Move[][]) => {
-        const newAttackMovesMap: Map<string, Move> = new Map();
-        const attackMovesArr: Move[] = [].concat.apply([], values);
-        attackMovesArr.forEach(m =>
-          newAttackMovesMap.set(`${m.file}${m.rank}`, m)
-        );
         // console.timeEnd('getting attack moves');
-        console.log(values);
-        return attackMovesArr;
+        return [].concat.apply([], values);
       })
     );
   }
 
-  private getLegalMovesMap(
-    color: 'white' | 'black'
-  ): Observable<Map<string, Move>> {
+  private getAllLegalMoves(color: 'white' | 'black'): Observable<Move[]> {
     this.onPrepare.emit(color);
     return zip(...this.onPrepareObs).pipe(
       switchMap((val: Move[][]) => {
@@ -396,18 +399,7 @@ export class Gameboard {
         });
         return zip(...toSimulate);
       }),
-      map(moves => {
-        const newDefendMovesMap: Map<string, Move> = new Map();
-        moves
-          .filter(m => m !== null)
-          .forEach(move =>
-            newDefendMovesMap.set(
-              `${move.fromFile}${move.fromRank}${move.file}${move.rank}`,
-              move
-            )
-          );
-        return newDefendMovesMap;
-      })
+      map(moves => moves.filter(m => m !== null))
     );
   }
 
@@ -431,7 +423,6 @@ export class Gameboard {
     this.moving = false;
   }
 
-  boards: Square[][][] = [];
   /**
    * Simulate Move to find out if it's legal while defending
    */
@@ -458,7 +449,7 @@ export class Gameboard {
 
     this.moveFromTo(currSquare, nextSquare, cloneCapturedPieces);
 
-    return this.getAttackMovesMap(
+    return this.getAllAttackMoves(
       attackTeamColor,
       clone,
       cloneCapturedPieces
