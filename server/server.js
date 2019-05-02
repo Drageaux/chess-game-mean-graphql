@@ -1,5 +1,6 @@
 const express = require('express');
 const path = require('path');
+const compression = require('compression');
 const bodyParser = require('body-parser');
 const env = process.env.NODE_ENV || 'development';
 const app = express();
@@ -11,6 +12,7 @@ const graphqlHTTP = require('express-graphql');
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
 app.use('*', cors());
+app.use(compression());
 // Point static path to dist
 app.use(express.static(path.join(__dirname, 'dist')));
 // Catch all other routes and return the index file
