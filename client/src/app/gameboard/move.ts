@@ -1,4 +1,6 @@
 export class Move {
+  fromFile: string;
+  fromRank: number;
   file: string;
   rank: number;
   castle: boolean;

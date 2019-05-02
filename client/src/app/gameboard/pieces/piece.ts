@@ -1,15 +1,19 @@
-import { Square, FileEnum } from '../square';
+import { Square } from '../square';
 import { Move } from '../move';
 import { Observable } from 'rxjs';
-import { filter, map } from 'rxjs/operators';
+import { map, distinctUntilChanged } from 'rxjs/operators';
+import { v4 as uuid } from 'uuid';
 
 export abstract class Piece {
+  // tslint:disable-next-line:variable-name
+  private _id: string;
   name: string;
   color: 'white' | 'black';
   myFile: string;
   myRank: number;
 
   constructor(name: string, color: 'white' | 'black') {
+    this._id = uuid();
     this.name = name;
     this.color = color;
   }
@@ -18,12 +22,18 @@ export abstract class Piece {
     return `${this.color} ${this.name}`;
   }
 
+  get id() {
+    return this._id;
+  }
+
   getAttackMoves(
     file: string,
     rank: number,
     board: Square[][]
   ): Observable<Move[]> {
-    return this.getAllPossibleMoves(file, rank, board);
+    return this.getAllPossibleMoves(file, rank, board).pipe(
+      distinctUntilChanged()
+    );
   }
 
   getAllLegalMoves(
@@ -31,13 +41,14 @@ export abstract class Piece {
     rank: number,
     board: Square[][]
   ): Observable<Move[]> {
-    // let allLegalMoves: Observable<Move[]> = [];
-    // const allPossibleMoves =
     return this.getAllPossibleMoves(file, rank, board).pipe(
+      distinctUntilChanged(),
       map((moves: Move[]) => moves.filter(m => !m.onAlly))
     );
-    // allLegalMoves =
-    // return allLegalMoves;
+  }
+
+  get isKing(): boolean {
+    return false;
   }
 
   protected abstract getAllPossibleMoves(

@@ -1,10 +1,10 @@
 <div class="text-center">
-  <h4>current turn: {{ currTurn }}</h4>
-  <h5>{{ whiteKingChecked || blackKingChecked ? 'checked' : '' }}</h5>
+  <h4>current turn: {{ gb.currTurn }}</h4>
+  <h5>{{ gb.checked.white || gb.checked.black ? 'checked' : '' }}</h5>
   <div class="board d-table mx-auto">
     <div
       *ngFor="
-        let r of board.slice().reverse();
+        let r of gb.board.slice().reverse();
         let r_index = index;
         let r_odd = odd;
         let r_even = even
@@ -28,23 +28,25 @@
       >
         <!-- activate square if a piece is trying to move -->
         <div
-          *ngIf="moving && currMovesMap.has('' + s.file + s.rank)"
+          *ngIf="gb.moving && gb.currMovesMap.has('' + s.file + s.rank)"
           class="move"
         ></div>
         <div
           class="current"
           *ngIf="
-            moving && currSquare.file === s.file && currSquare.rank === s.rank
+            gb.moving &&
+            gb.currSquare.file === s.file &&
+            gb.currSquare.rank === s.rank
           "
         ></div>
         <div
           class="offensive"
           *ngIf="
             isAdmin &&
-            ((currTurn == 'white' &&
-              attackMovesMap.black.has('' + s.file + s.rank)) ||
-              (currTurn == 'black' &&
-                attackMovesMap.white.has('' + s.file + s.rank)))
+            ((gb.currTurn == 'white' &&
+              gb.attackMovesMaps.black.has('' + s.file + s.rank)) ||
+              (gb.currTurn == 'black' &&
+                gb.attackMovesMaps.white.has('' + s.file + s.rank)))
           "
         ></div>
         <i
@@ -53,18 +55,17 @@
           [ngClass]="{
             white: s.piece?.color === 'white',
             black: s.piece?.color === 'black',
-            'white-turn': s.piece?.color === 'white' && currTurn === 'white',
-            'black-turn': s.piece?.color === 'black' && currTurn === 'black'
+            'white-turn': s.piece?.color === 'white' && gb.currTurn === 'white',
+            'black-turn': s.piece?.color === 'black' && gb.currTurn === 'black'
           }"
         ></i>
       </div>
     </div>
   </div>
-
   <h4>captured pieces:</h4>
   <p>
     <i
-      *ngFor="let piece of capturedPieces"
+      *ngFor="let piece of gb.capturedPieces"
       class="fas fa-chess-{{ piece?.name }}"
       [ngClass]="{
         white: piece?.color == 'white',
@@ -72,4 +73,44 @@
       }"
     ></i>
   </p>
+
+  <div *ngFor="let board of gb?.boards" class="board d-table mx-auto">
+    <div
+      *ngFor="
+        let r of board?.slice().reverse();
+        let r_index = index;
+        let r_odd = odd;
+        let r_even = even
+      "
+      class="board-rank"
+    >
+      <div
+        *ngFor="
+          let s of r;
+          let s_index = index;
+          let s_odd = odd;
+          let s_even = even
+        "
+        class="board-square"
+        [ngClass]="{
+          white: (s_even && r_even) || (s_odd && r_odd),
+          black: (s_odd && r_even) || (s_even && r_odd)
+        }"
+      >
+        <!-- activate square if a piece is trying to move -->
+
+        <i
+          *ngIf="s?.piece"
+          class="fas fa-chess-{{ s.piece?.name }}"
+          [ngClass]="{
+            white: s.piece?.color === 'white',
+            black: s.piece?.color === 'black',
+            'white-turn': s.piece?.color === 'white' && gb.currTurn === 'white',
+            'black-turn': s.piece?.color === 'black' && gb.currTurn === 'black'
+          }"
+        ></i>
+      </div>
+    </div>
+    <br />
+  </div>
 </div>
