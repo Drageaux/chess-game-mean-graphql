@@ -6,14 +6,14 @@ import { EventEmitter } from '@angular/core';
 import { Observable, of } from 'rxjs';
 
 export class Rook extends Piece {
-  hasMoved = new EventEmitter<boolean>();
+  hasMoved = false;
 
   constructor(color: 'white' | 'black', hasMoved: boolean = false) {
     super('rook', color);
   }
 
   updateHasMoved() {
-    this.hasMoved.emit(true);
+    this.hasMoved = true;
   }
 
   getAllPossibleMoves(

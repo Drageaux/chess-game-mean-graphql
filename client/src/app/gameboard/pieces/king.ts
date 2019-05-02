@@ -4,6 +4,7 @@ import { Move } from '../move';
 import { default as movesGetter } from '../moves-getter';
 import { default as parser } from '../board-parser';
 import { Observable, of } from 'rxjs';
+import { Rook } from './rook';
 
 export class King extends Piece {
   // tslint:disable-next-line:variable-name
@@ -82,7 +83,11 @@ export class King extends Piece {
       // left side castle
       const leftRookSquare = parser.getSquare(1, rank, board);
       let leftRoadClear = true;
-      if (leftRookSquare.piece && leftRookSquare.piece.color === this.color) {
+      if (
+        leftRookSquare.piece &&
+        leftRookSquare.piece.color === this.color &&
+        !(leftRookSquare.piece as Rook).hasMoved
+      ) {
         // check if road's clear
         for (let i = 2; i < FileEnum[file]; i++) {
           const sq = parser.getSquare(i, rank, board);
@@ -95,9 +100,14 @@ export class King extends Piece {
           movesGetter.appendPossibleMove(this, result, 3, rank, board);
         }
       }
+      // right side castle
       const rightRookSquare = parser.getSquare(8, rank, board);
       let rightRoadClear = true;
-      if (rightRookSquare.piece && rightRookSquare.piece.color === this.color) {
+      if (
+        rightRookSquare.piece &&
+        rightRookSquare.piece.color === this.color &&
+        !(rightRookSquare.piece as Rook).hasMoved
+      ) {
         // check if road's clear
         for (let i = 7; i > FileEnum[file]; i--) {
           const sq = parser.getSquare(i, rank, board);

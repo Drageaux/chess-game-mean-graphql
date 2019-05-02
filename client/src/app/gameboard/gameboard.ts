@@ -108,7 +108,7 @@ export class Gameboard {
       }
     }
 
-    // this.addTestPieces();
+    this.addTestPieces();
     // check for attack moves for 2nd player
     this.getAllAttackMoves('black')
       .pipe(
@@ -145,6 +145,11 @@ export class Gameboard {
     // for testing
     this.removePiece('d', 8);
     this.removePiece('g', 8);
+    this.removePiece('b', 1);
+    this.removePiece('c', 1);
+    this.removePiece('d', 1);
+    this.removePiece('f', 1);
+    this.removePiece('g', 1);
     this.insertPiece('a', 6, new Pawn('white'));
     this.insertPiece('d', 6, new Pawn('black'));
     this.insertPiece('e', 6, new Rook('white'));
@@ -300,25 +305,6 @@ export class Gameboard {
    *
    */
   private configurePieceEvents(piece: Piece) {
-    // on Rook's has moved, King can't castle anymore
-    if (piece instanceof Rook) {
-      if (piece.color === 'white') {
-        const whiteRookSubscription: Subscription = (piece as Rook).hasMoved.subscribe(
-          $event => {
-            this.whiteKingPiece.hasMoved = $event;
-            whiteRookSubscription.unsubscribe();
-          }
-        );
-      } else if (piece.color === 'black') {
-        const blackRookSubscription: Subscription = (piece as Rook).hasMoved.subscribe(
-          $event => {
-            this.blackKingPiece.hasMoved = $event;
-            blackRookSubscription.unsubscribe();
-          }
-        );
-      }
-    }
-
     // observing upon move; get moves that may be dangerous for the opposing King
     // receive a current color and a board, get attackMoves based on those 2 vars
     const attackSubscription: Subscription = this.justMoved.subscribe(
