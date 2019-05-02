@@ -10,7 +10,7 @@ import { Knight } from './pieces/knight';
 import { Queen } from './pieces/queen';
 import { King } from './pieces/king';
 import { Move } from './move';
-import { Observable, zip, Subscription, forkJoin } from 'rxjs';
+import { Observable, zip, Subscription, forkJoin, of } from 'rxjs';
 import {
   map,
   tap,
@@ -19,6 +19,7 @@ import {
   distinctUntilChanged
 } from 'rxjs/operators';
 import cloneDeep = require('lodash/cloneDeep');
+import forEach = require('lodash/forEach');
 
 export class Gameboard {
   // const
@@ -261,6 +262,7 @@ export class Gameboard {
       )
       .subscribe(
         (dMovesArr: Move[]) => {
+          console.timeEnd('move piece process benchmark');
           this.legalMovesMaps[defendingTeamColor].clear(); // important - clear previous legal moves
           dMovesArr.forEach(m =>
             this.legalMovesMaps[defendingTeamColor].set(
@@ -274,7 +276,7 @@ export class Gameboard {
           this.currTurn = attackingTeamColor === 'white' ? 'black' : 'white'; // switch player
         },
         err => console.error(err),
-        () => console.timeEnd('move piece process benchmark')
+        () => {}
       );
   }
 
@@ -400,19 +402,21 @@ export class Gameboard {
 
   private getAllLegalMoves(color: 'white' | 'black'): Observable<Move[]> {
     this.onPrepare.emit(color);
-    return zip(...this.onPrepareObs).pipe(
-      switchMap((val: Move[][]) => {
-        const defendMovesArr: Move[] = [].concat.apply([], val);
-        this.onPrepareObs = [];
 
-        const toSimulate: Observable<Move>[] = [];
-        defendMovesArr.forEach(m => {
-          toSimulate.push(this.simulateMove(color, m));
-        });
-        return zip(...toSimulate);
+    return zip(...this.onPrepareObs).pipe(
+      switchMap((allLegalMoves: Move[][]) => {
+        this.onPrepareObs = [];
+        // defendMovesArr.forEach(m => {
+        //   // console.time('push');
+        //   toSimulate.push(this.simulateMove(color, m));
+        //   // console.timeEnd('push');
+        // });
+        console.time('simulation');
+        return this.simulateMoves(color, [].concat.apply([], allLegalMoves));
       }),
-      map(moves => {
-        return moves.filter(m => m != null);
+      map(simulatedMoves => {
+        console.timeEnd('simulation');
+        return simulatedMoves.filter(m => m != null);
       })
     );
   }
@@ -440,49 +444,59 @@ export class Gameboard {
   /**
    * Simulate Move to find out if it's legal while defending
    */
-  simulateMove(defendTeamColor: string, move: Move): Observable<Move> {
+  simulateMoves(defendTeamColor: string, moves: Move[]): Observable<Move[]> {
+    const result: Observable<Move[]> = of([]);
+    const obs: Observable<Move>[] = [];
     const attackTeamColor: 'white' | 'black' =
       defendTeamColor === 'white' ? 'black' : 'white';
     const defendKingPiece =
       defendTeamColor === 'white' ? this.whiteKingPiece : this.blackKingPiece;
 
-    const clone = this.deepcopy(this.board);
-    const currSquare = parser.getSquare(move.fromFile, move.fromRank, clone);
+    // bottleneck
+    for (const move of moves) {
+      const clone = this.deepcopy(this.board);
+      const cloneKingPiece: Piece = parser.getSquare(
+        defendKingPiece.myFile,
+        defendKingPiece.myRank,
+        clone
+      ).piece; // refer to the King on the cloned board
+      const currSquare = parser.getSquare(move.fromFile, move.fromRank, clone);
+      const nextSquare = parser.getSquare(move.file, move.rank, clone);
+      const cloneCapturedPieces: Set<Piece> = this.deepcopy(
+        this.capturedPieces
+      );
 
-    const nextSquare = parser.getSquare(move.file, move.rank, clone);
-    // refer to the King on the cloned board
-    const cloneKingPiece: Piece = parser.getSquare(
-      defendKingPiece.myFile,
-      defendKingPiece.myRank,
-      clone
-    ).piece;
-    const cloneCapturedPieces: Set<Piece> = this.deepcopy(this.capturedPieces);
-    if (!nextSquare) {
-      // TODO: throw wrong square
-      return;
+      if (!nextSquare) {
+        // TODO: throw wrong square
+        return;
+      }
+
+      this.moveFromTo(currSquare, nextSquare, cloneCapturedPieces);
+
+      obs.push(
+        this.getAllAttackMoves(
+          attackTeamColor,
+          clone,
+          cloneCapturedPieces
+        ).pipe(
+          map((aMoves: Move[]) => {
+            if (
+              aMoves.find(
+                m =>
+                  `${m.file}${m.rank}` ===
+                  `${cloneKingPiece.myFile}${cloneKingPiece.myRank}`
+              )
+            ) {
+              return null;
+            } else {
+              return move;
+            }
+          })
+        )
+      );
     }
 
-    this.moveFromTo(currSquare, nextSquare, cloneCapturedPieces);
-
-    return this.getAllAttackMoves(
-      attackTeamColor,
-      clone,
-      cloneCapturedPieces
-    ).pipe(
-      map((moves: Move[]) => {
-        if (
-          moves.find(
-            m =>
-              `${m.file}${m.rank}` ===
-              `${cloneKingPiece.myFile}${cloneKingPiece.myRank}`
-          )
-        ) {
-          return null;
-        } else {
-          return move;
-        }
-      })
-    );
+    return zip(...obs);
   }
 
   deepcopy(obj) {
