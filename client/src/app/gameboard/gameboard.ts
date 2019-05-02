@@ -406,16 +406,11 @@ export class Gameboard {
     return zip(...this.onPrepareObs).pipe(
       switchMap((allLegalMoves: Move[][]) => {
         this.onPrepareObs = [];
-        // defendMovesArr.forEach(m => {
-        //   // console.time('push');
-        //   toSimulate.push(this.simulateMove(color, m));
-        //   // console.timeEnd('push');
-        // });
-        console.time('simulation');
+        // console.time('simulation');
         return this.simulateMoves(color, [].concat.apply([], allLegalMoves));
       }),
       map(simulatedMoves => {
-        console.timeEnd('simulation');
+        // console.timeEnd('simulation');
         return simulatedMoves.filter(m => m != null);
       })
     );
@@ -445,7 +440,6 @@ export class Gameboard {
    * Simulate Move to find out if it's legal while defending
    */
   simulateMoves(defendTeamColor: string, moves: Move[]): Observable<Move[]> {
-    const result: Observable<Move[]> = of([]);
     const obs: Observable<Move>[] = [];
     const attackTeamColor: 'white' | 'black' =
       defendTeamColor === 'white' ? 'black' : 'white';
