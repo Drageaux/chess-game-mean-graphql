@@ -6,6 +6,7 @@ import { Piece } from './pieces/piece';
 import { King } from './pieces/king';
 import { Move } from './move';
 import { default as parser } from './board-parser';
+import { distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'app-gameboard',
@@ -51,8 +52,9 @@ export class GameboardComponent {
     if (p) {
       // console.time('select piece');
       this.gb.moving = true;
-      p.getAllLegalMoves(s.file, s.rank, this.gb.board).subscribe(
-        allPieceLegalMoves => {
+      p.getAllLegalMoves(s.file, s.rank, this.gb.board)
+        .pipe(distinctUntilChanged())
+        .subscribe(allPieceLegalMoves => {
           // if is king, filter out dangerous moves
           // also filter out castling moves if currently checked
           if (p instanceof King) {
@@ -80,8 +82,7 @@ export class GameboardComponent {
           // );
 
           // console.timeEnd('select piece');
-        }
-      );
+        });
     }
   }
 }

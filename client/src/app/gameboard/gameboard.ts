@@ -11,7 +11,13 @@ import { Queen } from './pieces/queen';
 import { King } from './pieces/king';
 import { Move } from './move';
 import { Observable, zip, Subscription, forkJoin } from 'rxjs';
-import { map, tap, switchMap, filter } from 'rxjs/operators';
+import {
+  map,
+  tap,
+  switchMap,
+  filter,
+  distinctUntilChanged
+} from 'rxjs/operators';
 import cloneDeep = require('lodash/cloneDeep');
 
 export class Gameboard {
@@ -325,7 +331,9 @@ export class Gameboard {
             }
           }
           $event.obs.push(
-            piece.getAttackMoves(piece.myFile, piece.myRank, $event.board)
+            piece
+              .getAttackMoves(piece.myFile, piece.myRank, $event.board)
+              .pipe(distinctUntilChanged())
           );
         }
       }
@@ -341,6 +349,7 @@ export class Gameboard {
         if (piece.color === $event) {
           this.onPrepareObs.push(
             piece.getAllLegalMoves(piece.myFile, piece.myRank, this.board).pipe(
+              distinctUntilChanged(),
               map((result: Move[]) => {
                 if (piece instanceof King) {
                   result = this.filterOutKingMoves(piece, result);

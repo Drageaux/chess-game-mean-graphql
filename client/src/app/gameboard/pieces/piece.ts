@@ -1,7 +1,7 @@
 import { Square } from '../square';
 import { Move } from '../move';
 import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { map, distinctUntilChanged } from 'rxjs/operators';
 import { v4 as uuid } from 'uuid';
 
 export abstract class Piece {
@@ -31,7 +31,9 @@ export abstract class Piece {
     rank: number,
     board: Square[][]
   ): Observable<Move[]> {
-    return this.getAllPossibleMoves(file, rank, board);
+    return this.getAllPossibleMoves(file, rank, board).pipe(
+      distinctUntilChanged()
+    );
   }
 
   getAllLegalMoves(
@@ -40,6 +42,7 @@ export abstract class Piece {
     board: Square[][]
   ): Observable<Move[]> {
     return this.getAllPossibleMoves(file, rank, board).pipe(
+      distinctUntilChanged(),
       map((moves: Move[]) => moves.filter(m => !m.onAlly))
     );
   }
