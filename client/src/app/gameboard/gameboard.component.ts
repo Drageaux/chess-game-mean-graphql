@@ -28,7 +28,7 @@ export class GameboardComponent {
    *********************/
   // event handling
   handleSquareClick(s: Square) {
-    if (s === this.gb.currSquare) {
+    if (s === this.gb.currSquare || this.gb.gameOver) {
       return;
     }
     if (s.piece && s.piece.color === this.gb.currTurn) {

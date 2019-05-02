@@ -39,6 +39,7 @@ export class Gameboard {
     white: false,
     black: false
   };
+  gameOver = false;
   // events
   justMoved = new EventEmitter<any>(); // synchronously deliver events
   justMovedObs: Observable<any>[] = [];
@@ -211,6 +212,9 @@ export class Gameboard {
     currSquare.piece = null;
   }
 
+  /************
+   * MOVEMENT *
+   ************/
   /**
    * Moving a piece from one place to a destination, given an original Square object and the next Move
    * (check for special moves, update necessary properties)
@@ -267,7 +271,17 @@ export class Gameboard {
       )
       .subscribe(
         (dMovesArr: Move[]) => {
-          console.timeEnd('move piece process benchmark');
+          // TODO: check game conditions
+          this.checkGameConditions();
+          if (dMovesArr.length === 0) {
+            this.gameOver = true;
+            if (this.checked[defendingTeamColor]) {
+              return console.log('CHECKMATE');
+            } else {
+              return console.log('STALEMATE');
+            }
+          }
+
           this.legalMovesMaps[defendingTeamColor].clear(); // important - clear previous legal moves
           dMovesArr.forEach(m =>
             this.legalMovesMaps[defendingTeamColor].set(
@@ -275,13 +289,14 @@ export class Gameboard {
               m
             )
           );
+
           // only stop moving when everything is valid
           this.stopMoving(); // idempotent - finish up moving
           this.checked[attackingTeamColor] = false; // assume making a valid move means not exposing king
           this.currTurn = attackingTeamColor === 'white' ? 'black' : 'white'; // switch player
         },
         err => console.error(err),
-        () => {}
+        () => console.timeEnd('move piece process benchmark')
       );
   }
 
@@ -417,6 +432,11 @@ export class Gameboard {
     }
   }
 
+  /**********
+   * HELPER *
+   **********/
+  checkGameConditions() {}
+
   private stopMoving() {
     this.currMovesMap.clear();
     this.moving = false;
@@ -432,7 +452,7 @@ export class Gameboard {
     const defendKingPiece =
       defendTeamColor === 'white' ? this.whiteKingPiece : this.blackKingPiece;
 
-    // bottleneck
+    // FIXME - bottleneck at the .push() call
     for (const move of moves) {
       const clone = this.deepcopy(this.board);
       const cloneKingPiece: Piece = parser.getSquare(
