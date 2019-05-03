@@ -12,5 +12,6 @@
   "devDependencies": {
     "concurrently": "^4.1.0",
     "typedoc": "^0.14.2"
-  }
+  },
+  "dependencies": {}
 }
