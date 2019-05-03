@@ -35,6 +35,17 @@ const server = new ApolloServer({
   formatResponse: (response: any) => {
     log(success('[APOLLO] Response', response));
     return response;
+  },
+  context: async (context: { connection: any; req: any }) => {
+    if (context.connection) {
+      // check connection for metadata
+      return context.connection;
+    } else {
+      // check from req
+      const token = context.req.headers.authorization || '';
+
+      return { token };
+    }
   }
 });
 server.applyMiddleware({ app }); // app is from an existing express app
