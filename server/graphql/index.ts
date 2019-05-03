@@ -1,33 +1,40 @@
 const { gql } = require('apollo-server-express');
-const books = [
-  {
-    title: 'Harry Potter and the Chamber of Secrets',
-    author: 'J.K. Rowling'
-  },
-  {
-    title: 'Jurassic Park',
-    author: 'Michael Crichton'
-  }
-];
+
+import User from '../models/user';
 // The GraphQL schema
 export const typeDefs = gql`
   # Comments in GraphQL are defined with the hash (#) symbol.
 
-  # This "Book" type can be used in other type declarations.
-  type Book {
-    title: String
-    author: String
+  type User {
+    id: ID!
+    userName: String
+    email: String
   }
 
-  # The "Query" type is the root of all GraphQL queries.
-  # (A "Mutation" type will be covered later on.)
   type Query {
-    books: [Book]
+    getUsers: [User]
+  }
+
+  type Mutation {
+    addUser(userName: String!, email: String!): User
   }
 `;
 // A map of functions which return data for the schema.
 export const resolvers = {
   Query: {
-    books: () => books
+    getUsers: async () => await User.find({}).exec()
+  },
+  Mutation: {
+    addUser: async (_: any, args: any) => {
+      console.log(_, args);
+      try {
+        let response = await User.create(args);
+        console.log(response);
+        return response;
+      } catch (e) {
+        console.log(e.message);
+        return e.message;
+      }
+    }
   }
 };

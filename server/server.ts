@@ -19,20 +19,7 @@ app.use('*', cors());
 app.use(compression());
 
 // setup MongoDB
-const mongoose = require('mongoose');
-mongoose.Promise = global.Promise;
-mongoose.connect('mongodb://localhost:27017/chess-game-mean-graphql', {
-  useNewUrlParser: true
-});
-var db = mongoose.connection
-  .on('error', (err: any) => {
-    console.log(
-      'Error: Could not connect to MongoDB. Did you forget to run `mongod`?'
-    );
-  })
-  .on('open', function() {
-    console.log('Connection extablised with MongoDB');
-  });
+require('./config');
 
 // setup GraphQL
 // const userSchema = require('./graphql/index').userSchema;
@@ -45,7 +32,7 @@ server.applyMiddleware({ app }); // app is from an existing express app
 
 // point static path to dist
 app.use(express.static(path.join(__dirname, 'dist')));
-// catch all other routes and return the index file
+// catch all other routes and return the index file (put at the end before running)
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'dist/index.html'));
 });
