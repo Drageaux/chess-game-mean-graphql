@@ -1,4 +1,4 @@
-var mongoose = require('mongoose');
+import * as mongoose from 'mongoose';
 var Schema = mongoose.Schema;
 
 const userSchema = new Schema({

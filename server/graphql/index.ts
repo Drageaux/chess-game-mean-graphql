@@ -1,6 +1,6 @@
-const { gql } = require('apollo-server-express');
-
+import { gql } from 'apollo-server-express';
 import User from '../models/user';
+
 // The GraphQL schema
 export const typeDefs = gql`
   # Comments in GraphQL are defined with the hash (#) symbol.
@@ -26,13 +26,10 @@ export const resolvers = {
   },
   Mutation: {
     addUser: async (_: any, args: any) => {
-      console.log(_, args);
       try {
-        let response = await User.create(args);
-        console.log(response);
+        const response = await User.create(args);
         return response;
       } catch (e) {
-        console.log(e.message);
         return e.message;
       }
     }

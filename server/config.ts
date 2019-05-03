@@ -1,3 +1,4 @@
+import log, { error, system } from './log';
 const mongoose = require('mongoose');
 mongoose.Promise = global.Promise;
 mongoose.connect(
@@ -8,10 +9,12 @@ mongoose.connect(
 );
 var db = mongoose.connection
   .on('error', (err: any) => {
-    console.log(
-      'Error: Could not connect to MongoDB. Did you forget to run `mongod`?'
+    log(
+      error(
+        '[MONGO DB] Error: Could not connect to MongoDB. Did you forget to run `mongod`?'
+      )
     );
   })
   .on('open', function() {
-    console.log('Connection extablised with MongoDB');
+    log(system('[MONGO DB] Connection extablised with MongoDB'));
   });

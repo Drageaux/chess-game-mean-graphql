@@ -1,10 +1,11 @@
 import express from 'express';
 import path from 'path';
 import bodyParser from 'body-parser';
+import log, { error, system, success, warning } from './log';
 
 const compression = require('compression');
 const cors = require('cors');
-const { ApolloServer, gql } = require('apollo-server-express');
+import { ApolloServer, gql } from 'apollo-server-express';
 import { PubSub } from 'graphql-subscriptions';
 import { execute, subscribe } from 'graphql';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
@@ -26,7 +27,15 @@ require('./config');
 import { typeDefs, resolvers } from './graphql';
 const server = new ApolloServer({
   typeDefs,
-  resolvers
+  resolvers,
+  formatError: (err: any) => {
+    log(error('[APOLLO] Error:', err));
+    return err;
+  },
+  formatResponse: (response: any) => {
+    log(success('[APOLLO] Response', response));
+    return response;
+  }
 });
 server.applyMiddleware({ app }); // app is from an existing express app
 
@@ -40,9 +49,11 @@ app.get('*', (req, res) => {
 // up and running at port 3000
 app.listen(process.env.PORT || 3000, () => {
   console.log(
-    `🚀 Server ready at http://localhost:${process.env.PORT || 3000}${
-      server.graphqlPath
-    }`
+    system(
+      `🔥🚀 Server ready at http://localhost:${process.env.PORT || 3000}${
+        server.graphqlPath
+      }`
+    )
   );
   /*
   new SubscriptionServer(
