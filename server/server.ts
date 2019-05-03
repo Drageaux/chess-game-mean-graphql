@@ -1,13 +1,18 @@
-const express = require('express');
-const path = require('path');
-const compression = require('compression');
-const bodyParser = require('body-parser');
-const env = process.env.NODE_ENV || 'development';
-const app = express();
+import express from 'express';
+import path from 'path';
+import bodyParser from 'body-parser';
 
 const mongoose = require('mongoose');
-const cors = require('cors');
 const graphqlHTTP = require('express-graphql');
+const compression = require('compression');
+const cors = require('cors');
+import { execute, subscribe } from 'graphql';
+import { PubSub } from 'graphql-subscriptions';
+import { SubscriptionServer } from 'subscriptions-transport-ws';
+
+const env = process.env.NODE_ENV || 'development';
+const pubsub = new PubSub();
+const app = express();
 
 app.use(bodyParser.json()); // support json encoded bodies
 app.use(bodyParser.urlencoded({ extended: true })); // support encoded bodies
@@ -26,9 +31,9 @@ mongoose.connect('mongodb://localhost:27017/chess-game-mean-graphql', {
   useNewUrlParser: true
 });
 var db = mongoose.connection
-  .on('error', function(err) {
+  .on('error', err => {
     console.log(
-      'Error: Could not connect to MongoDB. Did you forget to run `mongod`?'.red
+      'Error: Could not connect to MongoDB. Did you forget to run `mongod`?'
     );
   })
   .on('open', function() {
@@ -50,4 +55,15 @@ app.use(
 // Up and Running at Port 3000
 app.listen(process.env.PORT || 3000, () => {
   console.log('A GraphQL API running at port 3000');
+  new SubscriptionServer(
+    {
+      execute,
+      subscribe,
+      userSchema
+    },
+    {
+      server: app,
+      path: '/subscriptions'
+    }
+  );
 });
