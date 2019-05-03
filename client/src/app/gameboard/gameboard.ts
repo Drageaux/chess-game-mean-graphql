@@ -219,6 +219,7 @@ export class Gameboard {
    * Moving a piece from one place to a destination, given an original Square object and the next Move
    * (check for special moves, update necessary properties)
    */
+  // TODO: fix monolithic method
   movePieceProcess(s: Square, move: Move) {
     console.time('move piece process benchmark');
     const nextSquare = parser.getSquare(move.file, move.rank, this.board);
@@ -244,6 +245,12 @@ export class Gameboard {
       this.castle(move.file, nextSquare.piece.color);
       console.timeEnd('move piece process benchmark');
       return;
+    }
+    // promote
+    if (
+      nextSquare.piece instanceof Pawn &&
+      (nextSquare.rank === 8 || nextSquare.rank === 1)
+    ) {
     }
 
     const attackingTeamColor: 'white' | 'black' = nextSquare.piece.color;
@@ -271,7 +278,7 @@ export class Gameboard {
       )
       .subscribe(
         (dMovesArr: Move[]) => {
-          // TODO: check game conditions
+          // TODO: check game conditions and prompt restart
           this.checkGameConditions();
           if (dMovesArr.length === 0) {
             this.gameOver = true;
@@ -527,5 +534,13 @@ export class Gameboard {
     if (s && m) {
       this.movePieceProcess(s, m);
     }
+  }
+
+  /**
+   *
+   * @param square - the destination where the Pawn goes to promote
+   */
+  private promote(square: Square): void {
+    window.prompt('test');
   }
 }
