@@ -130,9 +130,9 @@ export class Gameboard {
       });
   }
 
-  /***************
-   * BASIC SETUP *
-   ***************/
+  /*************************************************************************/
+  /****************************** BASIC SETUP ******************************/
+  /*************************************************************************/
   // board construction
   private addFileSquares(currRank: number): Square[] {
     const rank: Square[] = [];
@@ -160,9 +160,9 @@ export class Gameboard {
     this.insertPiece('f', 6, new Queen('white'));
   }
 
-  /*******************
-   * DATA MANAGEMENT *
-   *******************/
+  /*************************************************************************/
+  /**************************** DATA MANAGEMENT ****************************/
+  /*************************************************************************/
   insertPiece(file: string, rank: number, piece: Piece): boolean {
     // check if a piece already exists
     if (
@@ -212,9 +212,9 @@ export class Gameboard {
     currSquare.piece = null;
   }
 
-  /************
-   * MOVEMENT *
-   ************/
+  /*************************************************************************/
+  /******************************** MOVEMENT *******************************/
+  /*************************************************************************/
   /**
    * Moving a piece from one place to a destination, given an original Square object and the next Move
    * (check for special moves, update necessary properties)
@@ -432,9 +432,9 @@ export class Gameboard {
     }
   }
 
-  /**********
-   * HELPER *
-   **********/
+  /*************************************************************************/
+  /********************************* HELPER ********************************/
+  /*************************************************************************/
   checkGameConditions() {}
 
   private stopMoving() {
@@ -503,9 +503,9 @@ export class Gameboard {
     return cloneDeep(obj);
   }
 
-  /*****************
-   * SPECIAL MOVES *
-   *****************/
+  /*************************************************************************/
+  /***************************** SPECIAL MOVES *****************************/
+  /*************************************************************************/
   private castle(destination: string, color: 'white' | 'black'): void {
     if (
       (color === 'white' && this.checked[color]) ||
