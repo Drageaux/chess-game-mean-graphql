@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "author": "David Thong Nguyen",
   "scripts": {
+    "postinstall": "npm audit fix",
     "ng": "ng",
     "start": "ng serve --proxy-config proxy.conf.json",
     "build": "ng build --prod=true --aot=true --buildOptimizer=true --optimization=true --namedChunks --progress=true --stats-json",
