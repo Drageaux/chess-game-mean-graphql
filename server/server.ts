@@ -11,7 +11,6 @@ import { execute, subscribe } from 'graphql';
 import { SubscriptionServer } from 'subscriptions-transport-ws';
 
 const env = process.env.NODE_ENV || 'development';
-const pubsub = new PubSub();
 const app = express();
 
 app.use(bodyParser.json()); // support json encoded bodies
@@ -23,11 +22,34 @@ app.use(compression());
 require('./config');
 
 // setup GraphQL
-// const userSchema = require('./graphql/index').userSchema;
-import { typeDefs, resolvers } from './graphql';
-const server = new ApolloServer({
-  typeDefs,
-  resolvers,
+const validateToken = (authToken: any) => {
+  // ... validate token and return a Promise, rejects in case of an error
+};
+
+const findUser = (authToken: any) => {
+  return (tokenValidationResult: any) => {
+    // ... finds user by auth token and return a Promise, rejects in case of an error
+  };
+};
+import { userSchema } from './graphql';
+const apollo: ApolloServer = new ApolloServer({
+  schema: userSchema,
+  subscriptions: {
+    onConnect: (connectionParams: any, webSocket) => {
+      console.log('test');
+      if (connectionParams.authToken) {
+        // return validateToken(connectionParams.authToken)
+        //   .then(findUser(connectionParams.authToken))
+        //   .then(user => {
+        //     return {
+        //       currentUser: user
+        //     };
+        //   });
+      }
+
+      throw new Error('Missing auth token!');
+    }
+  },
   formatError: (err: any) => {
     log(error('[APOLLO] Error:', err));
     return err;
@@ -35,7 +57,7 @@ const server = new ApolloServer({
   formatResponse: (response: any) => {
     log(success('[APOLLO] Response', response));
     return response;
-  },
+  } /*
   context: async (context: { connection: any; req: any }) => {
     if (context.connection) {
       // check connection for metadata
@@ -46,9 +68,10 @@ const server = new ApolloServer({
 
       return { token };
     }
-  }
+  }*/
 });
-server.applyMiddleware({ app }); // app is from an existing express app
+apollo.applyMiddleware({ app }); // app is from an existing express app
+apollo.installSubscriptionHandlers(app as any);
 
 // point static path to dist
 app.use(express.static(path.join(__dirname, 'dist')));
@@ -59,24 +82,30 @@ app.get('*', (req, res) => {
 
 // up and running at port 3000
 app.listen(process.env.PORT || 3000, () => {
-  console.log(
+  log(
     system(
-      `🔥🚀 Server ready at http://localhost:${process.env.PORT || 3000}${
-        server.graphqlPath
+      `🚀 Server ready at http://localhost:${process.env.PORT || 3000}${
+        apollo.graphqlPath
       }`
     )
   );
-  /*
-  new SubscriptionServer(
+  log(
+    system(
+      `👀 Subscriptions ready at ws://localhost:${process.env.PORT || 3000}${
+        apollo.subscriptionsPath
+      }`
+    )
+  );
+
+  const subscriptionServer = SubscriptionServer.create(
     {
       execute,
       subscribe,
-      userSchema
+      schema: userSchema
     },
     {
-      server: app,
-      path: '/subscriptions'
+      server: app as any,
+      path: '/graphql'
     }
   );
-  */
 });

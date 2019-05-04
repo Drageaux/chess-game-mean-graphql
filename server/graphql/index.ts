@@ -1,8 +1,9 @@
 import { gql } from 'apollo-server-express';
 import User from '../models/user';
-const { PubSub } = require('apollo-server');
+import { PubSub } from 'apollo-server';
+import { makeExecutableSchema } from 'graphql-tools';
 
-const pubsub = new PubSub();
+const pubsub: PubSub = new PubSub();
 
 // The GraphQL schema
 export const typeDefs = gql`
@@ -50,3 +51,5 @@ export const resolvers = {
     }
   }
 };
+
+export const userSchema = makeExecutableSchema({ typeDefs, resolvers });

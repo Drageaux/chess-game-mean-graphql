@@ -11,10 +11,10 @@ var db = mongoose.connection
   .on('error', (err: any) => {
     log(
       error(
-        '[MONGO DB] Error: Could not connect to MongoDB. Did you forget to run `mongod`?'
+        '🗃 [MONGO DB] Error: Could not connect to MongoDB. Did you forget to run `mongod`?'
       )
     );
   })
   .on('open', function() {
-    log(system('[MONGO DB] Connection extablised with MongoDB'));
+    log(system('🗃 [MONGO DB] Connection extablised with MongoDB'));
   });
