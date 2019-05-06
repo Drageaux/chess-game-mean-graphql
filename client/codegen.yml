@@ -4,6 +4,7 @@ documents: './src/app/**/*.graphql'
 generates:
   src/app/types.ts:
     plugins:
+      - add: // tslint:disable
       - 'typescript'
       - 'typescript-operations'
       - 'typescript-apollo-angular'
