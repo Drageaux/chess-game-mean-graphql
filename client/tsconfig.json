@@ -1,8 +1,7 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
-    "baseUrl": "./",
-    "outDir": "./dist/out-tsc",
+    "baseUrl": "./src",
     "sourceMap": true,
     "declaration": false,
     "module": "commonjs",
@@ -14,6 +13,7 @@
     "typeRoots": ["node_modules/@types"],
     "lib": ["es2018", "dom"],
     "paths": {
+      "@app/*": ["app/*"],
       "@assets/*": ["assets/*"]
     }
   },
