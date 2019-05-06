@@ -47,7 +47,7 @@ export const resolvers = {
   Subscription: {
     userAdded: {
       // Additional event labels can be passed to asyncIterator creation
-      subscribe: () => pubsub.asyncIterator(['USER_ADDED'])
+      subscribe: async () => pubsub.asyncIterator(['USER_ADDED'])
     }
   }
 };
