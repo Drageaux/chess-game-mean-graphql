@@ -1,7 +1,6 @@
 {
+  "name": "chess-game-mean-graphql",
   "scripts": {
-    "preinstall": "concurrently \"cd client && npm install\" \"cd server && npm install\"",
-    "postinstall": "npm audit fix",
     "dev:client": "npm run start --prefix client",
     "dev:server": "npm run dev --prefix server",
     "build": "",
