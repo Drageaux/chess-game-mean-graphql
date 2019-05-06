@@ -1,0 +1,34 @@
+query getUsers {
+  getUsers {
+    id
+    userName
+  }
+}
+
+mutation addUser($userName: String!, $email: String!) {
+  addUser(userName: $userName, email: $email) {
+    id
+    userName
+    email
+  }
+}
+
+# mutation removeUser($id: String!) {
+#   removeUser(id: $id) {
+#     id
+#     userName
+#   }
+# }
+
+# mutation updateUser($id: String!, $userName: String!) {
+#   updateUser(id: $id, userName: $userName) {
+#     id
+#     userName
+#   }
+# }
+subscription userAdded {
+  userAdded {
+    userName
+    email
+  }
+}

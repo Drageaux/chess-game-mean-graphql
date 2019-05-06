@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Apollo } from 'apollo-angular';
-import * as UsersQuery from './users.model';
+// import * as UsersQuery from './users.model';
 import { map } from 'rxjs/operators';
 
 @Component({
