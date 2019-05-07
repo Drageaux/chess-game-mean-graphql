@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Apollo } from 'apollo-angular';
-import { User } from '@app/types';
+import { GetUsersGQL, User } from '@app/types';
 import { map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-users',
@@ -9,12 +10,18 @@ import { map } from 'rxjs/operators';
   styleUrls: ['./users.component.scss']
 })
 export class UsersComponent implements OnInit {
-  user: any;
-  users: any[] = [];
-  constructor(private apollo: Apollo) {}
+  user: Observable<User>;
+  users: Observable<User[]>;
+  constructor(private getUsersGQL: GetUsersGQL) {}
 
   ngOnInit() {
     this.getUsers();
+  }
+
+  getUsers() {
+    this.users = this.getUsersGQL
+      .watch()
+      .valueChanges.pipe(map(result => result.data.getUsers));
   }
 
   // /**
@@ -120,19 +127,4 @@ export class UsersComponent implements OnInit {
   //       }
   //     );
   // }
-
-  /**
-   * ----------------------------------------------------
-   * Get All Users
-   * ----------------------------------------------------
-   * @method getUsers
-   */
-  getUsers() {
-    this.apollo
-      .watchQuery({ query: UsersQuery.allUsers })
-      .valueChanges.pipe(map((result: any) => result.data.allUsers))
-      .subscribe(data => {
-        this.users = data;
-      });
-  }
 }
