@@ -1,4 +1,6 @@
 <h1>Users:</h1>
+
+{{ user | async | json }}
 <ul>
   <li *ngFor="let user of users | async">{{ user | json }}</li>
 </ul>

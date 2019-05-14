@@ -29,9 +29,9 @@ const findUser = (authToken: any) => {
     // ... finds user by auth token and return a Promise, rejects in case of an error
   };
 };
-import { userSchema } from './graphql';
+import schema from './graphql';
 const apollo: ApolloServer = new ApolloServer({
-  schema: userSchema,
+  schema,
   subscriptions: {
     onConnect: (connectionParams: any, webSocket) => {
       log(system('[APOLLO] Web socket connected'));

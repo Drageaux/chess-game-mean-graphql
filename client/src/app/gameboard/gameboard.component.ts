@@ -7,6 +7,7 @@ import { King } from './pieces/king';
 import { Move } from './move';
 import { default as parser } from './board-parser';
 import { distinctUntilChanged } from 'rxjs/operators';
+import { } from '@app/types';
 
 @Component({
   selector: 'app-gameboard',
@@ -21,7 +22,9 @@ export class GameboardComponent {
   gb = new Gameboard();
   board2: Square[][] = [];
 
-  constructor() {}
+  constructor() {
+
+  }
 
   /*********************
    * USER INTERACTIONS *

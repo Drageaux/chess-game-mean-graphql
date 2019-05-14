@@ -1,3 +1,6 @@
+query findUser {
+  findUser
+}
 query getUsers {
   getUsers {
     id
@@ -28,6 +31,7 @@ mutation addUser($userName: String!, $email: String!) {
 # }
 subscription userAdded {
   userAdded {
+    id
     userName
     email
   }
