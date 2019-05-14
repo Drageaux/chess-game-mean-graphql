@@ -1,6 +1,11 @@
 import { Component, OnInit } from '@angular/core';
 import { Apollo } from 'apollo-angular';
-import { GetUsersGQL, User } from '@app/types';
+import {
+  GetUsersGQL,
+  UserAddedSubscription as userAddedSubsGQL,
+  User,
+  UserAddedGQL
+} from '@app/types';
 import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
@@ -10,9 +15,12 @@ import { Observable } from 'rxjs';
   styleUrls: ['./users.component.scss']
 })
 export class UsersComponent implements OnInit {
-  user: Observable<User>;
+  user: any;
   users: Observable<User[]>;
-  constructor(private getUsersGQL: GetUsersGQL) {}
+  constructor(
+    private getUsersGQL: GetUsersGQL,
+    private userAddedGQL: UserAddedGQL
+  ) {}
 
   ngOnInit() {
     this.getUsers();
@@ -22,6 +30,7 @@ export class UsersComponent implements OnInit {
     this.users = this.getUsersGQL
       .watch()
       .valueChanges.pipe(map(result => result.data.getUsers));
+    this.user = this.userAddedGQL.subscribe();
   }
 
   // /**

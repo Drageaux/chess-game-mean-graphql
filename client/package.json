@@ -27,6 +27,7 @@
     "apollo-angular-link-http": "^1.6.0",
     "apollo-cache-inmemory": "^1.5.1",
     "apollo-client": "^2.5.1",
+    "apollo-link-ws": "^1.0.17",
     "bootstrap": "^4.3.1",
     "core-js": "^2.5.4",
     "graphql": "^14.2.1",
@@ -35,12 +36,13 @@
     "lodash": "^4.17.11",
     "popper": "^1.0.1",
     "rxjs": "~6.3.3",
+    "subscriptions-transport-ws": "^0.9.16",
     "tslib": "^1.9.0",
     "uuid": "^3.3.2",
     "zone.js": "~0.8.26"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "~0.13.0",
+    "@angular-devkit/build-angular": "^0.13.9",
     "@angular/cli": "~7.3.8",
     "@angular/compiler-cli": "~7.2.0",
     "@angular/language-service": "~7.2.0",
