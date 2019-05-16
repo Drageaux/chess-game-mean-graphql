@@ -2,20 +2,27 @@ import * as mongoose from 'mongoose';
 var Schema = mongoose.Schema;
 
 import User from './user';
+const UserSchema = User.schema;
 
 const sessionSchema = new Schema(
   {
-    players: [User],
+    players: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
     createdAt: { type: Date, default: Date.now },
     lastUpdated: { type: Date, default: Date.now },
-    whiteTeam: User, // TODO: multiple people in 1 team
-    blackTeam: User,
+    whiteTeam: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // TODO: multiple people in 1 team
+    blackTeam: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     gameState: {
       gameOver: { type: Boolean, default: false },
-      currentTurn: String,
+      currentTurn: { type: String, enum: ['black', 'white'], default: 'white' },
       checked: {
-        white: Boolean,
-        black: Boolean
+        white: {
+          type: Boolean,
+          default: false
+        },
+        black: {
+          type: Boolean,
+          default: false
+        }
       }
     }
   },
