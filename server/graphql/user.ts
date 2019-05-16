@@ -9,8 +9,8 @@ const typeDefs = gql`
 
   type User {
     id: ID!
-    userName: String
-    email: String
+    userName: String!
+    email: String!
   }
 
   type Query {
@@ -31,7 +31,7 @@ const typeDefs = gql`
 const resolvers = {
   Query: {
     findUser: async (root: any, args: { id: any }, context: any) =>
-      await User.find({ _id: args.id }).exec(),
+      await User.findById(args.id).exec(),
     getUsers: async () => await User.find({}).exec()
   },
   Mutation: {

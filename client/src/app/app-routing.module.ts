@@ -2,6 +2,7 @@ import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 import { UsersComponent } from './user/users.component';
 import { GameboardComponent } from './gameboard/gameboard.component';
+import { HomeComponent } from './home/home.component';
 
 const routes: Routes = [
   {
@@ -10,8 +11,13 @@ const routes: Routes = [
     pathMatch: 'full'
   },
   {
-    path: '',
+    path: 'game',
     component: GameboardComponent,
+    pathMatch: 'full'
+  },
+  {
+    path: '',
+    component: HomeComponent,
     pathMatch: 'full'
   }
 ];
