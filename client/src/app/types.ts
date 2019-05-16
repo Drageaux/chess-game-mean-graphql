@@ -20,7 +20,12 @@ export type MutationAddUserArgs = {
 };
 
 export type Query = {
+  findUser?: Maybe<User>;
   getUsers?: Maybe<Array<Maybe<User>>>;
+};
+
+export type QueryFindUserArgs = {
+  id: Scalars["ID"];
 };
 
 export type Subscription = {
@@ -32,12 +37,28 @@ export type User = {
   userName?: Maybe<Scalars["String"]>;
   email?: Maybe<Scalars["String"]>;
 };
-export type GetUsersQueryVariables = {};
+export type UserWithIdFragment = { __typename?: "User" } & Pick<
+  User,
+  "id" | "userName" | "email"
+>;
 
-export type GetUsersQuery = { __typename?: "Query" } & {
-  getUsers: Maybe<
-    Array<Maybe<{ __typename?: "User" } & Pick<User, "id" | "userName">>>
-  >;
+export type UserNoIdFragment = { __typename?: "User" } & Pick<
+  User,
+  "userName" | "email"
+>;
+
+export type FindUserByIdQueryVariables = {
+  id: Scalars["ID"];
+};
+
+export type FindUserByIdQuery = { __typename?: "Query" } & {
+  findUser: Maybe<{ __typename?: "User" } & UserWithIdFragment>;
+};
+
+export type GetAllUsersQueryVariables = {};
+
+export type GetAllUsersQuery = { __typename?: "Query" } & {
+  getUsers: Maybe<Array<Maybe<{ __typename?: "User" } & UserNoIdFragment>>>;
 };
 
 export type AddUserMutationVariables = {
@@ -46,47 +67,74 @@ export type AddUserMutationVariables = {
 };
 
 export type AddUserMutation = { __typename?: "Mutation" } & {
-  addUser: Maybe<
-    { __typename?: "User" } & Pick<User, "id" | "userName" | "email">
-  >;
+  addUser: Maybe<{ __typename?: "User" } & UserNoIdFragment>;
 };
 
 export type UserAddedSubscriptionVariables = {};
 
 export type UserAddedSubscription = { __typename?: "Subscription" } & {
-  userAdded: Maybe<{ __typename?: "User" } & Pick<User, "userName" | "email">>;
+  userAdded: Maybe<{ __typename?: "User" } & UserNoIdFragment>;
 };
 
 import gql from "graphql-tag";
 import { Injectable } from "@angular/core";
 import * as Apollo from "apollo-angular";
-
-export const GetUsersDocument = gql`
-  query getUsers {
-    getUsers {
-      id
-      userName
+export const userWithIdFragmentDoc = gql`
+  fragment userWithId on User {
+    id
+    userName
+    email
+  }
+`;
+export const userNoIdFragmentDoc = gql`
+  fragment userNoId on User {
+    userName
+    email
+  }
+`;
+export const FindUserByIdDocument = gql`
+  query FindUserById($id: ID!) {
+    findUser(id: $id) {
+      ...userWithId
     }
   }
+  ${userWithIdFragmentDoc}
 `;
 
 @Injectable({
   providedIn: "root"
 })
-export class GetUsersGQL extends Apollo.Query<
-  GetUsersQuery,
-  GetUsersQueryVariables
+export class FindUserByIdGQL extends Apollo.Query<
+  FindUserByIdQuery,
+  FindUserByIdQueryVariables
 > {
-  document = GetUsersDocument;
+  document = FindUserByIdDocument;
 }
-export const AddUserDocument = gql`
-  mutation addUser($userName: String!, $email: String!) {
-    addUser(userName: $userName, email: $email) {
-      id
-      userName
-      email
+export const GetAllUsersDocument = gql`
+  query GetAllUsers {
+    getUsers {
+      ...userNoId
     }
   }
+  ${userNoIdFragmentDoc}
+`;
+
+@Injectable({
+  providedIn: "root"
+})
+export class GetAllUsersGQL extends Apollo.Query<
+  GetAllUsersQuery,
+  GetAllUsersQueryVariables
+> {
+  document = GetAllUsersDocument;
+}
+export const AddUserDocument = gql`
+  mutation AddUser($userName: String!, $email: String!) {
+    addUser(userName: $userName, email: $email) {
+      ...userNoId
+    }
+  }
+  ${userNoIdFragmentDoc}
 `;
 
 @Injectable({
@@ -99,12 +147,12 @@ export class AddUserGQL extends Apollo.Mutation<
   document = AddUserDocument;
 }
 export const UserAddedDocument = gql`
-  subscription userAdded {
+  subscription UserAdded {
     userAdded {
-      userName
-      email
+      ...userNoId
     }
   }
+  ${userNoIdFragmentDoc}
 `;
 
 @Injectable({

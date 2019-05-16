@@ -14,6 +14,7 @@ const typeDefs = gql`
   }
 
   type Query {
+    findUser(id: ID!): User
     getUsers: [User]
   }
 
@@ -29,6 +30,8 @@ const typeDefs = gql`
 // A map of functions which return data for the schema.
 const resolvers = {
   Query: {
+    findUser: async (root: any, args: { id: any }, context: any) =>
+      await User.find({ _id: args.id }).exec(),
     getUsers: async () => await User.find({}).exec()
   },
   Mutation: {

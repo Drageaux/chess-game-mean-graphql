@@ -1,18 +1,28 @@
-query findUser {
-  findUser
+fragment userWithId on User {
+  id
+  userName
+  email
 }
-query getUsers {
+
+fragment userNoId on User {
+  userName
+  email
+}
+
+query FindUserById($id: ID!) {
+  findUser(id: $id) {
+    ...userWithId
+  }
+}
+query GetAllUsers {
   getUsers {
-    id
-    userName
+    ...userNoId
   }
 }
 
-mutation addUser($userName: String!, $email: String!) {
+mutation AddUser($userName: String!, $email: String!) {
   addUser(userName: $userName, email: $email) {
-    id
-    userName
-    email
+    ...userNoId
   }
 }
 
@@ -29,10 +39,8 @@ mutation addUser($userName: String!, $email: String!) {
 #     userName
 #   }
 # }
-subscription userAdded {
+subscription UserAdded {
   userAdded {
-    id
-    userName
-    email
+    ...userNoId
   }
 }
