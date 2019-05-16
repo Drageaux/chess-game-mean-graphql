@@ -1,34 +1,17 @@
-import { gql, makeExecutableSchema } from 'apollo-server-express';
 import User from '../models/user';
-import { PubSub } from 'apollo-server';
+import { PubSub, gql } from 'apollo-server-express';
 const pubsub: PubSub = new PubSub();
 
-// The GraphQL schema
-const typeDefs = gql`
-  # Comments in GraphQL are defined with the hash (#) symbol.
-
+export const typeDefs = gql`
   type User {
     id: ID!
     userName: String!
     email: String!
   }
-
-  type Query {
-    findUser(id: ID!): User
-    getUsers: [User]
-  }
-
-  type Mutation {
-    addUser(userName: String!, email: String!): User
-  }
-
-  type Subscription {
-    userAdded: User
-  }
 `;
 
 // A map of functions which return data for the schema.
-const resolvers = {
+export const resolvers = {
   Query: {
     findUser: async (root: any, args: { id: any }, context: any) =>
       await User.findById(args.id).exec(),
@@ -52,6 +35,3 @@ const resolvers = {
     }
   }
 };
-
-const userSchema = makeExecutableSchema({ typeDefs, resolvers });
-export default userSchema;
