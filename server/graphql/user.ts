@@ -8,6 +8,19 @@ export const typeDefs = gql`
     userName: String!
     email: String!
   }
+
+  extend type Query {
+    findUser(id: ID!): User
+    getUsers: [User]
+  }
+
+  extend type Mutation {
+    addUser(userName: String!, email: String!): User
+  }
+
+  extend type Subscription {
+    userAdded: User
+  }
 `;
 
 // A map of functions which return data for the schema.

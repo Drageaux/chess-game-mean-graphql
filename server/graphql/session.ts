@@ -1,6 +1,5 @@
-import { gql } from 'apollo-server-express';
 import Session from '../models/session';
-import { PubSub } from 'apollo-server';
+import { PubSub, gql } from 'apollo-server-express';
 const pubsub: PubSub = new PubSub();
 
 export const typeDefs = gql`
@@ -17,6 +16,18 @@ export const typeDefs = gql`
     whiteTeam: ID
     blackTeam: ID
     gameState: GameState
+  }
+
+  extend type Query {
+    findSessions: [Session]
+  }
+  extend type Mutation {
+    joinSession(userId: ID!): Session
+    addSession(sessionName: String!, email: String!): Session
+  }
+
+  extend type Subscription {
+    sessionAdded: Session
   }
 `;
 // A map of functions which return data for the schema.

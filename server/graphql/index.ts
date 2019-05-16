@@ -6,26 +6,15 @@ import { typeDefs as Session, resolvers as sessionResolvers } from './session';
 
 const typeDefs = gql`
   type Query {
-    findUser(id: ID!): User
-    getUsers: [User]
-    findSessions: [Session]
+    _empty: String
   }
 
   type Mutation {
-    addUser(userName: String!, email: String!): User
-    joinSession(userId: ID!): Session
-    addSession(sessionName: String!, email: String!): Session
+    _empty: String
   }
 
   type Subscription {
-    userAdded: User
-    sessionAdded: Session
-  }
-`;
-
-const linkTypeDefs = `
-  extend type Session {
-    players: [User]
+    _empty: String
   }
 `;
 
