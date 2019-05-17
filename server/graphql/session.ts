@@ -3,46 +3,44 @@ import { PubSub, gql } from 'apollo-server-express';
 const pubsub: PubSub = new PubSub();
 
 export const typeDefs = gql`
-  type GameState {
-    gameOver: Boolean
-    currentTurn: String
-  }
-
-  type Session {
-    id: ID
-    players: [User]
-    createdAt: Int
-    lastUpdated: Int
-    whiteTeam: ID
-    blackTeam: ID
+  type CreateOrJoinResult {
+    id: ID!
+    players: [Player!]
+    createdAt: String!
+    lastUpdated: String!
     gameState: GameState
   }
 
-  extend type Query {
-    findSessions: [Session]
+  type GameState {
+    gameStarted: Boolean!
+    gameOver: Boolean!
+    currentTurn: String
   }
+
   extend type Mutation {
-    joinSession(userId: ID!): Session
-    addSession(sessionName: String!, email: String!): Session
+    joinSession(userId: ID!): CreateOrJoinResult
+    addSession(sessionName: String!, email: String!): CreateOrJoinResult
   }
 
   extend type Subscription {
-    sessionAdded: Session
+    sessionAdded: CreateOrJoinResult
   }
 `;
 // A map of functions which return data for the schema.
 export const resolvers = {
-  Query: {
-    findSessions: async () => await Session.find({}).exec()
-  },
   Mutation: {
     joinSession: async (root: any, args: any, context: any) => {
-      let session = await Session.findOne({
+      let session: any = await Session.findOne({
+        whiteTeam: { $ne: args.userId }, // if is first player, prevent joining as second player 
         blackTeam: null,
-        gameState: { gameOver: false }
+        'gameState.gameStarted': false
       }).exec();
-      if (session) return session;
-      else {
+      console.log(session);
+      if (session) {
+        session.blackTeam = args.userId;
+        await session.save();
+        return session;
+      } else {
         try {
           const response = await Session.create({
             whiteTeam: args.userId

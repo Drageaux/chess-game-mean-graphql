@@ -10,4 +10,6 @@ export class HomeComponent implements OnInit {
   constructor(private findUserById: FindUserByIdGQL) {}
 
   ngOnInit() {}
+
+  queue() {}
 }

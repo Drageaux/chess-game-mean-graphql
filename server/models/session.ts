@@ -6,12 +6,23 @@ const UserSchema = User.schema;
 
 const sessionSchema = new Schema(
   {
-    players: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+    players: [
+      { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: [] }
+    ],
     createdAt: { type: Date, default: Date.now },
     lastUpdated: { type: Date, default: Date.now },
-    whiteTeam: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, // TODO: multiple people in 1 team
-    blackTeam: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    whiteTeam: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null
+    }, // TODO: multiple people in 1 team
+    blackTeam: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null
+    },
     gameState: {
+      gameStarted: { type: Boolean, default: false },
       gameOver: { type: Boolean, default: false },
       currentTurn: { type: String, enum: ['black', 'white'], default: 'white' },
       checked: {

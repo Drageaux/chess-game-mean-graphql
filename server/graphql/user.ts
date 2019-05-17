@@ -3,23 +3,42 @@ import { PubSub, gql } from 'apollo-server-express';
 const pubsub: PubSub = new PubSub();
 
 export const typeDefs = gql`
-  type User {
-    id: ID!
-    userName: String!
-    email: String!
+  enum TeamColor {
+    WHITE
+    BLACK
+  }
+
+  interface User {
+    id: ID
+    userName: String
+    email: String
+  }
+
+  type BasicUser implements User {
+    id: ID
+    userName: String
+    email: String
+  }
+
+  type Player implements User {
+    id: ID
+    userName: String
+    email: String
+    color: TeamColor
+    # TODO: personal profile here
   }
 
   extend type Query {
-    findUser(id: ID!): User
-    getUsers: [User]
+    findUser(id: ID!): BasicUser
+    getUsers: [BasicUser]
   }
 
   extend type Mutation {
-    addUser(userName: String!, email: String!): User
+    addUser(userName: String!, email: String!): BasicUser
   }
 
   extend type Subscription {
-    userAdded: User
+    userAdded: BasicUser
   }
 `;
 
