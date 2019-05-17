@@ -1,14 +1,11 @@
 import Session from '../models/session';
-import { PubSub, gql } from 'apollo-server-express';
+import { PubSub, gql, withFilter } from 'apollo-server-express';
 const pubsub: PubSub = new PubSub();
 
 export const typeDefs = gql`
-  type CreateOrJoinResult {
-    id: ID!
-    players: [Player!]
-    createdAt: String!
-    lastUpdated: String!
-    gameState: GameState
+  # return the time waiting in queue
+  type WaitingInQueue {
+    timeElapsed: String!
   }
 
   type GameState {
@@ -17,57 +14,65 @@ export const typeDefs = gql`
     currentTurn: String
   }
 
+  type GameSession {
+    id: ID!
+    players: [Player!]
+    createdAt: String!
+    lastUpdated: String!
+    gameState: GameState
+  }
+
   extend type Mutation {
-    joinSession(userId: ID!): CreateOrJoinResult
-    addSession(sessionName: String!, email: String!): CreateOrJoinResult
+    joinSession(userId: ID!): WaitingInQueue
   }
 
   extend type Subscription {
-    sessionAdded: CreateOrJoinResult
+    matchFound(userId: ID!): GameSession
   }
 `;
 // A map of functions which return data for the schema.
 export const resolvers = {
   Mutation: {
     joinSession: async (root: any, args: any, context: any) => {
+      // TODO: alternate black and white team for player
+      // TODO: prioritize players that came first
       let session: any = await Session.findOne({
-        whiteTeam: { $ne: args.userId }, // if is first player, prevent joining as second player 
+        whiteTeam: { $ne: args.userId }, // if is first player, prevent joining as second player
         blackTeam: null,
         'gameState.gameStarted': false
       }).exec();
       console.log(session);
       if (session) {
+        // start game
         session.blackTeam = args.userId;
         await session.save();
-        return session;
+        // TODO: players in queue, etc.
+        pubsub.publish('MATCH_FOUND', { matchFound: session });
+        return { timeElapsed: session.timeElapsed };
       } else {
+        // create new session instead if no match
         try {
-          const response = await Session.create({
+          const newSession: any = await Session.create({
             whiteTeam: args.userId
           });
-          pubsub.publish('SESSION_ADDED', { sessionAdded: args });
-          return response;
+          return { timeElapsed: newSession.timeElapsed };
         } catch (e) {
           return e.message;
         }
       }
-      // TODO: alternate black and white team for player
-      // TODO: prioritize players that came first
-    },
-    addSession: async (root: any, args: any, context: any) => {
-      try {
-        const response = await Session.create(args);
-        pubsub.publish('SESSION_ADDED', { sessionAdded: args });
-        return response;
-      } catch (e) {
-        return e.message;
-      }
     }
   },
   Subscription: {
-    sessionAdded: {
+    matchFound: {
       // Additional event labels can be passed to asyncIterator creation
-      subscribe: async () => pubsub.asyncIterator(['SESSION_ADDED'])
+      subscribe: withFilter(
+        () => pubsub.asyncIterator(['MATCH_FOUND']),
+        (payload: any, variables: any) => {
+          console.log(`payload: ${payload}`);
+          console.log(`variables: ${variables}`);
+          return true;
+        }
+      )
     }
   }
 };
