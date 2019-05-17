@@ -10,8 +10,30 @@ export type Scalars = {
   Float: number;
 };
 
+export type BasicUser = User & {
+  id?: Maybe<Scalars["ID"]>;
+  userName?: Maybe<Scalars["String"]>;
+  email?: Maybe<Scalars["String"]>;
+};
+
+export type GameSession = {
+  id: Scalars["ID"];
+  players?: Maybe<Array<Player>>;
+  createdAt: Scalars["String"];
+  lastUpdated: Scalars["String"];
+  gameState?: Maybe<GameState>;
+};
+
+export type GameState = {
+  gameStarted: Scalars["Boolean"];
+  gameOver: Scalars["Boolean"];
+  currentTurn?: Maybe<Scalars["String"]>;
+};
+
 export type Mutation = {
-  addUser?: Maybe<User>;
+  _empty?: Maybe<Scalars["String"]>;
+  addUser?: Maybe<BasicUser>;
+  joinSession?: Maybe<WaitingInQueue>;
 };
 
 export type MutationAddUserArgs = {
@@ -19,9 +41,21 @@ export type MutationAddUserArgs = {
   email: Scalars["String"];
 };
 
+export type MutationJoinSessionArgs = {
+  userId: Scalars["ID"];
+};
+
+export type Player = User & {
+  id?: Maybe<Scalars["ID"]>;
+  userName?: Maybe<Scalars["String"]>;
+  email?: Maybe<Scalars["String"]>;
+  color?: Maybe<TeamColor>;
+};
+
 export type Query = {
-  findUser?: Maybe<User>;
-  getUsers?: Maybe<Array<Maybe<User>>>;
+  _empty?: Maybe<Scalars["String"]>;
+  findUser?: Maybe<BasicUser>;
+  getUsers?: Maybe<Array<Maybe<BasicUser>>>;
 };
 
 export type QueryFindUserArgs = {
@@ -29,20 +63,58 @@ export type QueryFindUserArgs = {
 };
 
 export type Subscription = {
-  userAdded?: Maybe<User>;
+  _empty?: Maybe<Scalars["String"]>;
+  userAdded?: Maybe<BasicUser>;
+  matchFound?: Maybe<GameSession>;
 };
 
+export type SubscriptionMatchFoundArgs = {
+  userId: Scalars["ID"];
+};
+
+export enum TeamColor {
+  White = "WHITE",
+  Black = "BLACK"
+}
+
 export type User = {
-  id: Scalars["ID"];
+  id?: Maybe<Scalars["ID"]>;
   userName?: Maybe<Scalars["String"]>;
   email?: Maybe<Scalars["String"]>;
 };
-export type UserWithIdFragment = { __typename?: "User" } & Pick<
+
+export type WaitingInQueue = {
+  elapsedTime: Scalars["String"];
+};
+export type JoinGameMutationVariables = {
+  userId: Scalars["ID"];
+};
+
+export type JoinGameMutation = { __typename?: "Mutation" } & {
+  joinSession: Maybe<
+    { __typename?: "WaitingInQueue" } & Pick<WaitingInQueue, "elapsedTime">
+  >;
+};
+
+export type MatchFoundSubscriptionVariables = {
+  userId: Scalars["ID"];
+};
+
+export type MatchFoundSubscription = { __typename?: "Subscription" } & {
+  matchFound: Maybe<
+    { __typename?: "GameSession" } & Pick<
+      GameSession,
+      "id" | "createdAt" | "lastUpdated"
+    >
+  >;
+};
+
+export type UserWithIdFragment = { __typename?: "BasicUser" | "Player" } & Pick<
   User,
   "id" | "userName" | "email"
 >;
 
-export type UserNoIdFragment = { __typename?: "User" } & Pick<
+export type UserNoIdFragment = { __typename?: "BasicUser" | "Player" } & Pick<
   User,
   "userName" | "email"
 >;
@@ -52,13 +124,15 @@ export type FindUserByIdQueryVariables = {
 };
 
 export type FindUserByIdQuery = { __typename?: "Query" } & {
-  findUser: Maybe<{ __typename?: "User" } & UserWithIdFragment>;
+  findUser: Maybe<{ __typename?: "BasicUser" } & UserWithIdFragment>;
 };
 
 export type GetAllUsersQueryVariables = {};
 
 export type GetAllUsersQuery = { __typename?: "Query" } & {
-  getUsers: Maybe<Array<Maybe<{ __typename?: "User" } & UserNoIdFragment>>>;
+  getUsers: Maybe<
+    Array<Maybe<{ __typename?: "BasicUser" } & UserNoIdFragment>>
+  >;
 };
 
 export type AddUserMutationVariables = {
@@ -67,13 +141,13 @@ export type AddUserMutationVariables = {
 };
 
 export type AddUserMutation = { __typename?: "Mutation" } & {
-  addUser: Maybe<{ __typename?: "User" } & UserNoIdFragment>;
+  addUser: Maybe<{ __typename?: "BasicUser" } & UserNoIdFragment>;
 };
 
 export type UserAddedSubscriptionVariables = {};
 
 export type UserAddedSubscription = { __typename?: "Subscription" } & {
-  userAdded: Maybe<{ __typename?: "User" } & UserNoIdFragment>;
+  userAdded: Maybe<{ __typename?: "BasicUser" } & UserNoIdFragment>;
 };
 
 import gql from "graphql-tag";
@@ -92,6 +166,42 @@ export const userNoIdFragmentDoc = gql`
     email
   }
 `;
+export const JoinGameDocument = gql`
+  mutation JoinGame($userId: ID!) {
+    joinSession(userId: $userId) {
+      elapsedTime
+    }
+  }
+`;
+
+@Injectable({
+  providedIn: "root"
+})
+export class JoinGameGQL extends Apollo.Mutation<
+  JoinGameMutation,
+  JoinGameMutationVariables
+> {
+  document = JoinGameDocument;
+}
+export const MatchFoundDocument = gql`
+  subscription MatchFound($userId: ID!) {
+    matchFound(userId: $userId) {
+      id
+      createdAt
+      lastUpdated
+    }
+  }
+`;
+
+@Injectable({
+  providedIn: "root"
+})
+export class MatchFoundGQL extends Apollo.Subscription<
+  MatchFoundSubscription,
+  MatchFoundSubscriptionVariables
+> {
+  document = MatchFoundDocument;
+}
 export const FindUserByIdDocument = gql`
   query FindUserById($id: ID!) {
     findUser(id: $id) {

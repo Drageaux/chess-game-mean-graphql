@@ -1,11 +1,13 @@
 mutation JoinGame($userId: ID!) {
   joinSession(userId: $userId) {
+    elapsedTime
+  }
+}
+
+subscription MatchFound($userId: ID!) {
+  matchFound(userId: $userId) {
     id
-    players
     createdAt
     lastUpdated
-    gameState {
-      gameStarted
-    }
   }
 }

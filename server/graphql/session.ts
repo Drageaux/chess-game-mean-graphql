@@ -5,7 +5,7 @@ const pubsub: PubSub = new PubSub();
 export const typeDefs = gql`
   # return the time waiting in queue
   type WaitingInQueue {
-    timeElapsed: String!
+    elapsedTime: String!
   }
 
   type GameState {
@@ -41,21 +41,20 @@ export const resolvers = {
         blackTeam: null,
         'gameState.gameStarted': false
       }).exec();
-      console.log(session);
       if (session) {
         // start game
         session.blackTeam = args.userId;
         await session.save();
         // TODO: players in queue, etc.
         pubsub.publish('MATCH_FOUND', { matchFound: session });
-        return { timeElapsed: session.timeElapsed };
+        return { elapsedTime: session.elapsedTime };
       } else {
         // create new session instead if no match
         try {
           const newSession: any = await Session.create({
             whiteTeam: args.userId
           });
-          return { timeElapsed: newSession.timeElapsed };
+          return { elapsedTime: newSession.elapsedTime };
         } catch (e) {
           return e.message;
         }
@@ -68,8 +67,8 @@ export const resolvers = {
       subscribe: withFilter(
         () => pubsub.asyncIterator(['MATCH_FOUND']),
         (payload: any, variables: any) => {
-          console.log(`payload: ${payload}`);
-          console.log(`variables: ${variables}`);
+          console.log(`payload: ${JSON.stringify(payload)}`);
+          console.log(`variables: ${JSON.stringify(variables)}`);
           return true;
         }
       )

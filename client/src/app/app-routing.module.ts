@@ -11,9 +11,8 @@ const routes: Routes = [
     pathMatch: 'full'
   },
   {
-    path: 'game',
-    component: GameboardComponent,
-    pathMatch: 'full'
+    path: 'game/:gameId',
+    component: GameboardComponent
   },
   {
     path: '',
