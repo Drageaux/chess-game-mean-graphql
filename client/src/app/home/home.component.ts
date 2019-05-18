@@ -26,6 +26,9 @@ export class HomeComponent implements OnInit {
         matchFound.unsubscribe();
         this.router.navigate(['/game', result.data.matchFound.id]);
       });
+
+    // just getting the state of the queue,
+    // so it's slightly insignificant to track its results
     this.joinGameGQL
       .mutate({
         userId
