@@ -42,7 +42,7 @@ export const typeDefs = gql`
   }
 `;
 
-// A map of functions which return data for the schema.
+// a map of functions which return data for the schema.
 export const resolvers = {
   Query: {
     findUser: async (root: any, args: { id: any }, context: any) =>
@@ -62,7 +62,7 @@ export const resolvers = {
   },
   Subscription: {
     userAdded: {
-      // Additional event labels can be passed to asyncIterator creation
+      // additional event labels can be passed to asyncIterator creation
       subscribe: async () => pubsub.asyncIterator(['USER_ADDED'])
     }
   }

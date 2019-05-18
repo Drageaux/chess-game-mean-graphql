@@ -3,15 +3,21 @@ import { PubSub, gql, withFilter } from 'apollo-server-express';
 const pubsub: PubSub = new PubSub();
 
 export const typeDefs = gql`
-  # return the time waiting in queue
-  type WaitingInQueue {
-    elapsedTime: String!
+  # nested structures
+  type Square {
+    # TODO: transfer front-end square and piece classes
   }
-
+  
   type GameState {
     gameStarted: Boolean!
     gameOver: Boolean!
     currentTurn: String
+    gameBoard: [[Square]]
+  } 
+
+  # return the time waiting in queue
+  type WaitingInQueue {
+    elapsedTime: String!
   }
 
   type GameSession {
@@ -30,7 +36,7 @@ export const typeDefs = gql`
     matchFound(userId: ID!): GameSession
   }
 `;
-// A map of functions which return data for the schema.
+// a map of functions which return data for the schema.
 export const resolvers = {
   Mutation: {
     joinSession: async (root: any, args: any, context: any) => {
@@ -45,7 +51,7 @@ export const resolvers = {
         // start game
         session.blackTeam = args.userId;
         await session.save();
-        // TODO: players in queue, etc.
+        // TODO: # of players in queue, etc.
         pubsub.publish('MATCH_FOUND', { matchFound: session });
         return { elapsedTime: session.elapsedTime };
       } else {
@@ -63,7 +69,7 @@ export const resolvers = {
   },
   Subscription: {
     matchFound: {
-      // Additional event labels can be passed to asyncIterator creation
+      // additional event labels can be passed to asyncIterator creation
       subscribe: withFilter(
         () => pubsub.asyncIterator(['MATCH_FOUND']),
         (payload: any, variables: any) => {
