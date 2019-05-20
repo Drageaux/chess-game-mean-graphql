@@ -3,11 +3,6 @@ import { PubSub, gql } from 'apollo-server-express';
 const pubsub: PubSub = new PubSub();
 
 export const typeDefs = gql`
-  enum TeamColor {
-    WHITE
-    BLACK
-  }
-
   interface User {
     id: ID
     userName: String
@@ -24,7 +19,7 @@ export const typeDefs = gql`
     id: ID
     userName: String
     email: String
-    color: TeamColor
+    color: String
     # TODO: personal profile here
   }
 

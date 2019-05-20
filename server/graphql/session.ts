@@ -5,10 +5,15 @@ const pubsub: PubSub = new PubSub();
 
 export const typeDefs = gql`
   # nested structures
+  type Piece {
+    color: String
+    type: String
+  }
   type Square {
     # TODO: transfer front-end square and piece classes
     file: String
     rank: Int
+    piece: Piece
   }
 
   type Gameboard {
@@ -22,31 +27,35 @@ export const typeDefs = gql`
   }
 
   # return the time waiting in queue
-  type WaitingInQueue {
-    elapsedTime: String!
-  }
-
-  type GameSession {
+  type Session {
     id: ID!
     players: [Player!]
     createdAt: String!
     lastUpdated: String!
+    elapsedTime: String!
     gameState: GameState
     gameboard: Gameboard
   }
 
+  extend type Query {
+    playGame(gameId: ID!, userId: ID!): Session
+  }
+
   extend type Mutation {
-    joinSession(userId: ID!): WaitingInQueue
+    findGame(userId: ID!): Session
   }
 
   extend type Subscription {
-    matchFound(userId: ID!): GameSession
+    matchFound(userId: ID!): Session
   }
 `;
 // a map of functions which return data for the schema.
 export const resolvers = {
+  Query: {
+    playGame: async (root: any, args: any, context: any) => {}
+  },
   Mutation: {
-    joinSession: async (root: any, args: any, context: any) => {
+    findGame: async (root: any, args: any, context: any) => {
       // TODO: alternate black and white team for player
       // TODO: prioritize players that came first
       let session: any = await Session.findOne({
@@ -59,7 +68,7 @@ export const resolvers = {
         session.blackTeam = args.userId;
         // start game
         initGame(session);
-
+        console.log(session.gameboard);
         await session.save();
         // TODO: # of players in queue, etc.
         pubsub.publish('MATCH_FOUND', { matchFound: session });
@@ -83,8 +92,8 @@ export const resolvers = {
       subscribe: withFilter(
         () => pubsub.asyncIterator(['MATCH_FOUND']),
         (payload: any, variables: any) => {
-          console.log(`payload: ${JSON.stringify(payload)}`);
-          console.log(`variables: ${JSON.stringify(variables)}`);
+          // payload is the result returned
+          // variables are the args passed in when starting subscription
           return true;
         }
       )
@@ -95,11 +104,13 @@ export const resolvers = {
 const initGame = (session: any) => {
   session.gameStarted = true;
   session.gameboard = new Gameboard({
-    squares: initBoard()
+    squares: DEFAULT_BOARD
   });
 };
 
 const BOARD_SIZE = 8;
+const DEFAULT_BOARD = initBoard(); // prevent remaking board every time
+
 function initBoard(): any[] {
   let newBoard: any[] = [];
 
@@ -109,8 +120,51 @@ function initBoard(): any[] {
         file: x + 1,
         rank: y + 1
       };
+
+      const newPiece: any = {};
+
+      // set color
+      switch (y + 1) {
+        case 1:
+          switch (x + 1) {
+            case 1:
+            case 8:
+              newPiece.type = 'rook';
+              break;
+            case 2:
+            case 7:
+              newPiece.type = 'knight';
+              break;
+            case 3:
+            case 6:
+              newPiece.type = 'bishop';
+              break;
+            case 4:
+              newPiece.type = 'queen';
+              break;
+            case 5:
+              newPiece.type = 'king';
+          }
+        case 2:
+          newPiece.color = 'white';
+          newSquare.piece = newPiece;
+          break;
+        case 7:
+        case 8:
+          newPiece.color = 'black';
+          newSquare.piece = newPiece;
+          break;
+        default:
+          break;
+      }
+
       newBoard.push(newSquare);
     }
   }
+
+  newBoard = newBoard.sort(function(a, b) {
+    return b.rank - a.rank || a.file - b.file;
+  });
+
   return newBoard;
 }

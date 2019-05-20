@@ -24,7 +24,7 @@ const sessionSchema = new Schema(
     gameState: {
       gameStarted: { type: Boolean, default: false },
       gameOver: { type: Boolean, default: false },
-      currentTurn: { type: String, enum: ['black', 'white'], default: 'white' },
+      currentTurn: { type: String, enum: ['white', 'black'], default: 'white' },
       checked: {
         white: {
           type: Boolean,
