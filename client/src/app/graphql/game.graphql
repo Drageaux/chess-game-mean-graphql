@@ -1,8 +1,8 @@
-query PlayGame($gameId: ID!, $userId: ID!) {
-  playGame(gameId: $gameId, userId: ID!){
+# query PlayGame($gameId: ID!, $userId: ID!) {
+#   playGame(gameId: $gameId, userId: ID!){
 
-  }
-}
+#   }
+# }
 
 mutation JoinGame($userId: ID!) {
   joinSession(userId: $userId) {
@@ -15,5 +15,11 @@ subscription MatchFound($userId: ID!) {
     id
     createdAt
     lastUpdated
+    gameboard {
+      squares {
+        file
+        rank
+      }
+    }
   }
 }

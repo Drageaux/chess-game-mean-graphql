@@ -16,12 +16,17 @@ export type BasicUser = User & {
   email?: Maybe<Scalars["String"]>;
 };
 
+export type Gameboard = {
+  squares?: Maybe<Array<Maybe<Square>>>;
+};
+
 export type GameSession = {
   id: Scalars["ID"];
   players?: Maybe<Array<Player>>;
   createdAt: Scalars["String"];
   lastUpdated: Scalars["String"];
   gameState?: Maybe<GameState>;
+  gameboard?: Maybe<Gameboard>;
 };
 
 export type GameState = {
@@ -60,6 +65,11 @@ export type Query = {
 
 export type QueryFindUserArgs = {
   id: Scalars["ID"];
+};
+
+export type Square = {
+  file?: Maybe<Scalars["String"]>;
+  rank?: Maybe<Scalars["Int"]>;
 };
 
 export type Subscription = {
@@ -105,7 +115,17 @@ export type MatchFoundSubscription = { __typename?: "Subscription" } & {
     { __typename?: "GameSession" } & Pick<
       GameSession,
       "id" | "createdAt" | "lastUpdated"
-    >
+    > & {
+        gameboard: Maybe<
+          { __typename?: "Gameboard" } & {
+            squares: Maybe<
+              Array<
+                Maybe<{ __typename?: "Square" } & Pick<Square, "file" | "rank">>
+              >
+            >;
+          }
+        >;
+      }
   >;
 };
 
@@ -189,6 +209,12 @@ export const MatchFoundDocument = gql`
       id
       createdAt
       lastUpdated
+      gameboard {
+        squares {
+          file
+          rank
+        }
+      }
     }
   }
 `;

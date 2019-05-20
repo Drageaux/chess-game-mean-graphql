@@ -35,6 +35,10 @@ const sessionSchema = new Schema(
           default: false
         }
       }
+    },
+    gameboard: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Gameboard'
     }
   },
   {

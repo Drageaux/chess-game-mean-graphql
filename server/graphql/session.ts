@@ -1,4 +1,5 @@
 import Session from '../models/session';
+import Gameboard from '../models/gameboard';
 import { PubSub, gql, withFilter } from 'apollo-server-express';
 const pubsub: PubSub = new PubSub();
 
@@ -6,14 +7,19 @@ export const typeDefs = gql`
   # nested structures
   type Square {
     # TODO: transfer front-end square and piece classes
+    file: String
+    rank: Int
   }
-  
+
+  type Gameboard {
+    squares: [Square]
+  }
+
   type GameState {
     gameStarted: Boolean!
     gameOver: Boolean!
     currentTurn: String
-    gameBoard: [[Square]]
-  } 
+  }
 
   # return the time waiting in queue
   type WaitingInQueue {
@@ -26,6 +32,7 @@ export const typeDefs = gql`
     createdAt: String!
     lastUpdated: String!
     gameState: GameState
+    gameboard: Gameboard
   }
 
   extend type Mutation {
@@ -48,8 +55,11 @@ export const resolvers = {
         'gameState.gameStarted': false
       }).exec();
       if (session) {
-        // start game
+        // add final player
         session.blackTeam = args.userId;
+        // start game
+        initGame(session);
+
         await session.save();
         // TODO: # of players in queue, etc.
         pubsub.publish('MATCH_FOUND', { matchFound: session });
@@ -81,3 +91,26 @@ export const resolvers = {
     }
   }
 };
+
+const initGame = (session: any) => {
+  session.gameStarted = true;
+  session.gameboard = new Gameboard({
+    squares: initBoard()
+  });
+};
+
+const BOARD_SIZE = 8;
+function initBoard(): any[] {
+  let newBoard: any[] = [];
+
+  for (let x = 0; x < BOARD_SIZE; x++) {
+    for (let y = 0; y < BOARD_SIZE; y++) {
+      const newSquare: any = {
+        file: x + 1,
+        rank: y + 1
+      };
+      newBoard.push(newSquare);
+    }
+  }
+  return newBoard;
+}
