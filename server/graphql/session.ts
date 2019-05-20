@@ -52,7 +52,8 @@ export const typeDefs = gql`
 // a map of functions which return data for the schema.
 export const resolvers = {
   Query: {
-    playGame: async (root: any, args: any, context: any) => {}
+    playGame: async (root: any, args: any, context: any) =>
+      await Session.findById(args.gameId).exec()
   },
   Mutation: {
     findGame: async (root: any, args: any, context: any) => {
@@ -68,7 +69,6 @@ export const resolvers = {
         session.blackTeam = args.userId;
         // start game
         initGame(session);
-        console.log(session.gameboard);
         await session.save();
         // TODO: # of players in queue, etc.
         pubsub.publish('MATCH_FOUND', { matchFound: session });

@@ -1,5 +1,5 @@
 import { MatchFoundSubscription } from './../types';
-import { FindUserByIdGQL, MatchFoundGQL, JoinGameGQL } from '@app/types';
+import { FindUserByIdGQL, MatchFoundGQL, FindGameGQL } from '@app/types';
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { SubscriptionResult } from 'apollo-angular';
@@ -13,7 +13,7 @@ export class HomeComponent implements OnInit {
   constructor(
     private router: Router,
     private matchFoundGQL: MatchFoundGQL,
-    private joinGameGQL: JoinGameGQL
+    private findGameGQL: FindGameGQL
   ) {}
 
   ngOnInit() {}
@@ -29,7 +29,7 @@ export class HomeComponent implements OnInit {
 
     // just getting the state of the queue,
     // so it's slightly insignificant to track its results
-    this.joinGameGQL
+    this.findGameGQL
       .mutate({
         userId
       })

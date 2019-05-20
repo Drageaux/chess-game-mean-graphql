@@ -1,25 +1,36 @@
-# query PlayGame($gameId: ID!, $userId: ID!) {
-#   playGame(gameId: $gameId, userId: ID!){
+fragment basicSessionFields on Session {
+  id
+  createdAt
+  lastUpdated
+}
 
-#   }
-# }
+query PlayGame($gameId: ID!, $userId: ID!) {
+  playGame(gameId: $gameId, userId: $userId) {
+    ...basicSessionFields
+    players {
+      ...userWithId
+    }
+    gameboard {
+      squares {
+        file
+        rank
+        piece {
+          color
+          type
+        }
+      }
+    }
+  }
+}
 
-mutation JoinGame($userId: ID!) {
-  joinSession(userId: $userId) {
+mutation FindGame($userId: ID!) {
+  findGame(userId: $userId) {
     elapsedTime
   }
 }
 
 subscription MatchFound($userId: ID!) {
   matchFound(userId: $userId) {
-    id
-    createdAt
-    lastUpdated
-    gameboard {
-      squares {
-        file
-        rank
-      }
-    }
+    ...basicSessionFields
   }
 }
