@@ -25,7 +25,8 @@ const squareSchema = new Schema({
 // "flattened" 2D array of squares
 const gameboardSchema = new Schema({
   squares: {
-    type: [squareSchema]
+    type: [squareSchema],
+    capturedPieces: pieceSchema
   }
 });
 gameboardSchema.virtual('whiteKingLocation').get(function(v: any) {

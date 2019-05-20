@@ -72,14 +72,14 @@ export const resolvers = {
         await session.save();
         // TODO: # of players in queue, etc.
         pubsub.publish('MATCH_FOUND', { matchFound: session });
-        return { elapsedTime: session.elapsedTime };
+        return { elapsedTime: session };
       } else {
         // create new session instead if no match
         try {
           const newSession: any = await Session.create({
             whiteTeam: args.userId
           });
-          return { elapsedTime: newSession.elapsedTime };
+          return { elapsedTime: newSession };
         } catch (e) {
           return e.message;
         }
@@ -145,12 +145,39 @@ function initBoard(): any[] {
             case 5:
               newPiece.type = 'king';
           }
+          newPiece.color = 'white';
+          newSquare.piece = newPiece;
+          break;
         case 2:
+          newPiece.type = 'pawn';
           newPiece.color = 'white';
           newSquare.piece = newPiece;
           break;
         case 7:
+          newPiece.type = 'pawn';
+          newPiece.color = 'black';
+          newSquare.piece = newPiece;
+          break;
         case 8:
+          switch (x + 1) {
+            case 1:
+            case 8:
+              newPiece.type = 'rook';
+              break;
+            case 2:
+            case 7:
+              newPiece.type = 'knight';
+              break;
+            case 3:
+            case 6:
+              newPiece.type = 'bishop';
+              break;
+            case 4:
+              newPiece.type = 'queen';
+              break;
+            case 5:
+              newPiece.type = 'king';
+          }
           newPiece.color = 'black';
           newSquare.piece = newPiece;
           break;

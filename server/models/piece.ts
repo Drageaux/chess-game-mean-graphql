@@ -16,4 +16,7 @@ const pieceSchema = new Schema({
   },
   captured: Boolean
 });
+pieceSchema.virtual('name', function() {
+  return `${this.color} ${this.type}`;
+});
 export default mongoose.model('Piece', pieceSchema);
