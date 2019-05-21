@@ -29,7 +29,7 @@ export type GameState = {
 export type Mutation = {
   _empty?: Maybe<Scalars["String"]>;
   addUser?: Maybe<BasicUser>;
-  findGame?: Maybe<Session>;
+  findGame?: Maybe<WaitingForGame>;
 };
 
 export type MutationAddUserArgs = {
@@ -74,7 +74,7 @@ export type Session = {
   players?: Maybe<Array<Player>>;
   createdAt: Scalars["String"];
   lastUpdated: Scalars["String"];
-  elapsedTime: Scalars["String"];
+  elapsedTime?: Maybe<Scalars["String"]>;
   gameState?: Maybe<GameState>;
   gameboard?: Maybe<Gameboard>;
 };
@@ -99,6 +99,10 @@ export type User = {
   id?: Maybe<Scalars["ID"]>;
   userName?: Maybe<Scalars["String"]>;
   email?: Maybe<Scalars["String"]>;
+};
+
+export type WaitingForGame = {
+  elapsedTime: Scalars["String"];
 };
 export type BasicSessionFieldsFragment = { __typename?: "Session" } & Pick<
   Session,
@@ -138,7 +142,9 @@ export type FindGameMutationVariables = {
 };
 
 export type FindGameMutation = { __typename?: "Mutation" } & {
-  findGame: Maybe<{ __typename?: "Session" } & Pick<Session, "elapsedTime">>;
+  findGame: Maybe<
+    { __typename?: "WaitingForGame" } & Pick<WaitingForGame, "elapsedTime">
+  >;
 };
 
 export type MatchFoundSubscriptionVariables = {
