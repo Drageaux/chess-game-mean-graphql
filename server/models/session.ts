@@ -2,7 +2,9 @@ import * as mongoose from 'mongoose';
 var Schema = mongoose.Schema;
 
 import User from './user';
+import Gameboard from './gameboard';
 const UserSchema = User.schema;
+const GameboardSchema = Gameboard.schema;
 
 const sessionSchema = new Schema(
   {
@@ -53,6 +55,11 @@ const sessionSchema = new Schema(
 sessionSchema.virtual('elapsedTime').get(function() {
   // TODO: find out the time unit
   return Date.now() - this.createdAt;
+});
+sessionSchema.pre('remove', function(next) {
+  // work-around for 'this' not recognizing its properties in TS
+  Gameboard.findByIdAndRemove((this as any).gameboard);
+  next();
 });
 
 export default mongoose.model('Session', sessionSchema);

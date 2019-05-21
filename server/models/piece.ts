@@ -14,9 +14,10 @@ const pieceSchema = new Schema({
     enum: ['pawn', 'knight', 'bishop', 'rook', 'queen', 'king'],
     required: true
   },
-  captured: Boolean
+  captured: { type: Boolean, default: false }
 });
 pieceSchema.virtual('name', function() {
   return `${this.color} ${this.type}`;
 });
+
 export default mongoose.model('Piece', pieceSchema);

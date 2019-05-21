@@ -56,12 +56,9 @@ export const typeDefs = gql`
 export const resolvers = {
   Query: {
     playGame: async (root: any, args: any, context: any) => {
-      return await Session.findById(args.gameId).exec(function(err, data) {
-        console.log(data);
-
-        if (err) console.error(err);
-      });
-      // return await Session.findById(args.gameId).exec();
+      return await Session.findById(args.gameId)
+        .populate('gameboard')
+        .exec();
     }
   },
   Mutation: {
@@ -74,15 +71,29 @@ export const resolvers = {
         'gameState.gameStarted': false
       }).exec();
       if (session) {
-        // add final player
-        session.blackTeam = args.userId;
-        // start game
-        initGame(session);
+        // add final player start game
+        // TODO: add more players/viewers
+        const newGameboard = await Gameboard.create({
+          squares: DEFAULT_BOARD
+        });
+        session.gameState.gameStarted = true;
+        session.gameboard = newGameboard._id;
         await session.save();
-
-        // TODO: # of players in queue, etc.
-        pubsub.publish('MATCH_FOUND', { matchFound: session });
-        return session;
+        // await session.updateOne({
+        //   blackTeam: args.userId,
+        //   'gameState.gameStarted': true,
+        //   gameboard: newGameboard._id
+        // });
+        // console.log(`inited session `, session);
+        session.save(function(err: any, data: any) {
+          if (data) {
+            // TODO: # of players in queue, etc.
+            pubsub.publish('MATCH_FOUND', { matchFound: session });
+            return session;
+          } else if (err) {
+            return err.message;
+          }
+        });
       } else {
         // create new session instead if no match
         try {
@@ -102,7 +113,6 @@ export const resolvers = {
       subscribe: withFilter(
         () => pubsub.asyncIterator(['MATCH_FOUND']),
         (payload: any, variables: any) => {
-          console.log(payload);
           // payload is the result returned
           // variables are the args passed in when starting subscription
           return true;
@@ -110,15 +120,6 @@ export const resolvers = {
       )
     }
   }
-};
-
-const initGame = async (session: any) => {
-  session.gameStarted = true;
-  const gameboard = await Gameboard.create({
-    squares: DEFAULT_BOARD
-  });
-  console.log(gameboard);
-  session.gameboard = gameboard;
 };
 
 const BOARD_SIZE = 8;
