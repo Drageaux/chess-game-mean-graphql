@@ -1,5 +1,5 @@
 import Session from '../models/session';
-import Gameboard from '../models/gameboard';
+import Gameboard, { FILE } from '../models/gameboard';
 import { PubSub, gql, withFilter } from 'apollo-server-express';
 const pubsub: PubSub = new PubSub();
 
@@ -56,12 +56,12 @@ export const typeDefs = gql`
 export const resolvers = {
   Query: {
     playGame: async (root: any, args: any, context: any) => {
-      // console.log(
-      //   await Session.findById(args.gameId)
-      //     .populate('gameboard')
-      //     .exec()
-      // );
-      return await Session.findById(args.gameId).exec();
+      return await Session.findById(args.gameId).exec(function(err, data) {
+        console.log(data);
+
+        if (err) console.error(err);
+      });
+      // return await Session.findById(args.gameId).exec();
     }
   },
   Mutation: {
@@ -79,13 +79,14 @@ export const resolvers = {
         // start game
         initGame(session);
         await session.save();
+
         // TODO: # of players in queue, etc.
         pubsub.publish('MATCH_FOUND', { matchFound: session });
         return session;
       } else {
         // create new session instead if no match
         try {
-          const newSession: any = await Session.create({
+          const newSession = await Session.create({
             whiteTeam: args.userId
           });
           return newSession;
@@ -111,12 +112,13 @@ export const resolvers = {
   }
 };
 
-const initGame = (session: any) => {
+const initGame = async (session: any) => {
   session.gameStarted = true;
-  session.gameboard = new Gameboard({
+  const gameboard = await Gameboard.create({
     squares: DEFAULT_BOARD
   });
-  console.log(`inited session: ${session}`);
+  console.log(gameboard);
+  session.gameboard = gameboard;
 };
 
 const BOARD_SIZE = 8;
@@ -128,7 +130,7 @@ function initBoard(): any[] {
   for (let x = 0; x < BOARD_SIZE; x++) {
     for (let y = 0; y < BOARD_SIZE; y++) {
       const newSquare: any = {
-        file: x + 1,
+        file: FILE[x + 1],
         rank: y + 1
       };
 

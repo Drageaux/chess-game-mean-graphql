@@ -5,6 +5,7 @@ import Piece from './piece';
 const pieceSchema = Piece.schema;
 
 const BOARD_SIZE = 8;
+// easier for Mongoose to understand
 const File = Object.freeze({
   1: 'a',
   2: 'b',
@@ -16,12 +17,28 @@ const File = Object.freeze({
   8: 'h'
 });
 
+// lookup-enum type, easier for JS forward and reverse accessing
+export enum FILE {
+  'a' = 1,
+  'b',
+  'c',
+  'd',
+  'e',
+  'f',
+  'g',
+  'h'
+}
+
 const squareSchema = new Schema({
   // prevent udpates for x and y
   file: { alias: 'x', type: String, enum: Object.values(File), required: true },
   rank: { alias: 'y', type: Number, required: true },
   piece: pieceSchema
 });
+Object.assign(squareSchema.statics, {
+  File
+});
+
 // "flattened" 2D array of squares
 const gameboardSchema = new Schema({
   squares: {
