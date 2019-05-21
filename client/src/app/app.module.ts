@@ -22,7 +22,8 @@ import { GameModule } from './game/game.module';
     FormsModule,
     HomeModule,
     UsersModule,
-    GameModule
+    GameModule,
+    GameboardModule
   ],
   providers: [],
   bootstrap: [AppComponent]

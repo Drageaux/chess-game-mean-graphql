@@ -3,6 +3,7 @@ import { Routes, RouterModule } from '@angular/router';
 import { UsersComponent } from './user/users.component';
 import { HomeComponent } from './home/home.component';
 import { GameComponent } from './game/game.component';
+import { GameboardComponent } from './gameboard/gameboard.component';
 
 const routes: Routes = [
   {
@@ -13,6 +14,10 @@ const routes: Routes = [
   {
     path: 'game/:gameId',
     component: GameComponent
+  },
+  {
+    path: 'gameboard',
+    component: GameboardComponent
   },
   {
     path: '',

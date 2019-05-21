@@ -12,7 +12,7 @@ import { ApolloQueryResult } from 'apollo-client';
   styleUrls: ['./game.component.scss']
 })
 export class GameComponent implements OnInit {
-  gameSession: Observable<Session>;
+  gameSession: Session;
 
   constructor(
     private route: ActivatedRoute,
@@ -20,7 +20,7 @@ export class GameComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.gameSession = this.playGameGQL
+    this.playGameGQL
       .fetch({
         userId: '5cdda44272985718046cba86',
         gameId: this.route.snapshot.params.gameId
@@ -30,9 +30,21 @@ export class GameComponent implements OnInit {
           console.log(result.data.playGame);
           return result.data.playGame;
         })
-      );
+      )
+      .subscribe(result => (this.gameSession = result));
     // .subscribe(() => {
     //   this.gameSession;
     // });
   }
+}
+
+enum FILE {
+  a = 1,
+  b = 2,
+  c = 3,
+  d = 4,
+  e = 5,
+  f = 6,
+  g = 7,
+  h = 8
 }

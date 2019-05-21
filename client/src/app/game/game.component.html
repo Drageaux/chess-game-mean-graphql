@@ -1,1 +1,12 @@
-{{ gameSession | async | json }}
+<div class="board d-table mx-auto">
+  <div *ngFor="let s of gameSession?.gameboard?.squares" class="board-square">
+    {{ s.file + '' + s.rank }}
+    <i
+      *ngIf="s?.piece"
+      class="fas fa-chess-{{ s.piece?.type }} {{ s.piece?.color }}"
+      [ngClass]="{}"
+    ></i>
+  </div>
+</div>
+
+{{ gameSession?.gameboard | json }}

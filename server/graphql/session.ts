@@ -41,7 +41,7 @@ export const typeDefs = gql`
   }
 
   extend type Query {
-    playGame(gameId: ID!, userId: ID!): Session
+    playGame(gameId: ID!, userId: ID!, filterBy: String): Session
   }
 
   extend type Mutation {
@@ -203,9 +203,18 @@ function initBoard(): any[] {
     }
   }
 
-  newBoard = newBoard.sort(function(a, b) {
-    return b.rank - a.rank || a.file - b.file;
+  // sort descending in rank and ascending in file
+  // returned order shouldn't be further modified
+  newBoard = newBoard.sort((a, b) => {
+    if (a.rank - b.rank === 0) {
+      if (a.file > b.file) {
+        return 1;
+      } else if (a.file < b.file) {
+        return -1;
+      } else return 0;
+    } else return b.rank - a.rank;
   });
+  console.log(newBoard);
 
   return newBoard;
 }
