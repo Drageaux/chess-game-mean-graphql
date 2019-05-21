@@ -27,12 +27,15 @@ export const typeDefs = gql`
   }
 
   # return the time waiting in queue
+  type WaitingForGame {
+    elapsedTime: String!
+  }
   type Session {
     id: ID!
     players: [Player!]
     createdAt: String!
     lastUpdated: String!
-    elapsedTime: String!
+    elapsedTime: String
     gameState: GameState
     gameboard: Gameboard
   }
@@ -42,7 +45,7 @@ export const typeDefs = gql`
   }
 
   extend type Mutation {
-    findGame(userId: ID!): Session
+    findGame(userId: ID!): WaitingForGame
   }
 
   extend type Subscription {
@@ -52,8 +55,14 @@ export const typeDefs = gql`
 // a map of functions which return data for the schema.
 export const resolvers = {
   Query: {
-    playGame: async (root: any, args: any, context: any) =>
-      await Session.findById(args.gameId).exec()
+    playGame: async (root: any, args: any, context: any) => {
+      // console.log(
+      //   await Session.findById(args.gameId)
+      //     .populate('gameboard')
+      //     .exec()
+      // );
+      return await Session.findById(args.gameId).exec();
+    }
   },
   Mutation: {
     findGame: async (root: any, args: any, context: any) => {
@@ -72,14 +81,14 @@ export const resolvers = {
         await session.save();
         // TODO: # of players in queue, etc.
         pubsub.publish('MATCH_FOUND', { matchFound: session });
-        return { elapsedTime: session };
+        return session;
       } else {
         // create new session instead if no match
         try {
           const newSession: any = await Session.create({
             whiteTeam: args.userId
           });
-          return { elapsedTime: newSession };
+          return newSession;
         } catch (e) {
           return e.message;
         }
@@ -92,6 +101,7 @@ export const resolvers = {
       subscribe: withFilter(
         () => pubsub.asyncIterator(['MATCH_FOUND']),
         (payload: any, variables: any) => {
+          console.log(payload);
           // payload is the result returned
           // variables are the args passed in when starting subscription
           return true;
@@ -106,6 +116,7 @@ const initGame = (session: any) => {
   session.gameboard = new Gameboard({
     squares: DEFAULT_BOARD
   });
+  console.log(`inited session: ${session}`);
 };
 
 const BOARD_SIZE = 8;
