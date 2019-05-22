@@ -32,9 +32,6 @@ export class GameComponent implements OnInit {
         })
       )
       .subscribe(result => (this.gameSession = result));
-    // .subscribe(() => {
-    //   this.gameSession;
-    // });
   }
 }
 

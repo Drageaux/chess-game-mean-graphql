@@ -6,11 +6,11 @@
   overflow: hidden;
   display: table-cell;
   vertical-align: middle;
-  float: left;
+  // float: left;
 
-  &:nth-child(8n + 1) {
-    clear: left;
-  }
+  // &:nth-child(8n + 1) {
+  //   clear: left;
+  // }
 
   &.white {
     background: url(../../assets/img/light-veneer.png);
@@ -39,6 +39,19 @@
     height: 100%;
     top: 0;
     background: rgba(255, 0, 0, 0.3);
+  }
+
+  .annotation {
+    position: absolute;
+    line-height: 20px;
+    &.files {
+      right: 0;
+      bottom: 0;
+    }
+    &.ranks {
+      left: 0;
+      top: 0;
+    }
   }
 
   i {

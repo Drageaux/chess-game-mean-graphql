@@ -67,6 +67,7 @@ export type QueryFindUserArgs = {
 export type QueryPlayGameArgs = {
   gameId: Scalars["ID"];
   userId: Scalars["ID"];
+  filterBy?: Maybe<Scalars["String"]>;
 };
 
 export type Session = {
@@ -118,6 +119,12 @@ export type PlayGameQuery = { __typename?: "Query" } & {
   playGame: Maybe<
     { __typename?: "Session" } & {
       players: Maybe<Array<{ __typename?: "Player" } & UserWithIdFragment>>;
+      gameState: Maybe<
+        { __typename?: "GameState" } & Pick<
+          GameState,
+          "gameStarted" | "gameOver" | "currentTurn"
+        >
+      >;
       gameboard: Maybe<
         { __typename?: "Gameboard" } & {
           squares: Maybe<
@@ -225,6 +232,11 @@ export const PlayGameDocument = gql`
       ...basicSessionFields
       players {
         ...userWithId
+      }
+      gameState {
+        gameStarted
+        gameOver
+        currentTurn
       }
       gameboard {
         squares {

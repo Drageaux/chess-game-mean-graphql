@@ -11,6 +11,7 @@ import { GraphQLModule } from './graphql.module';
 import { HomeModule } from './home/home.module';
 import { UsersModule } from './user/users.module';
 import { GameModule } from './game/game.module';
+import { GameboardModule } from './gameboard/gameboard.module';
 
 @NgModule({
   declarations: [AppComponent],

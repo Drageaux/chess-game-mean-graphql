@@ -10,6 +10,11 @@ query PlayGame($gameId: ID!, $userId: ID!) {
     players {
       ...userWithId
     }
+    gameState {
+      gameStarted
+      gameOver
+      currentTurn
+    }
     gameboard {
       squares {
         file
