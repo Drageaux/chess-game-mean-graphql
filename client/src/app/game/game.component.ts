@@ -1,9 +1,9 @@
-import {} from './../types';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Session, PlayGameGQL, PlayGameQuery } from '@app/types';
 import { Router, ActivatedRoute } from '@angular/router';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { SubSink } from 'subsink';
 import { ApolloQueryResult } from 'apollo-client';
 
 @Component({
@@ -11,7 +11,8 @@ import { ApolloQueryResult } from 'apollo-client';
   templateUrl: './game.component.html',
   styleUrls: ['./game.component.scss']
 })
-export class GameComponent implements OnInit {
+export class GameComponent implements OnInit, OnDestroy {
+  private subs = new SubSink();
   gameSession: Session;
 
   constructor(
@@ -20,7 +21,7 @@ export class GameComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    this.playGameGQL
+    this.subs.sink = this.playGameGQL
       .fetch({
         userId: '5cdda44272985718046cba86',
         gameId: this.route.snapshot.params.gameId
@@ -31,7 +32,14 @@ export class GameComponent implements OnInit {
           return result.data.playGame;
         })
       )
-      .subscribe(result => (this.gameSession = result));
+      .subscribe(result => {
+        this.gameSession = result;
+        console.log(this.gameSession);
+      });
+  }
+
+  ngOnDestroy() {
+    this.subs.unsubscribe();
   }
 }
 
