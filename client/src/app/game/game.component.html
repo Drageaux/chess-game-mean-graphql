@@ -1,4 +1,6 @@
-<div class="board d-table mx-auto">
+{{ gameSession | json }}
+
+<div class="board d-table mx-auto text-center">
   <!-- divide up by rank/row/y -->
   <div
     *ngFor="
@@ -44,5 +46,3 @@
     </div>
   </div>
 </div>
-
-{{ gameSession | json }}
