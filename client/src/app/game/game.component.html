@@ -1,48 +1,5 @@
 {{ gameSession | json }}
-
-<div class="board d-table mx-auto text-center">
-  <!-- divide up by rank/row/y -->
-  <div
-    *ngFor="
-      let r of gameSession?.gameboard?.squares | twoDArr: 8;
-      let r_index = index;
-      let r_odd = odd;
-      let r_even = even
-    "
-    class="board-rank"
-  >
-    <div
-      *ngFor="
-        let s of r;
-        let s_index = index;
-        let s_odd = odd;
-        let s_even = even
-      "
-      class="board-square"
-      [ngClass]="{
-        white: (s_even && r_even) || (s_odd && r_odd),
-        black: (s_odd && r_even) || (s_even && r_odd)
-      }"
-      id="square-{{ '' + s.file + s.rank }}"
-    >
-      <span *ngIf="s.rank === 1" class="annotation files">
-        {{ s.file }}
-      </span>
-      <span *ngIf="s.file === 'a'" class="annotation ranks">{{ s.rank }}</span>
-      <i
-        *ngIf="s?.piece"
-        class="fas fa-chess-{{ s.piece?.type }} {{ s.piece?.color }}"
-        [ngClass]="{
-          white: s.piece?.color === 'white',
-          black: s.piece?.color === 'black',
-          'white-turn':
-            s.piece?.color === 'white' &&
-            gameSession?.gameState?.currentTurn === 'white',
-          'black-turn':
-            s.piece?.color === 'black' &&
-            gameSession?.gameState?.currentTurn === 'black'
-        }"
-      ></i>
-    </div>
-  </div>
-</div>
+<app-board
+  *ngIf="gameSession?.gameboard"
+  [board]="gameSession.gameboard"
+></app-board>
