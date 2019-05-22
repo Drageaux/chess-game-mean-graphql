@@ -35,6 +35,9 @@ const squareSchema = new Schema({
   rank: { alias: 'y', type: Number, required: true },
   piece: pieceSchema
 });
+squareSchema.virtual('name').get(function(v: any) {
+  return `${this.x}${this.y}`;
+});
 
 // "flattened" 2D array of squares
 const gameboardSchema = new Schema({
@@ -42,7 +45,7 @@ const gameboardSchema = new Schema({
   capturedPieces: [pieceSchema]
 });
 gameboardSchema.virtual('whiteKingLocation').get(function(v: any) {
-  this.squares.populate().find(function(square: any) {
+  return this.squares.find(function(square: any) {
     return (
       square.piece &&
       square.piece.type === 'king' &&
@@ -51,7 +54,7 @@ gameboardSchema.virtual('whiteKingLocation').get(function(v: any) {
   });
 });
 gameboardSchema.virtual('blackKingLocation').get(function(v: any) {
-  this.squares.populate().find(function(square: any) {
+  return this.squares.find(function(square: any) {
     return (
       square.piece &&
       square.piece.type === 'king' &&

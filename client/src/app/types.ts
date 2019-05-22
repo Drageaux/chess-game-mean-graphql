@@ -18,6 +18,8 @@ export type BasicUser = User & {
 
 export type Gameboard = {
   squares?: Maybe<Array<Maybe<Square>>>;
+  whiteKingLocation?: Maybe<Square>;
+  blackKingLocation?: Maybe<Square>;
 };
 
 export type GameState = {
@@ -84,6 +86,7 @@ export type Square = {
   file?: Maybe<Scalars["String"]>;
   rank?: Maybe<Scalars["Int"]>;
   piece?: Maybe<Piece>;
+  name?: Maybe<Scalars["String"]>;
 };
 
 export type Subscription = {
@@ -110,6 +113,16 @@ export type BasicSessionFieldsFragment = { __typename?: "Session" } & Pick<
   "id" | "createdAt" | "lastUpdated"
 >;
 
+export type PieceFieldsFragment = { __typename?: "Piece" } & Pick<
+  Piece,
+  "color" | "type"
+>;
+
+export type SquareXyFieldsFragment = { __typename?: "Square" } & Pick<
+  Square,
+  "file" | "rank"
+>;
+
 export type PlayGameQueryVariables = {
   gameId: Scalars["ID"];
   userId: Scalars["ID"];
@@ -132,11 +145,19 @@ export type PlayGameQuery = { __typename?: "Query" } & {
               Maybe<
                 { __typename?: "Square" } & Pick<Square, "file" | "rank"> & {
                     piece: Maybe<
-                      { __typename?: "Piece" } & Pick<Piece, "color" | "type">
+                      { __typename?: "Piece" } & PieceFieldsFragment
                     >;
                   }
               >
             >
+          >;
+          whiteKingLocation: Maybe<
+            { __typename?: "Square" } & Pick<Square, "name"> &
+              SquareXyFieldsFragment
+          >;
+          blackKingLocation: Maybe<
+            { __typename?: "Square" } & Pick<Square, "name"> &
+              SquareXyFieldsFragment
           >;
         }
       >;
@@ -213,6 +234,18 @@ export const basicSessionFieldsFragmentDoc = gql`
     lastUpdated
   }
 `;
+export const pieceFieldsFragmentDoc = gql`
+  fragment pieceFields on Piece {
+    color
+    type
+  }
+`;
+export const squareXYFieldsFragmentDoc = gql`
+  fragment squareXYFields on Square {
+    file
+    rank
+  }
+`;
 export const userWithIdFragmentDoc = gql`
   fragment userWithId on User {
     id
@@ -243,15 +276,24 @@ export const PlayGameDocument = gql`
           file
           rank
           piece {
-            color
-            type
+            ...pieceFields
           }
+        }
+        whiteKingLocation {
+          ...squareXYFields
+          name
+        }
+        blackKingLocation {
+          ...squareXYFields
+          name
         }
       }
     }
   }
   ${basicSessionFieldsFragmentDoc}
   ${userWithIdFragmentDoc}
+  ${pieceFieldsFragmentDoc}
+  ${squareXYFieldsFragmentDoc}
 `;
 
 @Injectable({

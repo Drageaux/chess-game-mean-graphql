@@ -14,10 +14,13 @@ export const typeDefs = gql`
     file: String
     rank: Int
     piece: Piece
+    name: String
   }
 
   type Gameboard {
     squares: [Square]
+    whiteKingLocation: Square
+    blackKingLocation: Square
   }
 
   type GameState {
@@ -214,7 +217,6 @@ function initBoard(): any[] {
       } else return 0;
     } else return b.rank - a.rank;
   });
-  console.log(newBoard);
 
   return newBoard;
 }
