@@ -7,15 +7,25 @@ var Schema = mongoose.Schema;
  * Parent.findOne({ 'children': { $elemMatch: { 'field': 'Family Name',
  * 'value': 'Smith' } } }, fn ...)
  */
-const pieceSchema = new Schema({
-  color: { type: String, enum: ['white', 'black'], required: true },
-  type: {
-    type: String,
-    enum: ['pawn', 'knight', 'bishop', 'rook', 'queen', 'king'],
-    required: true
+const pieceSchema = new Schema(
+  {
+    color: { type: String, enum: ['white', 'black'], required: true },
+    type: {
+      type: String,
+      enum: ['pawn', 'knight', 'bishop', 'rook', 'queen', 'king'],
+      required: true
+    },
+    captured: { type: Boolean, default: false }
   },
-  captured: { type: Boolean, default: false }
-});
+  {
+    toObject: {
+      virtuals: true
+    },
+    toJSON: {
+      virtuals: true
+    }
+  }
+);
 pieceSchema.virtual('name', function() {
   return `${this.color} ${this.type}`;
 });

@@ -40,10 +40,20 @@ squareSchema.virtual('name').get(function(v: any) {
 });
 
 // "flattened" 2D array of squares
-const gameboardSchema = new Schema({
-  squares: { type: [squareSchema] },
-  capturedPieces: [pieceSchema]
-});
+const gameboardSchema = new Schema(
+  {
+    squares: { type: [squareSchema] },
+    capturedPieces: [pieceSchema]
+  },
+  {
+    toObject: {
+      virtuals: true
+    },
+    toJSON: {
+      virtuals: true
+    }
+  }
+);
 gameboardSchema.virtual('whiteKingLocation').get(function(v: any) {
   return this.squares.find(function(square: any) {
     return (
