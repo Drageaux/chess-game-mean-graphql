@@ -17,6 +17,7 @@ export type BasicUser = User & {
 };
 
 export type Gameboard = {
+  id: Scalars["ID"];
   squares: Array<Square>;
   whiteKingLocation: Square;
   blackKingLocation: Square;
@@ -67,6 +68,7 @@ export type Query = {
   findUser?: Maybe<BasicUser>;
   getUsers?: Maybe<Array<Maybe<BasicUser>>>;
   playGame?: Maybe<Session>;
+  getBoard?: Maybe<Gameboard>;
 };
 
 export type QueryFindUserArgs = {
@@ -77,6 +79,10 @@ export type QueryPlayGameArgs = {
   gameId: Scalars["ID"];
   userId: Scalars["ID"];
   filterBy?: Maybe<Scalars["String"]>;
+};
+
+export type QueryGetBoardArgs = {
+  gameId: Scalars["ID"];
 };
 
 export type Session = {
@@ -140,17 +146,20 @@ export type SquareXyFieldsFragment = { __typename?: "Square" } & Pick<
   "file" | "rank"
 >;
 
-export type GameboardFieldsFragment = { __typename?: "Gameboard" } & {
-  squares: Array<
-    { __typename?: "Square" } & Pick<Square, "file" | "rank"> & {
-        piece: Maybe<{ __typename?: "Piece" } & PieceFieldsFragment>;
-      }
-  >;
-  whiteKingLocation: { __typename?: "Square" } & Pick<Square, "name"> &
-    SquareXyFieldsFragment;
-  blackKingLocation: { __typename?: "Square" } & Pick<Square, "name"> &
-    SquareXyFieldsFragment;
-};
+export type GameboardFieldsFragment = { __typename?: "Gameboard" } & Pick<
+  Gameboard,
+  "id"
+> & {
+    squares: Array<
+      { __typename?: "Square" } & Pick<Square, "file" | "rank"> & {
+          piece: Maybe<{ __typename?: "Piece" } & PieceFieldsFragment>;
+        }
+    >;
+    whiteKingLocation: { __typename?: "Square" } & Pick<Square, "name"> &
+      SquareXyFieldsFragment;
+    blackKingLocation: { __typename?: "Square" } & Pick<Square, "name"> &
+      SquareXyFieldsFragment;
+  };
 
 export type PlayGameQueryVariables = {
   gameId: Scalars["ID"];
@@ -165,6 +174,19 @@ export type PlayGameQuery = { __typename?: "Query" } & {
         GameState,
         "gameStarted" | "gameOver" | "currentTurn"
       >;
+      gameboard: { __typename?: "Gameboard" } & GameboardFieldsFragment;
+    } & BasicSessionFieldsFragment
+  >;
+};
+
+export type GetBoardQueryVariables = {
+  gameId: Scalars["ID"];
+  userId: Scalars["ID"];
+};
+
+export type GetBoardQuery = { __typename?: "Query" } & {
+  playGame: Maybe<
+    { __typename?: "Session" } & {
       gameboard: { __typename?: "Gameboard" } & GameboardFieldsFragment;
     } & BasicSessionFieldsFragment
   >;
@@ -271,6 +293,7 @@ export const squareXYFieldsFragmentDoc = gql`
 `;
 export const gameboardFieldsFragmentDoc = gql`
   fragment gameboardFields on Gameboard {
+    id
     squares {
       file
       rank
@@ -333,6 +356,28 @@ export class PlayGameGQL extends Apollo.Query<
   PlayGameQueryVariables
 > {
   document = PlayGameDocument;
+}
+export const GetBoardDocument = gql`
+  query GetBoard($gameId: ID!, $userId: ID!) {
+    playGame(gameId: $gameId, userId: $userId) {
+      ...basicSessionFields
+      gameboard {
+        ...gameboardFields
+      }
+    }
+  }
+  ${basicSessionFieldsFragmentDoc}
+  ${gameboardFieldsFragmentDoc}
+`;
+
+@Injectable({
+  providedIn: "root"
+})
+export class GetBoardGQL extends Apollo.Query<
+  GetBoardQuery,
+  GetBoardQueryVariables
+> {
+  document = GetBoardDocument;
 }
 export const FindGameDocument = gql`
   mutation FindGame($userId: ID!) {

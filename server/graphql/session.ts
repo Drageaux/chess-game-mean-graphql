@@ -22,6 +22,7 @@ export const typeDefs = gql`
   }
 
   type Gameboard {
+    id: ID!
     squares: [Square!]!
     whiteKingLocation: Square!
     blackKingLocation: Square!
@@ -49,6 +50,7 @@ export const typeDefs = gql`
 
   extend type Query {
     playGame(gameId: ID!, userId: ID!, filterBy: String): Session
+    getBoard(gameId: ID!): Gameboard
   }
 
   extend type Mutation {

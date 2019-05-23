@@ -1,8 +1,11 @@
 {{ gameSession | json }}
-<app-board
-  *ngIf="gameSession"
-  [board]="gameSession.gameboard"
-  [currTurn]="gameSession.gameState.currentTurn"
-></app-board>
 
+<app-board
+  *ngIf="gameSession; else loading"
+  [gameId]="gameSession?.id"
+  [currTurn]="gameSession?.gameState?.currentTurn"
+>
+  <!-- {{ gameSession | json }} -->
+</app-board>
+<ng-template #loading>Loading...</ng-template>
 <button (click)="move()">move</button>

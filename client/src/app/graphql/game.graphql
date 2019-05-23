@@ -15,6 +15,7 @@ fragment squareXYFields on Square {
 }
 
 fragment gameboardFields on Gameboard {
+  id
   squares {
     file
     rank
@@ -43,6 +44,15 @@ query PlayGame($gameId: ID!, $userId: ID!) {
       gameOver
       currentTurn
     }
+    gameboard {
+      id
+    }
+  }
+}
+
+query GetBoard($gameId: ID!, $userId: ID!) {
+  playGame(gameId: $gameId, userId: $userId) {
+    ...basicSessionFields
     gameboard {
       ...gameboardFields
     }
