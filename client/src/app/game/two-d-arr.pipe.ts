@@ -9,9 +9,8 @@ export class TwoDArrPipe implements PipeTransform {
   transform(arr: any[], width: any): any {
     if (arr) {
       const newArr = [];
-      while (arr.length) {
-        newArr.push(arr.slice(0, width));
-        console.log(newArr)
+      for (let i = 0; i < arr.length; i = i + width) {
+        newArr.push(arr.slice(i, i + width));
       }
       return newArr;
     }

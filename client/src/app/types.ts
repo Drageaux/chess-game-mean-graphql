@@ -17,7 +17,7 @@ export type BasicUser = User & {
 };
 
 export type Gameboard = {
-  id?: Maybe<Scalars["ID"]>;
+  id: Scalars["ID"];
   squares?: Maybe<Array<Maybe<Square>>>;
   whiteKingLocation?: Maybe<Square>;
   blackKingLocation?: Maybe<Square>;
@@ -68,7 +68,6 @@ export type Query = {
   findUser?: Maybe<BasicUser>;
   getUsers?: Maybe<Array<Maybe<BasicUser>>>;
   playGame?: Maybe<Session>;
-  getBoard?: Maybe<Gameboard>;
 };
 
 export type QueryFindUserArgs = {
@@ -79,10 +78,6 @@ export type QueryPlayGameArgs = {
   gameId: Scalars["ID"];
   userId: Scalars["ID"];
   filterBy?: Maybe<Scalars["String"]>;
-};
-
-export type QueryGetBoardArgs = {
-  gameId: Scalars["ID"];
 };
 
 export type Session = {
