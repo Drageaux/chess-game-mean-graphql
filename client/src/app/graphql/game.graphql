@@ -14,6 +14,24 @@ fragment squareXYFields on Square {
   rank
 }
 
+fragment gameboardFields on Gameboard {
+  squares {
+    file
+    rank
+    piece {
+      ...pieceFields
+    }
+  }
+  whiteKingLocation {
+    ...squareXYFields
+    name
+  }
+  blackKingLocation {
+    ...squareXYFields
+    name
+  }
+}
+
 query PlayGame($gameId: ID!, $userId: ID!) {
   playGame(gameId: $gameId, userId: $userId) {
     ...basicSessionFields
@@ -26,21 +44,7 @@ query PlayGame($gameId: ID!, $userId: ID!) {
       currentTurn
     }
     gameboard {
-      squares {
-        file
-        rank
-        piece {
-          ...pieceFields
-        }
-      }
-      whiteKingLocation {
-        ...squareXYFields
-        name
-      }
-      blackKingLocation {
-        ...squareXYFields
-        name
-      }
+      ...gameboardFields
     }
   }
 }
@@ -51,8 +55,20 @@ mutation FindGame($userId: ID!) {
   }
 }
 
+mutation MovePiece($gameId: ID!, $from: SquareXYInput!, $to: SquareXYInput!) {
+  movePiece(gameId: $gameId, from: $from, to: $to) {
+    ...gameboardFields
+  }
+}
+
 subscription MatchFound($userId: ID!) {
   matchFound(userId: $userId) {
     ...basicSessionFields
+  }
+}
+
+subscription BoardChanged($userId: ID!) {
+  boardChanged(userId: $userId) {
+    ...gameboardFields
   }
 }

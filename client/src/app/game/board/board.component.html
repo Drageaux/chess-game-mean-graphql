@@ -33,12 +33,8 @@
         [ngClass]="{
           white: s.piece?.color === 'white',
           black: s.piece?.color === 'black',
-          'white-turn':
-            s.piece?.color === 'white' &&
-            gameSession?.gameState?.currentTurn === 'white',
-          'black-turn':
-            s.piece?.color === 'black' &&
-            gameSession?.gameState?.currentTurn === 'black'
+          'white-turn': s.piece?.color === 'white' && currTurn === 'white',
+          'black-turn': s.piece?.color === 'black' && currTurn === 'black'
         }"
       ></i>
     </div>

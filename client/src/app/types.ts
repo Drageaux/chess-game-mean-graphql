@@ -17,9 +17,9 @@ export type BasicUser = User & {
 };
 
 export type Gameboard = {
-  squares?: Maybe<Array<Maybe<Square>>>;
-  whiteKingLocation?: Maybe<Square>;
-  blackKingLocation?: Maybe<Square>;
+  squares: Array<Square>;
+  whiteKingLocation: Square;
+  blackKingLocation: Square;
 };
 
 export type GameState = {
@@ -32,6 +32,7 @@ export type Mutation = {
   _empty?: Maybe<Scalars["String"]>;
   addUser?: Maybe<BasicUser>;
   findGame?: Maybe<WaitingForGame>;
+  movePiece?: Maybe<Gameboard>;
 };
 
 export type MutationAddUserArgs = {
@@ -41,6 +42,12 @@ export type MutationAddUserArgs = {
 
 export type MutationFindGameArgs = {
   userId: Scalars["ID"];
+};
+
+export type MutationMovePieceArgs = {
+  gameId: Scalars["ID"];
+  from: SquareXyInput;
+  to: SquareXyInput;
 };
 
 export type Piece = {
@@ -78,8 +85,8 @@ export type Session = {
   createdAt: Scalars["String"];
   lastUpdated: Scalars["String"];
   elapsedTime?: Maybe<Scalars["String"]>;
-  gameState?: Maybe<GameState>;
-  gameboard?: Maybe<Gameboard>;
+  gameState: GameState;
+  gameboard: Gameboard;
 };
 
 export type Square = {
@@ -89,13 +96,23 @@ export type Square = {
   name?: Maybe<Scalars["String"]>;
 };
 
+export type SquareXyInput = {
+  file: Scalars["String"];
+  rank: Scalars["Int"];
+};
+
 export type Subscription = {
   _empty?: Maybe<Scalars["String"]>;
   userAdded?: Maybe<BasicUser>;
   matchFound?: Maybe<Session>;
+  boardChanged?: Maybe<Gameboard>;
 };
 
 export type SubscriptionMatchFoundArgs = {
+  userId: Scalars["ID"];
+};
+
+export type SubscriptionBoardChangedArgs = {
   userId: Scalars["ID"];
 };
 
@@ -123,6 +140,18 @@ export type SquareXyFieldsFragment = { __typename?: "Square" } & Pick<
   "file" | "rank"
 >;
 
+export type GameboardFieldsFragment = { __typename?: "Gameboard" } & {
+  squares: Array<
+    { __typename?: "Square" } & Pick<Square, "file" | "rank"> & {
+        piece: Maybe<{ __typename?: "Piece" } & PieceFieldsFragment>;
+      }
+  >;
+  whiteKingLocation: { __typename?: "Square" } & Pick<Square, "name"> &
+    SquareXyFieldsFragment;
+  blackKingLocation: { __typename?: "Square" } & Pick<Square, "name"> &
+    SquareXyFieldsFragment;
+};
+
 export type PlayGameQueryVariables = {
   gameId: Scalars["ID"];
   userId: Scalars["ID"];
@@ -132,35 +161,11 @@ export type PlayGameQuery = { __typename?: "Query" } & {
   playGame: Maybe<
     { __typename?: "Session" } & {
       players: Maybe<Array<{ __typename?: "Player" } & UserWithIdFragment>>;
-      gameState: Maybe<
-        { __typename?: "GameState" } & Pick<
-          GameState,
-          "gameStarted" | "gameOver" | "currentTurn"
-        >
+      gameState: { __typename?: "GameState" } & Pick<
+        GameState,
+        "gameStarted" | "gameOver" | "currentTurn"
       >;
-      gameboard: Maybe<
-        { __typename?: "Gameboard" } & {
-          squares: Maybe<
-            Array<
-              Maybe<
-                { __typename?: "Square" } & Pick<Square, "file" | "rank"> & {
-                    piece: Maybe<
-                      { __typename?: "Piece" } & PieceFieldsFragment
-                    >;
-                  }
-              >
-            >
-          >;
-          whiteKingLocation: Maybe<
-            { __typename?: "Square" } & Pick<Square, "name"> &
-              SquareXyFieldsFragment
-          >;
-          blackKingLocation: Maybe<
-            { __typename?: "Square" } & Pick<Square, "name"> &
-              SquareXyFieldsFragment
-          >;
-        }
-      >;
+      gameboard: { __typename?: "Gameboard" } & GameboardFieldsFragment;
     } & BasicSessionFieldsFragment
   >;
 };
@@ -175,12 +180,30 @@ export type FindGameMutation = { __typename?: "Mutation" } & {
   >;
 };
 
+export type MovePieceMutationVariables = {
+  gameId: Scalars["ID"];
+  from: SquareXyInput;
+  to: SquareXyInput;
+};
+
+export type MovePieceMutation = { __typename?: "Mutation" } & {
+  movePiece: Maybe<{ __typename?: "Gameboard" } & GameboardFieldsFragment>;
+};
+
 export type MatchFoundSubscriptionVariables = {
   userId: Scalars["ID"];
 };
 
 export type MatchFoundSubscription = { __typename?: "Subscription" } & {
   matchFound: Maybe<{ __typename?: "Session" } & BasicSessionFieldsFragment>;
+};
+
+export type BoardChangedSubscriptionVariables = {
+  userId: Scalars["ID"];
+};
+
+export type BoardChangedSubscription = { __typename?: "Subscription" } & {
+  boardChanged: Maybe<{ __typename?: "Gameboard" } & GameboardFieldsFragment>;
 };
 
 export type UserWithIdFragment = { __typename?: "BasicUser" | "Player" } & Pick<
@@ -246,6 +269,27 @@ export const squareXYFieldsFragmentDoc = gql`
     rank
   }
 `;
+export const gameboardFieldsFragmentDoc = gql`
+  fragment gameboardFields on Gameboard {
+    squares {
+      file
+      rank
+      piece {
+        ...pieceFields
+      }
+    }
+    whiteKingLocation {
+      ...squareXYFields
+      name
+    }
+    blackKingLocation {
+      ...squareXYFields
+      name
+    }
+  }
+  ${pieceFieldsFragmentDoc}
+  ${squareXYFieldsFragmentDoc}
+`;
 export const userWithIdFragmentDoc = gql`
   fragment userWithId on User {
     id
@@ -272,28 +316,13 @@ export const PlayGameDocument = gql`
         currentTurn
       }
       gameboard {
-        squares {
-          file
-          rank
-          piece {
-            ...pieceFields
-          }
-        }
-        whiteKingLocation {
-          ...squareXYFields
-          name
-        }
-        blackKingLocation {
-          ...squareXYFields
-          name
-        }
+        ...gameboardFields
       }
     }
   }
   ${basicSessionFieldsFragmentDoc}
   ${userWithIdFragmentDoc}
-  ${pieceFieldsFragmentDoc}
-  ${squareXYFieldsFragmentDoc}
+  ${gameboardFieldsFragmentDoc}
 `;
 
 @Injectable({
@@ -322,6 +351,24 @@ export class FindGameGQL extends Apollo.Mutation<
 > {
   document = FindGameDocument;
 }
+export const MovePieceDocument = gql`
+  mutation MovePiece($gameId: ID!, $from: SquareXYInput!, $to: SquareXYInput!) {
+    movePiece(gameId: $gameId, from: $from, to: $to) {
+      ...gameboardFields
+    }
+  }
+  ${gameboardFieldsFragmentDoc}
+`;
+
+@Injectable({
+  providedIn: "root"
+})
+export class MovePieceGQL extends Apollo.Mutation<
+  MovePieceMutation,
+  MovePieceMutationVariables
+> {
+  document = MovePieceDocument;
+}
 export const MatchFoundDocument = gql`
   subscription MatchFound($userId: ID!) {
     matchFound(userId: $userId) {
@@ -339,6 +386,24 @@ export class MatchFoundGQL extends Apollo.Subscription<
   MatchFoundSubscriptionVariables
 > {
   document = MatchFoundDocument;
+}
+export const BoardChangedDocument = gql`
+  subscription BoardChanged($userId: ID!) {
+    boardChanged(userId: $userId) {
+      ...gameboardFields
+    }
+  }
+  ${gameboardFieldsFragmentDoc}
+`;
+
+@Injectable({
+  providedIn: "root"
+})
+export class BoardChangedGQL extends Apollo.Subscription<
+  BoardChangedSubscription,
+  BoardChangedSubscriptionVariables
+> {
+  document = BoardChangedDocument;
 }
 export const FindUserByIdDocument = gql`
   query FindUserById($id: ID!) {

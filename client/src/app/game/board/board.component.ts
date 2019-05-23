@@ -8,6 +8,7 @@ import { Gameboard, Square } from '@app/types';
 })
 export class BoardComponent implements OnInit {
   @Input() board: Gameboard;
+  @Input() currTurn: 'white' | 'black';
 
   // view-based
   moving = false;
@@ -16,6 +17,10 @@ export class BoardComponent implements OnInit {
   constructor() {}
 
   ngOnInit() {}
+
+  changeTurn() {
+    this.currTurn = 'black';
+  }
 }
 
 enum FILE {

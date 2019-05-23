@@ -16,11 +16,15 @@ export const typeDefs = gql`
     piece: Piece
     name: String
   }
+  input SquareXYInput {
+    file: String!
+    rank: Int!
+  }
 
   type Gameboard {
-    squares: [Square]
-    whiteKingLocation: Square
-    blackKingLocation: Square
+    squares: [Square!]!
+    whiteKingLocation: Square!
+    blackKingLocation: Square!
   }
 
   type GameState {
@@ -39,8 +43,8 @@ export const typeDefs = gql`
     createdAt: String!
     lastUpdated: String!
     elapsedTime: String
-    gameState: GameState
-    gameboard: Gameboard
+    gameState: GameState!
+    gameboard: Gameboard!
   }
 
   extend type Query {
@@ -49,10 +53,12 @@ export const typeDefs = gql`
 
   extend type Mutation {
     findGame(userId: ID!): WaitingForGame
+    movePiece(gameId: ID!, from: SquareXYInput!, to: SquareXYInput!): Gameboard
   }
 
   extend type Subscription {
     matchFound(userId: ID!): Session
+    boardChanged(userId: ID!): Gameboard
   }
 `;
 // a map of functions which return data for the schema.
@@ -108,6 +114,19 @@ export const resolvers = {
           return e.message;
         }
       }
+    },
+    movePiece: async (root: any, args: any, context: any) => {
+      let session: any = await Session.findById(args.gameId)
+        .populate('board')
+        .exec();
+      let squares: any[] = session.gameboard.squares;
+      let fromSqr = squares.find(s => args.from.name === s.name);
+      let toSqr = squares.find(s => args.to.name === s.name);
+      console.log(toSqr);
+      toSqr.piece = fromSqr.piece;
+      await session.save();
+      return session;
+      // args.from.piece
     }
   },
   Subscription: {
@@ -115,6 +134,16 @@ export const resolvers = {
       // additional event labels can be passed to asyncIterator creation
       subscribe: withFilter(
         () => pubsub.asyncIterator(['MATCH_FOUND']),
+        (payload: any, variables: any) => {
+          // payload is the result returned
+          // variables are the args passed in when starting subscription
+          return true;
+        }
+      )
+    },
+    boardChanged: {
+      subscribe: withFilter(
+        () => pubsub.asyncIterator(['BOARD_CHANGED']),
         (payload: any, variables: any) => {
           // payload is the result returned
           // variables are the args passed in when starting subscription

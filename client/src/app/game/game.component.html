@@ -1,5 +1,8 @@
 {{ gameSession | json }}
 <app-board
-  *ngIf="gameSession?.gameboard"
+  *ngIf="gameSession?.gameboard && gameSession?.gameState"
   [board]="gameSession.gameboard"
+  [currTurn]="gameSession.gameState.currentTurn"
 ></app-board>
+
+<button (click)="move()">move</button>
