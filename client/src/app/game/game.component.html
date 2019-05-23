@@ -1,8 +1,8 @@
-{{ gameSession | async | json }}
+{{ gameSession | json }}
 <app-board
-  *ngIf="gameSession | async"
-  [board]="(gameSession | async)?.gameboard"
-  [currTurn]="(gameSession | async)?.gameState.currentTurn"
+  *ngIf="gameSession"
+  [board]="gameSession.gameboard"
+  [currTurn]="gameSession.gameState.currentTurn"
 ></app-board>
 
 <button (click)="move()">move</button>

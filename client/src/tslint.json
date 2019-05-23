@@ -3,6 +3,12 @@
   "rules": {
     "directive-selector": [true, "attribute", "app", "camelCase"],
     "component-selector": [true, "element", "app", "kebab-case"],
-    "no-console": { "severity": "warning" }
+    "no-console": { "severity": "warning" },
+    "variable-name": [
+      true,
+      "ban-keywords",
+      "check-format",
+      "allow-leading-underscore"
+    ]
   }
 }
