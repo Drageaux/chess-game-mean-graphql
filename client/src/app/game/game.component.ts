@@ -28,7 +28,7 @@ export class GameComponent implements OnInit, OnDestroy {
   private subs = new SubSink();
 
   playGameQuery: QueryRef<PlayGameQuery, PlayGameQueryVariables>;
-  gameSession: Session;
+  gameSession: Observable<Session>;
 
   constructor(
     private route: ActivatedRoute,
@@ -43,12 +43,9 @@ export class GameComponent implements OnInit, OnDestroy {
       gameId: this.route.snapshot.params.gameId
     });
 
-    this.subs.sink = this.playGameQuery.valueChanges
-      .pipe(map(result => result.data.playGame))
-      .subscribe(result => {
-        this.gameSession = result;
-        console.log(result);
-      });
+    this.gameSession = this.playGameQuery.valueChanges.pipe(
+      map(result => result.data.playGame)
+    );
   }
 
   subscribeToUpdatedBoard() {
@@ -57,21 +54,25 @@ export class GameComponent implements OnInit, OnDestroy {
   }
 
   move() {
-    console.log(this.gameSession.gameboard.squares);
-    const fromSqr: Square = this.gameSession.gameboard.squares.find(
-      x => x.name === 'e2'
-    );
-    const toSqr: Square = this.gameSession.gameboard.squares.find(
-      x => x.name === 'e4'
-    );
+    // console.log(this.gameSession.gameboard.squares);
+    this.subs.sink = this.gameSession
+      .pipe(
+        map((result: Session) => {
+          const fromSqr: Square = result.gameboard.squares.find(
+            x => x.name === 'e2'
+          );
+          const toSqr: Square = result.gameboard.squares.find(
+            x => x.name === 'e4'
+          );
 
-    this.subs.sink = this.movePieceGQL
-      .mutate({
-        gameId: this.gameSession.id,
-        from: { file: fromSqr.file, rank: fromSqr.rank },
-        to: { file: toSqr.file, rank: toSqr.rank }
-      })
-      .subscribe();
+          return this.movePieceGQL.mutate({
+            gameId: result.id,
+            from: { file: fromSqr.file, rank: fromSqr.rank },
+            to: { file: toSqr.file, rank: toSqr.rank }
+          });
+        })
+      )
+      .subscribe(result => console.log(result));
   }
 
   ngOnDestroy() {
