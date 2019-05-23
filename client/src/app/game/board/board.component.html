@@ -8,35 +8,9 @@
       let r_even = even
     "
     class="board-rank"
-  >
-    <div
-      *ngFor="
-        let s of r;
-        let s_index = index;
-        let s_odd = odd;
-        let s_even = even
-      "
-      class="board-square"
-      [ngClass]="{
-        white: (s_even && r_even) || (s_odd && r_odd),
-        black: (s_odd && r_even) || (s_even && r_odd)
-      }"
-      id="square-{{ '' + s.file + s.rank }}"
-    >
-      <span *ngIf="s.rank === 1" class="annotation files">
-        {{ s.file }}
-      </span>
-      <span *ngIf="s.file === 'a'" class="annotation ranks">{{ s.rank }}</span>
-      <i
-        *ngIf="s?.piece"
-        class="fas fa-chess-{{ s.piece?.type }} {{ s.piece?.color }}"
-        [ngClass]="{
-          white: s.piece?.color === 'white',
-          black: s.piece?.color === 'black',
-          'white-turn': s.piece?.color === 'white' && currTurn === 'white',
-          'black-turn': s.piece?.color === 'black' && currTurn === 'black'
-        }"
-      ></i>
-    </div>
-  </div>
+  ></div>
+</div>
+<div *ngIf="board" class="controls">
+  {{ board | json }}
+  <button (click)="move()">move</button>
 </div>

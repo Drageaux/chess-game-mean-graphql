@@ -7,7 +7,6 @@ import {
   GetBoardGQL,
   GetBoardQuery,
   GetBoardQueryVariables,
-  MovePieceGQL,
   BoardChangedGQL,
   Gameboard
 } from '@app/types';
@@ -24,7 +23,7 @@ import { QueryRef } from 'apollo-angular';
   templateUrl: './game.component.html',
   styleUrls: ['./game.component.scss']
 })
-export class GameComponent implements OnInit, AfterViewChecked, OnDestroy {
+export class GameComponent implements OnInit, OnDestroy {
   private subs = new SubSink();
 
   // playGameQuery: QueryRef<PlayGameQuery, PlayGameQueryVariables>;
@@ -46,45 +45,6 @@ export class GameComponent implements OnInit, AfterViewChecked, OnDestroy {
       .subscribe(result => {
         this.gameSession = result;
       });
-  }
-
-  ngAfterViewChecked(): void {
-    // this.gameSession.subscribe(session => console.log(session));
-  }
-
-  subscribeToUpdatedBoard() {
-    // TODO: update board
-    // this.g.subscribeToMore(this.boardChangedGQL);
-  }
-
-  move() {
-    // console.log(this.gameSession.gameboard.squares);
-    // this.subs.sink = this.gameSession
-    //   .pipe(
-    //     map((result: Session) => {
-    //       console.log(result);
-    //       const squares = result.gameboard.squares;
-    //       if (!squares || squares.length === 0) {
-    //         return throwError('Board has no squares');
-    //       }
-    //       const fromSqr: Square = result.gameboard.squares.find(
-    //         x => x.name === 'e2'
-    //       );
-    //       const toSqr: Square = result.gameboard.squares.find(
-    //         x => x.name === 'e4'
-    //       );
-    //       return this.movePieceGQL.mutate({
-    //         gameId: result.id,
-    //         from: { file: fromSqr.file, rank: fromSqr.rank },
-    //         to: { file: toSqr.file, rank: toSqr.rank }
-    //       });
-    //     }),
-    //     retry(2),
-    //     catchError((err, caught) => {
-    //       return caught;
-    //     })
-    //   )
-    //   .subscribe(result => console.log(result), err => console.error(err));
   }
 
   ngOnDestroy() {

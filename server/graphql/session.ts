@@ -22,10 +22,10 @@ export const typeDefs = gql`
   }
 
   type Gameboard {
-    id: ID!
-    squares: [Square!]!
-    whiteKingLocation: Square!
-    blackKingLocation: Square!
+    id: ID
+    squares: [Square]
+    whiteKingLocation: Square
+    blackKingLocation: Square
   }
 
   type GameState {
@@ -41,11 +41,11 @@ export const typeDefs = gql`
   type Session {
     id: ID!
     players: [Player!]
-    createdAt: String!
-    lastUpdated: String!
+    createdAt: String
+    lastUpdated: String
     elapsedTime: String
-    gameState: GameState!
-    gameboard: Gameboard!
+    gameState: GameState
+    gameboard: Gameboard
   }
 
   extend type Query {

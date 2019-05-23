@@ -10,9 +10,11 @@ import {
   Square,
   GetBoardGQL,
   GetBoardQuery,
-  GetBoardQueryVariables
+  GetBoardQueryVariables,
+  MovePieceGQL,
+  BoardChangedGQL
 } from '@app/types';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, throwError } from 'rxjs';
 import { QueryRef } from 'apollo-angular';
 import { SubSink } from 'subsink';
 import { map } from 'rxjs/operators';
@@ -34,7 +36,11 @@ export class BoardComponent implements OnChanges, OnInit {
   moving = false;
   selectedSqr: Square;
 
-  constructor(private getBoardGQL: GetBoardGQL) {}
+  constructor(
+    private getBoardGQL: GetBoardGQL,
+    private movePieceGQL: MovePieceGQL,
+    private boardChangedGQL: BoardChangedGQL
+  ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     // only run when property "data" changed
@@ -42,6 +48,7 @@ export class BoardComponent implements OnChanges, OnInit {
       console.log(changes);
     }
   }
+
   ngOnInit() {
     this.getBoardQuery = this.getBoardGQL.watch({
       userId: '5cdda44272985718046cba86',
@@ -50,12 +57,38 @@ export class BoardComponent implements OnChanges, OnInit {
     this.subs.sink = this.getBoardQuery.valueChanges
       .pipe(map(({ data }) => data.playGame))
       .subscribe(result => {
+        console.log(result);
         this.board = result.gameboard;
       });
   }
 
-  changeTurn() {
-    this.currTurn = 'black';
+  subscribeToUpdatedBoard() {
+    // TODO: update board
+    this.getBoardQuery.subscribeToMore(this.boardChangedGQL);
+  }
+
+  move() {
+    const squares = this.board.squares;
+    console.log(this.board);
+    if (!squares || squares.length === 0) {
+      return throwError('Board has no squares');
+    }
+    const fromSqr: Square = this.board.squares.find(x => x.name === 'e2');
+    const toSqr: Square = this.board.squares.find(x => x.name === 'e4');
+    this.movePieceGQL
+      .mutate({
+        gameId: this.gameId,
+        from: { file: fromSqr.file, rank: fromSqr.rank },
+        to: { file: toSqr.file, rank: toSqr.rank }
+      })
+      .subscribe(() => console.log('mutated'));
+
+    //   retry(2),
+    //   catchError((err, caught) => {
+    //     return caught;
+    //   })
+    // )
+    // .subscribe(result => console.log(result), err => console.error(err));
   }
 }
 

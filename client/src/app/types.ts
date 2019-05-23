@@ -17,10 +17,10 @@ export type BasicUser = User & {
 };
 
 export type Gameboard = {
-  id: Scalars["ID"];
-  squares: Array<Square>;
-  whiteKingLocation: Square;
-  blackKingLocation: Square;
+  id?: Maybe<Scalars["ID"]>;
+  squares?: Maybe<Array<Maybe<Square>>>;
+  whiteKingLocation?: Maybe<Square>;
+  blackKingLocation?: Maybe<Square>;
 };
 
 export type GameState = {
@@ -88,11 +88,11 @@ export type QueryGetBoardArgs = {
 export type Session = {
   id: Scalars["ID"];
   players?: Maybe<Array<Player>>;
-  createdAt: Scalars["String"];
-  lastUpdated: Scalars["String"];
+  createdAt?: Maybe<Scalars["String"]>;
+  lastUpdated?: Maybe<Scalars["String"]>;
   elapsedTime?: Maybe<Scalars["String"]>;
-  gameState: GameState;
-  gameboard: Gameboard;
+  gameState?: Maybe<GameState>;
+  gameboard?: Maybe<Gameboard>;
 };
 
 export type Square = {
@@ -150,15 +150,21 @@ export type GameboardFieldsFragment = { __typename?: "Gameboard" } & Pick<
   Gameboard,
   "id"
 > & {
-    squares: Array<
-      { __typename?: "Square" } & Pick<Square, "file" | "rank"> & {
-          piece: Maybe<{ __typename?: "Piece" } & PieceFieldsFragment>;
-        }
+    squares: Maybe<
+      Array<
+        Maybe<
+          { __typename?: "Square" } & Pick<Square, "file" | "rank"> & {
+              piece: Maybe<{ __typename?: "Piece" } & PieceFieldsFragment>;
+            }
+        >
+      >
     >;
-    whiteKingLocation: { __typename?: "Square" } & Pick<Square, "name"> &
-      SquareXyFieldsFragment;
-    blackKingLocation: { __typename?: "Square" } & Pick<Square, "name"> &
-      SquareXyFieldsFragment;
+    whiteKingLocation: Maybe<
+      { __typename?: "Square" } & Pick<Square, "name"> & SquareXyFieldsFragment
+    >;
+    blackKingLocation: Maybe<
+      { __typename?: "Square" } & Pick<Square, "name"> & SquareXyFieldsFragment
+    >;
   };
 
 export type PlayGameQueryVariables = {
@@ -170,11 +176,12 @@ export type PlayGameQuery = { __typename?: "Query" } & {
   playGame: Maybe<
     { __typename?: "Session" } & {
       players: Maybe<Array<{ __typename?: "Player" } & UserWithIdFragment>>;
-      gameState: { __typename?: "GameState" } & Pick<
-        GameState,
-        "gameStarted" | "gameOver" | "currentTurn"
+      gameState: Maybe<
+        { __typename?: "GameState" } & Pick<
+          GameState,
+          "gameStarted" | "gameOver" | "currentTurn"
+        >
       >;
-      gameboard: { __typename?: "Gameboard" } & GameboardFieldsFragment;
     } & BasicSessionFieldsFragment
   >;
 };
@@ -187,7 +194,7 @@ export type GetBoardQueryVariables = {
 export type GetBoardQuery = { __typename?: "Query" } & {
   playGame: Maybe<
     { __typename?: "Session" } & {
-      gameboard: { __typename?: "Gameboard" } & GameboardFieldsFragment;
+      gameboard: Maybe<{ __typename?: "Gameboard" } & GameboardFieldsFragment>;
     } & BasicSessionFieldsFragment
   >;
 };
@@ -338,14 +345,10 @@ export const PlayGameDocument = gql`
         gameOver
         currentTurn
       }
-      gameboard {
-        ...gameboardFields
-      }
     }
   }
   ${basicSessionFieldsFragmentDoc}
   ${userWithIdFragmentDoc}
-  ${gameboardFieldsFragmentDoc}
 `;
 
 @Injectable({

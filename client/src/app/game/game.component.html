@@ -1,5 +1,3 @@
-{{ gameSession | json }}
-
 <app-board
   *ngIf="gameSession; else loading"
   [gameId]="gameSession?.id"
@@ -8,4 +6,4 @@
   <!-- {{ gameSession | json }} -->
 </app-board>
 <ng-template #loading>Loading...</ng-template>
-<button (click)="move()">move</button>
+{{ gameSession | json }}
