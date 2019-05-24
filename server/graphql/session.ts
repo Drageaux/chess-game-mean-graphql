@@ -88,7 +88,6 @@ export const resolvers = {
         });
         session.gameState.gameStarted = true;
         session.gameboard = newGameboard._id;
-        await session.save();
         // await session.updateOne({
         //   blackTeam: args.userId,
         //   'gameState.gameStarted': true,
@@ -132,10 +131,16 @@ export const resolvers = {
       fromSqr.piece = null;
       session.markModified('gameboard');
       // console.log(`AFTER\nfrom ${fromSqr}\n`, `to ${toSqr}`);
-      await session.gameboard.save();
       // end modifying
-      return session;
-      // args.from.piece
+      session.gameboard.save(function(err: any, data: any) {
+        if (data) {
+          // TODO: # of players in queue, etc.
+          pubsub.publish('BOARD_CHANGED', { boardChanged: session });
+          return session;
+        } else if (err) {
+          return err.message;
+        }
+      });
     }
   },
   Subscription: {

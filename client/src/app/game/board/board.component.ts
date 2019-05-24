@@ -3,7 +3,8 @@ import {
   OnInit,
   Input,
   OnChanges,
-  SimpleChanges
+  SimpleChanges,
+  OnDestroy
 } from '@angular/core';
 import {
   Gameboard,
@@ -24,7 +25,7 @@ import { map } from 'rxjs/operators';
   templateUrl: './board.component.html',
   styleUrls: ['./board.component.scss']
 })
-export class BoardComponent implements OnChanges, OnInit {
+export class BoardComponent implements OnChanges, OnInit, OnDestroy {
   private subs = new SubSink();
 
   @Input() gameId: string;
@@ -54,17 +55,34 @@ export class BoardComponent implements OnChanges, OnInit {
       userId: '5cdda44272985718046cba86',
       gameId: this.gameId
     });
+
     this.subs.sink = this.getBoardQuery.valueChanges
       .pipe(map(({ data }) => data.playGame))
       .subscribe(result => {
         console.log(result);
         this.board = result.gameboard;
       });
+
+    this.subscribeToUpdatedBoard();
   }
 
   subscribeToUpdatedBoard() {
     // TODO: update board
-    this.getBoardQuery.subscribeToMore(this.boardChangedGQL);
+    this.getBoardQuery.subscribeToMore({
+      document: this.boardChangedGQL.document,
+      variables: {
+        userId: '5cdda44272985718046cba86'
+      },
+      updateQuery: (prev, { subscriptionData }) => {
+        console.log(subscriptionData);
+        return {
+          ...prev,
+          entry: {
+            board: subscriptionData.data.boardChanged
+          }
+        };
+      }
+    });
   }
 
   move() {
@@ -76,7 +94,7 @@ export class BoardComponent implements OnChanges, OnInit {
     const fromSqr: Square = squares.find(x => x.name === 'e2');
     const toSqr: Square = squares.find(x => x.name === 'e4');
     if (fromSqr && toSqr) {
-      this.movePieceGQL
+      this.subs.sink = this.movePieceGQL
         .mutate({
           gameId: this.gameId,
           from: { file: fromSqr.file, rank: fromSqr.rank },
@@ -91,6 +109,10 @@ export class BoardComponent implements OnChanges, OnInit {
     //   })
     // )
     // .subscribe(result => console.log(result), err => console.error(err));
+  }
+
+  ngOnDestroy(): void {
+    this.subs.unsubscribe();
   }
 }
 
