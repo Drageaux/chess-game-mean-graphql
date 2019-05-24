@@ -69,19 +69,21 @@ export class BoardComponent implements OnChanges, OnInit {
 
   move() {
     const squares = this.board.squares;
-    console.log(this.board);
+    console.log(squares);
     if (!squares || squares.length === 0) {
       return throwError('Board has no squares');
     }
-    const fromSqr: Square = this.board.squares.find(x => x.name === 'e2');
-    const toSqr: Square = this.board.squares.find(x => x.name === 'e4');
-    this.movePieceGQL
-      .mutate({
-        gameId: this.gameId,
-        from: { file: fromSqr.file, rank: fromSqr.rank },
-        to: { file: toSqr.file, rank: toSqr.rank }
-      })
-      .subscribe(() => console.log('mutated'));
+    const fromSqr: Square = squares.find(x => x.name === 'e2');
+    const toSqr: Square = squares.find(x => x.name === 'e4');
+    if (fromSqr && toSqr) {
+      this.movePieceGQL
+        .mutate({
+          gameId: this.gameId,
+          from: { file: fromSqr.file, rank: fromSqr.rank },
+          to: { file: toSqr.file, rank: toSqr.rank }
+        })
+        .subscribe(() => console.log('mutated'));
+    }
 
     //   retry(2),
     //   catchError((err, caught) => {

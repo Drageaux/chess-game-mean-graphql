@@ -148,9 +148,9 @@ export type GameboardFieldsFragment = { __typename?: "Gameboard" } & Pick<
     squares: Maybe<
       Array<
         Maybe<
-          { __typename?: "Square" } & Pick<Square, "file" | "rank"> & {
+          { __typename?: "Square" } & Pick<Square, "name"> & {
               piece: Maybe<{ __typename?: "Piece" } & PieceFieldsFragment>;
-            }
+            } & SquareXyFieldsFragment
         >
       >
     >;
@@ -281,24 +281,24 @@ export const basicSessionFieldsFragmentDoc = gql`
     lastUpdated
   }
 `;
-export const pieceFieldsFragmentDoc = gql`
-  fragment pieceFields on Piece {
-    color
-    type
-  }
-`;
 export const squareXYFieldsFragmentDoc = gql`
   fragment squareXYFields on Square {
     file
     rank
   }
 `;
+export const pieceFieldsFragmentDoc = gql`
+  fragment pieceFields on Piece {
+    color
+    type
+  }
+`;
 export const gameboardFieldsFragmentDoc = gql`
   fragment gameboardFields on Gameboard {
     id
     squares {
-      file
-      rank
+      ...squareXYFields
+      name
       piece {
         ...pieceFields
       }
@@ -312,8 +312,8 @@ export const gameboardFieldsFragmentDoc = gql`
       name
     }
   }
-  ${pieceFieldsFragmentDoc}
   ${squareXYFieldsFragmentDoc}
+  ${pieceFieldsFragmentDoc}
 `;
 export const userWithIdFragmentDoc = gql`
   fragment userWithId on User {

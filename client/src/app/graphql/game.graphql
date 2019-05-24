@@ -17,8 +17,8 @@ fragment squareXYFields on Square {
 fragment gameboardFields on Gameboard {
   id
   squares {
-    file
-    rank
+    ...squareXYFields
+    name
     piece {
       ...pieceFields
     }
@@ -43,6 +43,10 @@ query PlayGame($gameId: ID!, $userId: ID!) {
       gameStarted
       gameOver
       currentTurn
+    }
+    # get id to check availability and reroute if nonexistent
+    gameBoard {
+      id
     }
   }
 }

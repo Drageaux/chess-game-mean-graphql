@@ -118,14 +118,22 @@ export const resolvers = {
     },
     movePiece: async (root: any, args: any, context: any) => {
       let session: any = await Session.findById(args.gameId)
-        .populate('board')
+        .populate('gameboard')
         .exec();
       let squares: any[] = session.gameboard.squares;
-      let fromSqr = squares.find(s => args.from.name === s.name);
-      let toSqr = squares.find(s => args.to.name === s.name);
-      console.log(toSqr);
+      let fromSqr = squares.find(
+        s => `${args.from.file}${args.from.rank}` === s.name
+      );
+      let toSqr = squares.find(
+        s => `${args.to.file}${args.to.rank}` === s.name
+      );
+      // start modifying
       toSqr.piece = fromSqr.piece;
-      await session.save();
+      fromSqr.piece = null;
+      session.markModified('gameboard');
+      // console.log(`AFTER\nfrom ${fromSqr}\n`, `to ${toSqr}`);
+      await session.gameboard.save();
+      // end modifying
       return session;
       // args.from.piece
     }
