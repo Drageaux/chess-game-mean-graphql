@@ -45,7 +45,7 @@ query PlayGame($gameId: ID!, $userId: ID!) {
       currentTurn
     }
     # get id to check availability and reroute if nonexistent
-    gameBoard {
+    gameboard {
       id
     }
   }
