@@ -80,29 +80,24 @@ export const resolvers = {
         blackTeam: null,
         'gameState.gameStarted': false
       }).exec();
+
       if (session) {
         // add final player start game
-        // TODO: add more players/viewers
-        const newGameboard = await Gameboard.create({
-          squares: DEFAULT_BOARD
-        });
-        session.gameState.gameStarted = true;
-        session.gameboard = newGameboard._id;
-        // await session.updateOne({
-        //   blackTeam: args.userId,
-        //   'gameState.gameStarted': true,
-        //   gameboard: newGameboard._id
-        // });
-        // console.log(`inited session `, session);
-        session.save(function(err: any, data: any) {
-          if (data) {
-            // TODO: # of players in queue, etc.
-            pubsub.publish('MATCH_FOUND', { matchFound: data });
-            return data;
-          } else if (err) {
-            return err.message;
-          }
-        });
+        try {
+          // TODO: add more players/viewers
+          const newGameboard = await Gameboard.create({
+            squares: DEFAULT_BOARD
+          });
+          session.gameState.gameStarted = true;
+          session.gameboard = newGameboard._id;
+          session.blackTeam = args.userId;
+
+          // TODO: # of players in queue, etc.
+          let saveSession = await session.save();
+          pubsub.publish('MATCH_FOUND', { matchFound: saveSession });
+        } catch (e) {
+          return e.message;
+        }
       } else {
         // create new session instead if no match
         try {
@@ -138,9 +133,9 @@ export const resolvers = {
         console.log(saveBoard);
         pubsub.publish('BOARD_CHANGED', { boardChanged: session });
         return saveBoard;
-      } catch (err) {
-        console.log('err', err);
-        return { test: 'test' };
+      } catch (e) {
+        // FIXME: not returning error as accepted somehow
+        return e.message;
       }
     }
   },
