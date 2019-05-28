@@ -97,8 +97,8 @@ export const resolvers = {
         session.save(function(err: any, data: any) {
           if (data) {
             // TODO: # of players in queue, etc.
-            pubsub.publish('MATCH_FOUND', { matchFound: session });
-            return session;
+            pubsub.publish('MATCH_FOUND', { matchFound: data });
+            return data;
           } else if (err) {
             return err.message;
           }
@@ -134,9 +134,9 @@ export const resolvers = {
       // end modifying
       session.gameboard.save(function(err: any, data: any) {
         if (data) {
-          // TODO: # of players in queue, etc.
-          pubsub.publish('BOARD_CHANGED', { boardChanged: session });
-          return session;
+          console.log(data);
+          pubsub.publish('BOARD_CHANGED', { boardChanged: data });
+          return data;
         } else if (err) {
           return err.message;
         }

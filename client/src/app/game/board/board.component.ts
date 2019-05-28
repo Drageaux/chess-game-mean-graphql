@@ -51,38 +51,36 @@ export class BoardComponent implements OnChanges, OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    this.getBoardQuery = this.getBoardGQL.watch({
-      userId: '5cdda44272985718046cba86',
-      gameId: this.gameId
-    });
-
-    this.subs.sink = this.getBoardQuery.valueChanges
+    this.subs.sink = this.getBoardGQL
+      .fetch({
+        userId: '5cdda44272985718046cba86',
+        gameId: this.gameId
+      })
       .pipe(map(({ data }) => data.playGame))
       .subscribe(result => {
         console.log(result);
         this.board = result.gameboard;
       });
 
+    // this.subs.sink = this.getBoardQuery.valueChanges
+    //   .pipe(map(({ data }) => data.playGame))
+    //   .subscribe(result => {
+    //     console.log(result);
+    //     this.board = result.gameboard;
+    //   });
+
     this.subscribeToUpdatedBoard();
   }
 
   subscribeToUpdatedBoard() {
     // TODO: update board
-    this.getBoardQuery.subscribeToMore({
-      document: this.boardChangedGQL.document,
-      variables: {
+    this.subs.sink = this.boardChangedGQL
+      .subscribe({
         userId: '5cdda44272985718046cba86'
-      },
-      updateQuery: (prev, { subscriptionData }) => {
-        console.log(subscriptionData);
-        return {
-          ...prev,
-          entry: {
-            board: subscriptionData.data.boardChanged
-          }
-        };
-      }
-    });
+      })
+      .subscribe(({ data }) => {
+        this.board = data.boardChanged;
+      });
   }
 
   move() {
@@ -100,15 +98,8 @@ export class BoardComponent implements OnChanges, OnInit, OnDestroy {
           from: { file: fromSqr.file, rank: fromSqr.rank },
           to: { file: toSqr.file, rank: toSqr.rank }
         })
-        .subscribe(() => console.log('mutated'));
+        .subscribe(); // no need to change anything, already subscribed below
     }
-
-    //   retry(2),
-    //   catchError((err, caught) => {
-    //     return caught;
-    //   })
-    // )
-    // .subscribe(result => console.log(result), err => console.error(err));
   }
 
   ngOnDestroy(): void {
