@@ -116,31 +116,32 @@ export const resolvers = {
       }
     },
     movePiece: async (root: any, args: any, context: any) => {
-      let session: any = await Session.findById(args.gameId)
-        .populate('gameboard')
-        .exec();
-      let squares: any[] = session.gameboard.squares;
-      let fromSqr = squares.find(
-        s => `${args.from.file}${args.from.rank}` === s.name
-      );
-      let toSqr = squares.find(
-        s => `${args.to.file}${args.to.rank}` === s.name
-      );
-      // start modifying
-      toSqr.piece = fromSqr.piece;
-      fromSqr.piece = null;
-      session.markModified('gameboard');
-      // console.log(`AFTER\nfrom ${fromSqr}\n`, `to ${toSqr}`);
-      // end modifying
-      session.gameboard.save(function(err: any, data: any) {
-        if (data) {
-          console.log(data);
-          pubsub.publish('BOARD_CHANGED', { boardChanged: data });
-          return data;
-        } else if (err) {
-          return err.message;
-        }
-      });
+      try {
+        // let session: any = await Session.findById(args.gameId)
+        let session: any = await Session.findById('0')
+          .populate('gameboard')
+          .exec();
+        let squares: any[] = session.gameboard.squares;
+        let fromSqr = squares.find(
+          s => `${args.from.file}${args.from.rank}` === s.name
+        );
+        let toSqr = squares.find(
+          s => `${args.to.file}${args.to.rank}` === s.name
+        );
+        // start modifying
+        toSqr.piece = fromSqr.piece;
+        fromSqr.piece = null;
+        session.markModified('gameboard');
+        // console.log(`AFTER\nfrom ${fromSqr}\n`, `to ${toSqr}`);
+        // end modifying
+        let saveBoard = await session.gameboard.save();
+        console.log(saveBoard);
+        pubsub.publish('BOARD_CHANGED', { boardChanged: session });
+        return saveBoard;
+      } catch (err) {
+        console.log('err', err);
+        return { test: 'test' };
+      }
     }
   },
   Subscription: {

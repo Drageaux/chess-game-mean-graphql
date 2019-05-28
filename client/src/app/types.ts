@@ -177,6 +177,7 @@ export type PlayGameQuery = { __typename?: "Query" } & {
           "gameStarted" | "gameOver" | "currentTurn"
         >
       >;
+      gameboard: Maybe<{ __typename?: "Gameboard" } & Pick<Gameboard, "id">>;
     } & BasicSessionFieldsFragment
   >;
 };
@@ -339,6 +340,9 @@ export const PlayGameDocument = gql`
         gameStarted
         gameOver
         currentTurn
+      }
+      gameboard {
+        id
       }
     }
   }
