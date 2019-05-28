@@ -1,3 +1,4 @@
+import { prop, Typegoose } from 'typegoose';
 import * as mongoose from 'mongoose';
 var Schema = mongoose.Schema;
 
@@ -5,7 +6,8 @@ import Piece from './piece';
 const pieceSchema = Piece.schema;
 
 // easier for Mongoose to understand
-const File = Object.freeze({
+type File = 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h';
+const Files = Object.freeze({
   1: 'a',
   2: 'b',
   3: 'c',
@@ -31,7 +33,12 @@ export enum FILE {
 
 const squareSchema = new Schema({
   // prevent udpates for x and y
-  file: { alias: 'x', type: String, enum: Object.values(File), required: true },
+  file: {
+    alias: 'x',
+    type: String,
+    enum: Object.values(Files),
+    required: true
+  },
   rank: { alias: 'y', type: Number, required: true },
   piece: pieceSchema
 });
@@ -74,3 +81,20 @@ gameboardSchema.virtual('blackKingLocation').get(function(v: any) {
 });
 
 export default mongoose.model('Gameboard', gameboardSchema);
+
+import { Piece as PieceType } from './piece';
+class Square extends Typegoose {
+  @prop({ enum: Object.values(Files), required: true })
+  file: File;
+
+  @prop({ required: true })
+  rank: number;
+
+  @prop()
+  piece: PieceType;
+}
+
+// export class Gameboard extends Typegoose {
+//   @arrayProp({itemsRef: })
+//   squares:
+// }
