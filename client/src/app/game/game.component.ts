@@ -1,22 +1,8 @@
-import { Component, OnInit, OnDestroy, AfterViewChecked } from '@angular/core';
-import {
-  Session,
-  Square,
-  PlayGameGQL,
-  PlayGameQuery,
-  GetBoardGQL,
-  GetBoardQuery,
-  GetBoardQueryVariables,
-  BoardChangedGQL,
-  Gameboard
-} from '@app/types';
+import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Session, PlayGameGQL } from '@app/types';
 import { Router, ActivatedRoute } from '@angular/router';
-import { Observable, throwError } from 'rxjs';
 import { map, retry, catchError } from 'rxjs/operators';
 import { SubSink } from 'subsink';
-import { ApolloQueryResult } from 'apollo-client';
-import { from } from 'zen-observable';
-import { QueryRef } from 'apollo-angular';
 
 @Component({
   selector: 'app-game',
@@ -25,9 +11,6 @@ import { QueryRef } from 'apollo-angular';
 })
 export class GameComponent implements OnInit, OnDestroy {
   private subs = new SubSink();
-
-  // playGameQuery: QueryRef<PlayGameQuery, PlayGameQueryVariables>;
-
   gameSession: Session;
 
   constructor(

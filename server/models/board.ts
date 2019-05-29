@@ -38,7 +38,7 @@ class Square extends Typegoose {
   piece?: Piece;
 
   @prop()
-  get name() {
+  get name(): string {
     return `${this.file}${this.rank}`;
   }
 }

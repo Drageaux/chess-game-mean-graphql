@@ -79,7 +79,7 @@ export const resolvers = {
         whiteTeam: { $ne: args.userId }, // if is first player, prevent joining as second player
         blackTeam: null,
         'gameState.gameStarted': false
-      });
+      }).exec();
 
       console.log('find session:', session);
       if (session) {
@@ -89,15 +89,14 @@ export const resolvers = {
           const newBoard = await BoardModel.create({
             squares: DEFAULT_BOARD
           });
-          console.log('find new board:', newBoard);
           session.gameState.gameStarted = true;
           session.board = newBoard._id;
           session.blackTeam = args.userId;
 
           // TODO: # of players in queue, etc.
           let saveSession = await session.save();
-
           pubsub.publish('MATCH_FOUND', { matchFound: saveSession });
+          return saveSession;
         } catch (e) {
           return e.message;
         }
@@ -107,7 +106,6 @@ export const resolvers = {
           const newSession = await SessionModel.create({
             whiteTeam: args.userId
           });
-
           return newSession;
         } catch (e) {
           return e.message;
@@ -116,11 +114,11 @@ export const resolvers = {
     },
     movePiece: async (root: any, args: any, context: any) => {
       try {
-        let session: any = await SessionModel.findById(args.gameId)
+        let session = await SessionModel.findById(args.gameId)
           // let session: any = await SessionModel.findById('0')
           .populate('board')
           .exec();
-        let squares: any[] = session.board.squares;
+        let squares = session.board.squares;
         let fromSqr = squares.find(
           s => `${args.from.file}${args.from.rank}` === s.name
         );
@@ -133,9 +131,10 @@ export const resolvers = {
         session.markModified('board');
         // console.log(`AFTER\nfrom ${fromSqr}\n`, `to ${toSqr}`);
         // end modifying
-        let saveBoard = await session.board.save();
+        let saveSession = await session.save();
+        let saveBoard = saveSession.board;
         console.log(saveBoard);
-        pubsub.publish('BOARD_CHANGED', { boardChanged: session });
+        pubsub.publish('BOARD_CHANGED', { boardChanged: saveBoard });
         return saveBoard;
       } catch (e) {
         // FIXME: not returning error as accepted somehow

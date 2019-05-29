@@ -59,4 +59,9 @@ export class Session extends Typegoose {
   }
 }
 
-export const SessionModel = new Session().getModelForClass(Session);
+export const SessionModel = new Session().getModelForClass(Session, {
+  schemaOptions: {
+    toObject: { virtuals: true },
+    toJSON: { virtuals: true }
+  }
+});
