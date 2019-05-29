@@ -43,7 +43,7 @@ class Square extends Typegoose {
   }
 }
 
-export class Gameboard extends Typegoose {
+export class Board extends Typegoose {
   @prop()
   squares: Square[];
 
@@ -73,4 +73,4 @@ export class Gameboard extends Typegoose {
   }
 }
 
-export default new Gameboard().getModelForClass(Gameboard);
+export const BoardModel = new Board().getModelForClass(Board);

@@ -1,11 +1,7 @@
 import * as mongoose from 'mongoose';
 var Schema = mongoose.Schema;
 
-import User from './user';
-import Gameboard from './gameboard';
 import { Typegoose, prop, arrayProp, Ref } from 'typegoose';
-const UserSchema = User.schema;
-const GameboardSchema = Gameboard.schema;
 
 const sessionSchema = new Schema(
   {
@@ -59,20 +55,36 @@ sessionSchema.virtual('elapsedTime').get(function() {
 });
 sessionSchema.pre('remove', function(next) {
   // work-around for 'this' not recognizing its properties in TS
-  Gameboard.findByIdAndRemove((this as any).gameboard);
+  Board.findByIdAndRemove((this as any).gameboard);
   next();
 });
 
-export default mongoose.model('Session', sessionSchema);
+// export default mongoose.model('Session', sessionSchema);
 
-import { User as UserType } from './user';
+import { User } from './user';
+import { Board } from './board';
+
+class GameState extends Typegoose {
+  gameStarted: boolean;
+  gameOver: boolean;
+  currentTurn: string;
+  checked: Map<string, boolean>;
+  board: Board;
+}
+
 export class Session extends Typegoose {
-  @arrayProp({ itemsRef: UserType })
-  players?: Ref<UserType>[];
+  @arrayProp({ itemsRef: User })
+  players?: Ref<User>[];
 
   @prop({ default: Date.now, required: true })
   createdAt: Date;
 
   @prop({ default: Date.now })
   lastUpdated?: Date;
+
+  whiteTeam;
+  blackTeam;
+  gameState;
 }
+
+export const SessionModel = new Session().getModelForClass(Session);

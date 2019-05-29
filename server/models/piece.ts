@@ -32,4 +32,4 @@ export class Piece extends Typegoose {
   }
 }
 
-export default new Piece().getModelForClass(Piece);
+export const PieceModel = new Piece().getModelForClass(Piece);

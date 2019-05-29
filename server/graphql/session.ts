@@ -1,5 +1,5 @@
-import Session from '../models/session';
-import Gameboard, { FILE } from '../models/gameboard';
+import { SessionModel } from '../models/session';
+import { BoardModel, FILE } from '../models/board';
 import { PubSub, gql, withFilter } from 'apollo-server-express';
 const pubsub: PubSub = new PubSub();
 
@@ -66,7 +66,7 @@ export const typeDefs = gql`
 export const resolvers = {
   Query: {
     playGame: async (root: any, args: any, context: any) => {
-      return await Session.findById(args.gameId)
+      return await SessionModel.findById(args.gameId)
         .populate('gameboard')
         .exec();
     }
@@ -75,7 +75,7 @@ export const resolvers = {
     findGame: async (root: any, args: any, context: any) => {
       // TODO: alternate black and white team for player
       // TODO: prioritize players that came first
-      let session: any = await Session.findOne({
+      let session: any = await SessionModel.findOne({
         whiteTeam: { $ne: args.userId }, // if is first player, prevent joining as second player
         blackTeam: null,
         'gameState.gameStarted': false
@@ -85,7 +85,7 @@ export const resolvers = {
         // add final player start game
         try {
           // TODO: add more players/viewers
-          const newGameboard = await Gameboard.create({
+          const newGameboard = await BoardModel.create({
             squares: DEFAULT_BOARD
           });
           session.gameState.gameStarted = true;
@@ -101,7 +101,7 @@ export const resolvers = {
       } else {
         // create new session instead if no match
         try {
-          const newSession = await Session.create({
+          const newSession = await SessionModel.create({
             whiteTeam: args.userId
           });
           return newSession;
@@ -113,7 +113,7 @@ export const resolvers = {
     movePiece: async (root: any, args: any, context: any) => {
       try {
         // let session: any = await Session.findById(args.gameId)
-        let session: any = await Session.findById('0')
+        let session: any = await SessionModel.findById('0')
           .populate('gameboard')
           .exec();
         let squares: any[] = session.gameboard.squares;

@@ -8,4 +8,4 @@ export class User extends Typegoose {
   email: string;
 }
 
-export default new User().getModelForClass(User);
+export const UserModel = new User().getModelForClass(User);
