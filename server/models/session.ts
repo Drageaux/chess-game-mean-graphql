@@ -3,6 +3,7 @@ var Schema = mongoose.Schema;
 
 import User from './user';
 import Gameboard from './gameboard';
+import { Typegoose, prop, arrayProp, Ref } from 'typegoose';
 const UserSchema = User.schema;
 const GameboardSchema = Gameboard.schema;
 
@@ -63,3 +64,15 @@ sessionSchema.pre('remove', function(next) {
 });
 
 export default mongoose.model('Session', sessionSchema);
+
+import { User as UserType } from './user';
+export class Session extends Typegoose {
+  @arrayProp({ itemsRef: UserType })
+  players?: Ref<UserType>[];
+
+  @prop({ default: Date.now, required: true })
+  createdAt: Date;
+
+  @prop({ default: Date.now })
+  lastUpdated?: Date;
+}
