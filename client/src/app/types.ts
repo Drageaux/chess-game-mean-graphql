@@ -16,7 +16,7 @@ export type BasicUser = User & {
   email?: Maybe<Scalars["String"]>;
 };
 
-export type Gameboard = {
+export type Board = {
   id: Scalars["ID"];
   squares?: Maybe<Array<Maybe<Square>>>;
   whiteKingLocation?: Maybe<Square>;
@@ -33,7 +33,7 @@ export type Mutation = {
   _empty?: Maybe<Scalars["String"]>;
   addUser?: Maybe<BasicUser>;
   findGame?: Maybe<WaitingForGame>;
-  movePiece?: Maybe<Gameboard>;
+  movePiece?: Maybe<Board>;
 };
 
 export type MutationAddUserArgs = {
@@ -87,7 +87,7 @@ export type Session = {
   lastUpdated?: Maybe<Scalars["String"]>;
   elapsedTime?: Maybe<Scalars["String"]>;
   gameState?: Maybe<GameState>;
-  gameboard?: Maybe<Gameboard>;
+  board?: Maybe<Board>;
 };
 
 export type Square = {
@@ -106,7 +106,7 @@ export type Subscription = {
   _empty?: Maybe<Scalars["String"]>;
   userAdded?: Maybe<BasicUser>;
   matchFound?: Maybe<Session>;
-  boardChanged?: Maybe<Gameboard>;
+  boardChanged?: Maybe<Board>;
 };
 
 export type SubscriptionMatchFoundArgs = {
@@ -141,8 +141,8 @@ export type SquareXyFieldsFragment = { __typename?: "Square" } & Pick<
   "file" | "rank"
 >;
 
-export type GameboardFieldsFragment = { __typename?: "Gameboard" } & Pick<
-  Gameboard,
+export type BoardFieldsFragment = { __typename?: "Board" } & Pick<
+  Board,
   "id"
 > & {
     squares: Maybe<
@@ -177,7 +177,7 @@ export type PlayGameQuery = { __typename?: "Query" } & {
           "gameStarted" | "gameOver" | "currentTurn"
         >
       >;
-      gameboard: Maybe<{ __typename?: "Gameboard" } & Pick<Gameboard, "id">>;
+      board: Maybe<{ __typename?: "Board" } & Pick<Board, "id">>;
     } & BasicSessionFieldsFragment
   >;
 };
@@ -190,7 +190,7 @@ export type GetBoardQueryVariables = {
 export type GetBoardQuery = { __typename?: "Query" } & {
   playGame: Maybe<
     { __typename?: "Session" } & {
-      gameboard: Maybe<{ __typename?: "Gameboard" } & GameboardFieldsFragment>;
+      board: Maybe<{ __typename?: "Board" } & BoardFieldsFragment>;
     } & BasicSessionFieldsFragment
   >;
 };
@@ -212,7 +212,7 @@ export type MovePieceMutationVariables = {
 };
 
 export type MovePieceMutation = { __typename?: "Mutation" } & {
-  movePiece: Maybe<{ __typename?: "Gameboard" } & GameboardFieldsFragment>;
+  movePiece: Maybe<{ __typename?: "Board" } & BoardFieldsFragment>;
 };
 
 export type MatchFoundSubscriptionVariables = {
@@ -228,7 +228,7 @@ export type BoardChangedSubscriptionVariables = {
 };
 
 export type BoardChangedSubscription = { __typename?: "Subscription" } & {
-  boardChanged: Maybe<{ __typename?: "Gameboard" } & GameboardFieldsFragment>;
+  boardChanged: Maybe<{ __typename?: "Board" } & BoardFieldsFragment>;
 };
 
 export type UserWithIdFragment = { __typename?: "BasicUser" | "Player" } & Pick<
@@ -294,8 +294,8 @@ export const pieceFieldsFragmentDoc = gql`
     type
   }
 `;
-export const gameboardFieldsFragmentDoc = gql`
-  fragment gameboardFields on Gameboard {
+export const boardFieldsFragmentDoc = gql`
+  fragment boardFields on Board {
     id
     squares {
       ...squareXYFields
@@ -341,7 +341,7 @@ export const PlayGameDocument = gql`
         gameOver
         currentTurn
       }
-      gameboard {
+      board {
         id
       }
     }
@@ -363,13 +363,13 @@ export const GetBoardDocument = gql`
   query GetBoard($gameId: ID!, $userId: ID!) {
     playGame(gameId: $gameId, userId: $userId) {
       ...basicSessionFields
-      gameboard {
-        ...gameboardFields
+      board {
+        ...boardFields
       }
     }
   }
   ${basicSessionFieldsFragmentDoc}
-  ${gameboardFieldsFragmentDoc}
+  ${boardFieldsFragmentDoc}
 `;
 
 @Injectable({
@@ -401,10 +401,10 @@ export class FindGameGQL extends Apollo.Mutation<
 export const MovePieceDocument = gql`
   mutation MovePiece($gameId: ID!, $from: SquareXYInput!, $to: SquareXYInput!) {
     movePiece(gameId: $gameId, from: $from, to: $to) {
-      ...gameboardFields
+      ...boardFields
     }
   }
-  ${gameboardFieldsFragmentDoc}
+  ${boardFieldsFragmentDoc}
 `;
 
 @Injectable({
@@ -437,10 +437,10 @@ export class MatchFoundGQL extends Apollo.Subscription<
 export const BoardChangedDocument = gql`
   subscription BoardChanged($userId: ID!) {
     boardChanged(userId: $userId) {
-      ...gameboardFields
+      ...boardFields
     }
   }
-  ${gameboardFieldsFragmentDoc}
+  ${boardFieldsFragmentDoc}
 `;
 
 @Injectable({

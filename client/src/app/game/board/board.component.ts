@@ -7,7 +7,7 @@ import {
   OnDestroy
 } from '@angular/core';
 import {
-  Gameboard,
+  Board,
   Square,
   GetBoardGQL,
   GetBoardQuery,
@@ -15,7 +15,7 @@ import {
   MovePieceGQL,
   BoardChangedGQL
 } from '@app/types';
-import { BehaviorSubject, throwError } from 'rxjs';
+import { throwError } from 'rxjs';
 import { QueryRef } from 'apollo-angular';
 import { SubSink } from 'subsink';
 import { map } from 'rxjs/operators';
@@ -31,7 +31,7 @@ export class BoardComponent implements OnChanges, OnInit, OnDestroy {
   @Input() gameId: string;
   @Input() currTurn: 'white' | 'black';
   getBoardQuery: QueryRef<GetBoardQuery, GetBoardQueryVariables>;
-  board: Gameboard;
+  board: Board;
 
   // view-based
   moving = false;
@@ -59,7 +59,7 @@ export class BoardComponent implements OnChanges, OnInit, OnDestroy {
       .pipe(map(({ data }) => data.playGame))
       .subscribe(result => {
         console.log(result);
-        this.board = result.gameboard;
+        this.board = result.board;
       });
 
     // this.subs.sink = this.getBoardQuery.valueChanges

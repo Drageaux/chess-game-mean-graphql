@@ -14,7 +14,7 @@ fragment squareXYFields on Square {
   rank
 }
 
-fragment gameboardFields on Gameboard {
+fragment boardFields on Board {
   id
   squares {
     ...squareXYFields
@@ -45,7 +45,7 @@ query PlayGame($gameId: ID!, $userId: ID!) {
       currentTurn
     }
     # get id to check availability and reroute if nonexistent
-    gameboard {
+    board {
       id
     }
   }
@@ -54,8 +54,8 @@ query PlayGame($gameId: ID!, $userId: ID!) {
 query GetBoard($gameId: ID!, $userId: ID!) {
   playGame(gameId: $gameId, userId: $userId) {
     ...basicSessionFields
-    gameboard {
-      ...gameboardFields
+    board {
+      ...boardFields
     }
   }
 }
@@ -68,7 +68,7 @@ mutation FindGame($userId: ID!) {
 
 mutation MovePiece($gameId: ID!, $from: SquareXYInput!, $to: SquareXYInput!) {
   movePiece(gameId: $gameId, from: $from, to: $to) {
-    ...gameboardFields
+    ...boardFields
   }
 }
 
@@ -80,6 +80,6 @@ subscription MatchFound($userId: ID!) {
 
 subscription BoardChanged($userId: ID!) {
   boardChanged(userId: $userId) {
-    ...gameboardFields
+    ...boardFields
   }
 }

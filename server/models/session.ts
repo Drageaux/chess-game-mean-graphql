@@ -10,7 +10,7 @@ const Colors = {
 };
 
 class GameState extends Typegoose {
-  @prop({ default: false })
+  @prop({ default: false, required: true })
   gameStarted: boolean;
 
   @prop({ default: false })
@@ -19,7 +19,7 @@ class GameState extends Typegoose {
   @prop({ enum: Object.values(Colors), required: true, default: 'white' })
   currentTurn: Color;
 
-  @prop({ default: { white: false, black: false } })
+  @prop({ default: { white: false, black: false }, required: true })
   checked: Map<Color, boolean>;
 
   @prop({ ref: Board })
@@ -35,10 +35,10 @@ export class Session extends Typegoose {
   players?: Ref<User>[];
 
   @prop({ default: Date.now, required: true })
-  createdAt: string | number;
+  createdAt: Date;
 
   @prop({ default: Date.now })
-  lastUpdated?: string | number;
+  lastUpdated?: Date;
 
   @prop({ ref: User })
   whiteTeam?: Ref<User>;
@@ -46,16 +46,16 @@ export class Session extends Typegoose {
   @prop({ ref: User })
   blackTeam?: Ref<User>;
 
-  @prop()
+  @prop({ default: new GameState() })
   gameState?: GameState;
 
   @prop({ ref: Board })
   board?: Board;
 
   @prop()
-  get elapsedTime(): string | number {
+  get elapsedTime(): Date {
     // TODO: find out the time unit (s or ms)
-    return Date.now() - Date.parse(this.createdAt.toString());
+    return new Date(Date.now().valueOf() - this.createdAt.getTime());
   }
 }
 

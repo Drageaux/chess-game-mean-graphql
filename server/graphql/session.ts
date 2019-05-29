@@ -1,4 +1,4 @@
-import { SessionModel } from '../models/session';
+import { SessionModel, Session } from '../models/session';
 import { BoardModel, FILE } from '../models/board';
 import { PubSub, gql, withFilter } from 'apollo-server-express';
 const pubsub: PubSub = new PubSub();
@@ -21,7 +21,7 @@ export const typeDefs = gql`
     rank: Int!
   }
 
-  type Gameboard {
+  type Board {
     id: ID!
     squares: [Square]
     whiteKingLocation: Square
@@ -45,7 +45,7 @@ export const typeDefs = gql`
     lastUpdated: String
     elapsedTime: String
     gameState: GameState
-    gameboard: Gameboard
+    board: Board
   }
 
   extend type Query {
@@ -54,12 +54,12 @@ export const typeDefs = gql`
 
   extend type Mutation {
     findGame(userId: ID!): WaitingForGame
-    movePiece(gameId: ID!, from: SquareXYInput!, to: SquareXYInput!): Gameboard
+    movePiece(gameId: ID!, from: SquareXYInput!, to: SquareXYInput!): Board
   }
 
   extend type Subscription {
     matchFound(userId: ID!): Session
-    boardChanged(userId: ID!): Gameboard
+    boardChanged(userId: ID!): Board
   }
 `;
 // a map of functions which return data for the schema.
@@ -67,7 +67,7 @@ export const resolvers = {
   Query: {
     playGame: async (root: any, args: any, context: any) => {
       return await SessionModel.findById(args.gameId)
-        .populate('gameboard')
+        .populate('board')
         .exec();
     }
   },
@@ -75,25 +75,28 @@ export const resolvers = {
     findGame: async (root: any, args: any, context: any) => {
       // TODO: alternate black and white team for player
       // TODO: prioritize players that came first
-      let session: any = await SessionModel.findOne({
+      let session = await SessionModel.findOne({
         whiteTeam: { $ne: args.userId }, // if is first player, prevent joining as second player
         blackTeam: null,
         'gameState.gameStarted': false
-      }).exec();
+      });
 
+      console.log('find session:', session);
       if (session) {
         // add final player start game
         try {
           // TODO: add more players/viewers
-          const newGameboard = await BoardModel.create({
+          const newBoard = await BoardModel.create({
             squares: DEFAULT_BOARD
           });
+          console.log('find new board:', newBoard);
           session.gameState.gameStarted = true;
-          session.gameboard = newGameboard._id;
+          session.board = newBoard._id;
           session.blackTeam = args.userId;
 
           // TODO: # of players in queue, etc.
           let saveSession = await session.save();
+
           pubsub.publish('MATCH_FOUND', { matchFound: saveSession });
         } catch (e) {
           return e.message;
@@ -104,6 +107,7 @@ export const resolvers = {
           const newSession = await SessionModel.create({
             whiteTeam: args.userId
           });
+
           return newSession;
         } catch (e) {
           return e.message;
@@ -112,11 +116,11 @@ export const resolvers = {
     },
     movePiece: async (root: any, args: any, context: any) => {
       try {
-        // let session: any = await Session.findById(args.gameId)
-        let session: any = await SessionModel.findById('0')
-          .populate('gameboard')
+        let session: any = await SessionModel.findById(args.gameId)
+          // let session: any = await SessionModel.findById('0')
+          .populate('board')
           .exec();
-        let squares: any[] = session.gameboard.squares;
+        let squares: any[] = session.board.squares;
         let fromSqr = squares.find(
           s => `${args.from.file}${args.from.rank}` === s.name
         );
@@ -126,10 +130,10 @@ export const resolvers = {
         // start modifying
         toSqr.piece = fromSqr.piece;
         fromSqr.piece = null;
-        session.markModified('gameboard');
+        session.markModified('board');
         // console.log(`AFTER\nfrom ${fromSqr}\n`, `to ${toSqr}`);
         // end modifying
-        let saveBoard = await session.gameboard.save();
+        let saveBoard = await session.board.save();
         console.log(saveBoard);
         pubsub.publish('BOARD_CHANGED', { boardChanged: session });
         return saveBoard;
