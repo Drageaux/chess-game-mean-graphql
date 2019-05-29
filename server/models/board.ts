@@ -1,5 +1,5 @@
 import { prop, Typegoose } from 'typegoose';
-import { Piece as PieceType } from './piece';
+import { Piece } from './piece';
 
 // easier for Mongoose to understand
 type File = 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h';
@@ -35,7 +35,7 @@ class Square extends Typegoose {
   rank: number;
 
   @prop()
-  piece?: PieceType;
+  piece?: Piece;
 
   @prop()
   get name() {
@@ -48,7 +48,7 @@ export class Board extends Typegoose {
   squares: Square[];
 
   @prop()
-  capturedPieces: PieceType[];
+  capturedPieces: Piece[];
 
   @prop()
   get whiteKingLocation() {

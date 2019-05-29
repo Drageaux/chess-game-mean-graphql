@@ -1,90 +1,62 @@
-import * as mongoose from 'mongoose';
-var Schema = mongoose.Schema;
-
-import { Typegoose, prop, arrayProp, Ref } from 'typegoose';
-
-const sessionSchema = new Schema(
-  {
-    players: [
-      { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: [] }
-    ],
-    createdAt: { type: Date, default: Date.now },
-    lastUpdated: { type: Date, default: Date.now },
-    whiteTeam: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      default: null
-    }, // TODO: multiple people in 1 team
-    blackTeam: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
-      default: null
-    },
-    gameState: {
-      gameStarted: { type: Boolean, default: false },
-      gameOver: { type: Boolean, default: false },
-      currentTurn: { type: String, enum: ['white', 'black'], default: 'white' },
-      checked: {
-        white: {
-          type: Boolean,
-          default: false
-        },
-        black: {
-          type: Boolean,
-          default: false
-        }
-      }
-    },
-    gameboard: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Gameboard'
-    }
-  },
-  {
-    toObject: {
-      virtuals: true
-    },
-    toJSON: {
-      virtuals: true
-    }
-  }
-);
-sessionSchema.virtual('elapsedTime').get(function() {
-  // TODO: find out the time unit
-  return Date.now() - this.createdAt;
-});
-sessionSchema.pre('remove', function(next) {
-  // work-around for 'this' not recognizing its properties in TS
-  Board.findByIdAndRemove((this as any).gameboard);
-  next();
-});
-
-// export default mongoose.model('Session', sessionSchema);
+import { Typegoose, prop, arrayProp, Ref, pre } from 'typegoose';
 
 import { User } from './user';
-import { Board } from './board';
+import { Board, BoardModel } from './board';
+
+type Color = 'white' | 'black';
+const Colors = {
+  WHITE: 'white' as Color,
+  BLACK: 'black' as Color
+};
 
 class GameState extends Typegoose {
+  @prop({ default: false })
   gameStarted: boolean;
+
+  @prop({ default: false })
   gameOver: boolean;
-  currentTurn: string;
-  checked: Map<string, boolean>;
-  board: Board;
+
+  @prop({ enum: Object.values(Colors), required: true, default: 'white' })
+  currentTurn: Color;
+
+  @prop({ default: { white: false, black: false } })
+  checked: Map<Color, boolean>;
+
+  @prop({ ref: Board })
+  board: Ref<Board>;
 }
 
+@pre<Session>('remove', function(next) {
+  BoardModel.findByIdAndRemove(this.board);
+  next();
+})
 export class Session extends Typegoose {
   @arrayProp({ itemsRef: User })
   players?: Ref<User>[];
 
   @prop({ default: Date.now, required: true })
-  createdAt: Date;
+  createdAt: string | number;
 
   @prop({ default: Date.now })
-  lastUpdated?: Date;
+  lastUpdated?: string | number;
 
-  whiteTeam;
-  blackTeam;
-  gameState;
+  @prop({ ref: User })
+  whiteTeam?: Ref<User>;
+
+  @prop({ ref: User })
+  blackTeam?: Ref<User>;
+
+  @prop()
+  gameState?: GameState;
+
+  @prop({ ref: Board })
+  board?: Board;
+
+  @prop()
+  get elapsedTime(): string | number {
+    // TODO: find out the time unit (s or ms)
+    return Date.now() - Date.parse(this.createdAt.toString());
+  }
 }
 
 export const SessionModel = new Session().getModelForClass(Session);

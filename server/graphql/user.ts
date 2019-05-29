@@ -1,4 +1,4 @@
-import { default as User, User as UserType } from '../models/user';
+import { UserModel, User } from '../models/user';
 import { PubSub, gql } from 'apollo-server-express';
 const pubsub: PubSub = new PubSub();
 
@@ -41,13 +41,13 @@ export const typeDefs = gql`
 export const resolvers = {
   Query: {
     findUser: async (root: any, args: { id: any }, context: any) =>
-      await User.findById(args.id).exec(),
-    getUsers: async () => await User.find({}).exec()
+      await UserModel.findById(args.id).exec(),
+    getUsers: async () => await UserModel.find({}).exec()
   },
   Mutation: {
     addUser: async (root: any, args: any, context: any) => {
       try {
-        const response: UserType = await User.create(args);
+        const response: User = await UserModel.create(args);
         pubsub.publish('USER_ADDED', { userAdded: args });
         return response;
       } catch (e) {
