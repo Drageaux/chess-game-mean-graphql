@@ -1,9 +1,5 @@
 import { prop, Typegoose } from 'typegoose';
-import * as mongoose from 'mongoose';
-var Schema = mongoose.Schema;
-
-import Piece from './piece';
-const pieceSchema = Piece.schema;
+import { Piece as PieceType } from './piece';
 
 // easier for Mongoose to understand
 type File = 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h';
@@ -17,7 +13,6 @@ const Files = Object.freeze({
   7: 'g',
   8: 'h'
 });
-
 const BOARD_SIZE = 8;
 // lookup-enum type, easier for JS forward and reverse accessing
 export enum FILE {
@@ -31,59 +26,8 @@ export enum FILE {
   'h'
 }
 
-const squareSchema = new Schema({
-  // prevent udpates for x and y
-  file: {
-    alias: 'x',
-    type: String,
-    enum: Object.values(Files),
-    required: true
-  },
-  rank: { alias: 'y', type: Number, required: true },
-  piece: pieceSchema
-});
-squareSchema.virtual('name').get(function(v: any) {
-  return `${this.x}${this.y}`;
-});
-
-// "flattened" 2D array of squares
-const gameboardSchema = new Schema(
-  {
-    squares: { type: [squareSchema] },
-    capturedPieces: [pieceSchema]
-  },
-  {
-    toObject: {
-      virtuals: true
-    },
-    toJSON: {
-      virtuals: true
-    }
-  }
-);
-gameboardSchema.virtual('whiteKingLocation').get(function(v: any) {
-  return this.squares.find(function(square: any) {
-    return (
-      square.piece &&
-      square.piece.type === 'king' &&
-      square.piece.color === 'white'
-    );
-  });
-});
-gameboardSchema.virtual('blackKingLocation').get(function(v: any) {
-  return this.squares.find(function(square: any) {
-    return (
-      square.piece &&
-      square.piece.type === 'king' &&
-      square.piece.color === 'black'
-    );
-  });
-});
-
-export default mongoose.model('Gameboard', gameboardSchema);
-
-import { Piece as PieceType } from './piece';
 class Square extends Typegoose {
+  // TODO: alias x and y when it's supported
   @prop({ enum: Object.values(Files), required: true })
   file: File;
 
@@ -91,10 +35,42 @@ class Square extends Typegoose {
   rank: number;
 
   @prop()
-  piece: PieceType;
+  piece?: PieceType;
+
+  @prop()
+  get name() {
+    return `${this.file}${this.rank}`;
+  }
 }
 
-// export class Gameboard extends Typegoose {
-//   @arrayProp({itemsRef: })
-//   squares:
-// }
+export class Gameboard extends Typegoose {
+  @prop()
+  squares: Square[];
+
+  @prop()
+  capturedPieces: PieceType[];
+
+  @prop()
+  get whiteKingLocation() {
+    return this.squares.find((square: Square) => {
+      return (
+        square.piece &&
+        square.piece.type === 'king' &&
+        square.piece.color === 'white'
+      );
+    });
+  }
+
+  @prop()
+  get blackKingLocation() {
+    return this.squares.find((square: Square) => {
+      return (
+        square.piece &&
+        square.piece.type === 'king' &&
+        square.piece.color === 'black'
+      );
+    });
+  }
+}
+
+export default new Gameboard().getModelForClass(Gameboard);
