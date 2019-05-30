@@ -1,4 +1,7 @@
 {
+  "linterOptions": {
+    "exclude": ["node_modules/**"]
+  },
   "extends": "tslint:recommended",
   "rulesDirectory": ["codelyzer"],
   "rules": {
