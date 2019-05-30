@@ -43,7 +43,7 @@ export const typeDefs = gql`
     players: [Player!]
     createdAt: String
     lastUpdated: String
-    elapsedTime: String
+    elapsedTime: Int
     gameState: GameState
     board: Board
   }

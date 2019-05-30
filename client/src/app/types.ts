@@ -85,7 +85,7 @@ export type Session = {
   players?: Maybe<Array<Player>>;
   createdAt?: Maybe<Scalars["String"]>;
   lastUpdated?: Maybe<Scalars["String"]>;
-  elapsedTime?: Maybe<Scalars["String"]>;
+  elapsedTime?: Maybe<Scalars["Int"]>;
   gameState?: Maybe<GameState>;
   board?: Maybe<Board>;
 };

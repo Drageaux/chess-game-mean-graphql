@@ -1,4 +1,4 @@
-import { Typegoose, prop, arrayProp, Ref, pre } from 'typegoose';
+import { Typegoose, prop, arrayProp, Ref, pre, plugin } from 'typegoose';
 
 import { User } from './user';
 import { Board, BoardModel } from './board';
@@ -53,15 +53,10 @@ export class Session extends Typegoose {
   board?: Board;
 
   @prop()
-  get elapsedTime(): Date {
-    // TODO: find out the time unit (s or ms)
-    return new Date(Date.now().valueOf() - this.createdAt.getTime());
+  get elapsedTime(): number {
+    // should be in millseconds
+    return Date.now() - this.createdAt.getTime();
   }
 }
 
-export const SessionModel = new Session().getModelForClass(Session, {
-  schemaOptions: {
-    toObject: { virtuals: true },
-    toJSON: { virtuals: true }
-  }
-});
+export const SessionModel = new Session().getModelForClass(Session);
