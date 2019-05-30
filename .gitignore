@@ -79,6 +79,7 @@ typings/
 .history/
 
 # Compiled
+**/bin/
 **/dist/
 **/node_modules/
 client/src/app/**/*.css

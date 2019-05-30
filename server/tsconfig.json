@@ -8,11 +8,19 @@
     "noImplicitAny": true,
     "moduleResolution": "node",
     "sourceMap": true,
-    "outDir": "dist",
+    "outDir": "./bin",
+    "rootDir": ".",
     "baseUrl": ".",
     "paths": {
-      "*": ["node_modules/*"]
-    }
+      // "*": ["node_modules/*"]
+    },
+    "allowJs": true,
+    "checkJs": true,
+    // "strict": true,
+    // "strictNullChecks": true
+    "typeRoots": [],
+    "types": []
   },
-  "include": ["server", "./**/*"]
+  // "include": ["server", "./**/*"],
+  "exclude": ["bin", "node_modules", "**/*.spec.ts"]
 }
