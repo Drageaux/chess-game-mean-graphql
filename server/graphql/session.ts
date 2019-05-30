@@ -120,10 +120,10 @@ export const resolvers = {
           .exec();
         let squares = session.board.squares;
         let fromSqr = squares.find(
-          s => `${args.from.file}${args.from.rank}` === s.name
+          s => `${args.from.file}${args.from.rank}` === `${s.file}${s.rank}`
         );
         let toSqr = squares.find(
-          s => `${args.to.file}${args.to.rank}` === s.name
+          s => `${args.to.file}${args.to.rank}` === `${s.file}${s.rank}`
         );
         // start modifying
         toSqr.piece = fromSqr.piece;

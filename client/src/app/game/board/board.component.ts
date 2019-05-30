@@ -89,8 +89,8 @@ export class BoardComponent implements OnChanges, OnInit, OnDestroy {
     if (!squares || squares.length === 0) {
       return throwError('Board has no squares');
     }
-    const fromSqr: Square = squares.find(x => x.name === 'e2');
-    const toSqr: Square = squares.find(x => x.name === 'e4');
+    const fromSqr: Square = squares.find(x => `${x.file}${x.rank}` === 'e2');
+    const toSqr: Square = squares.find(x => `${x.file}${x.rank}` === 'e4');
     if (fromSqr && toSqr) {
       this.subs.sink = this.movePieceGQL
         .mutate({
