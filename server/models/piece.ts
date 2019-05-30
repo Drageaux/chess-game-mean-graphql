@@ -27,7 +27,7 @@ export class Piece extends Typegoose {
   captured?: boolean;
 
   @prop()
-  get name() {
+  get name(): string {
     return `${this.color} ${this.type}`;
   }
 }
