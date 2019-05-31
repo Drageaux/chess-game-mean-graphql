@@ -1,4 +1,4 @@
-import { prop, Typegoose, InstanceType, pre } from 'typegoose';
+import { prop, Typegoose, InstanceType, pre, arrayProp } from 'typegoose';
 import { Piece } from './piece';
 
 // easier for Mongoose/Typegoose to understand
@@ -52,10 +52,10 @@ const SquareModel = new Square().getModelForClass(Square, {
 });
 
 export class Board extends Typegoose {
-  @prop({ default: DEFAULT_BOARD, required: true })
+  @arrayProp({ items: Square, default: DEFAULT_BOARD })
   squares: Square[];
 
-  @prop()
+  @arrayProp({ items: Piece })
   capturedPieces?: Piece[];
 
   @prop()
