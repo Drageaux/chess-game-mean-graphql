@@ -1,20 +1,8 @@
-import { prop, Typegoose, InstanceType, pre, arrayProp } from 'typegoose';
+import { prop, Typegoose, InstanceType, pre, arrayProp, post } from 'typegoose';
 import { Piece } from './piece';
 
-// easier for Mongoose/Typegoose to understand
-type File = 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h';
-const Files = Object.freeze({
-  1: 'a',
-  2: 'b',
-  3: 'c',
-  4: 'd',
-  5: 'e',
-  6: 'f',
-  7: 'g',
-  8: 'h'
-});
 // lookup-enum type, easier for JS forward and reverse accessing
-export enum FILE {
+export enum File {
   'a' = 1,
   'b',
   'c',
@@ -29,8 +17,8 @@ const DEFAULT_BOARD = initBoard(); // prevent remaking board every time
 
 class Square extends Typegoose {
   // TODO: alias x and y when it's supported
-  @prop({ enum: Object.values(Files), required: true })
-  file: File;
+  @prop({ lowercase: true, enum: File, required: true })
+  file: string;
 
   @prop({ required: true })
   rank: number;
@@ -51,8 +39,11 @@ const SquareModel = new Square().getModelForClass(Square, {
   }
 });
 
+@post<Board>('init', board => {
+  console.log(DEFAULT_BOARD);
+})
 export class Board extends Typegoose {
-  @arrayProp({ items: Square, default: DEFAULT_BOARD })
+  @arrayProp({ items: Square, default: [] })
   squares: Square[];
 
   @arrayProp({ items: Piece })
@@ -93,7 +84,7 @@ function initBoard(): Square[] {
   for (let x = 0; x < BOARD_SIZE; x++) {
     for (let y = 0; y < BOARD_SIZE; y++) {
       const newSquare: any = {
-        file: FILE[x + 1],
+        file: File[x + 1],
         rank: y + 1
       };
 
