@@ -55,7 +55,7 @@ const apollo: ApolloServer = new ApolloServer({
     return err;
   },
   formatResponse: (response: any) => {
-    log(success(`[APOLLO] Response ${JSON.stringify(response)}`));
+    log(success(`[APOLLO] Response:`, response));
     return response;
   } /*
   context: async (context: { connection: any; req: any }) => {
