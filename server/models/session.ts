@@ -1,4 +1,13 @@
-import { Typegoose, prop, arrayProp, Ref, pre, plugin } from 'typegoose';
+import {
+  Typegoose,
+  prop,
+  arrayProp,
+  Ref,
+  pre,
+  plugin,
+  instanceMethod,
+  InstanceType
+} from 'typegoose';
 
 import { User } from './user';
 import { Board, BoardModel } from './board';
@@ -59,4 +68,9 @@ export class Session extends Typegoose {
   }
 }
 
-export const SessionModel = new Session().getModelForClass(Session);
+export const SessionModel = new Session().getModelForClass(Session, {
+  schemaOptions: {
+    toObject: { virtuals: true },
+    toJSON: { virtuals: true }
+  }
+});

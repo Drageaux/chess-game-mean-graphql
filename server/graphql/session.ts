@@ -1,5 +1,6 @@
+import { InstanceType } from 'typegoose';
 import { SessionModel, Session } from '../models/session';
-import { BoardModel, FILE } from '../models/board';
+import { BoardModel, Board } from '../models/board';
 import { PubSub, gql, withFilter } from 'apollo-server-express';
 const pubsub: PubSub = new PubSub();
 
@@ -75,7 +76,7 @@ export const resolvers = {
     findGame: async (root: any, args: any, context: any) => {
       // TODO: alternate black and white team for player
       // TODO: prioritize players that came first
-      let session = await SessionModel.findOne({
+      let session: InstanceType<Session> = await SessionModel.findOne({
         whiteTeam: { $ne: args.userId }, // if is first player, prevent joining as second player
         blackTeam: null,
         'gameState.gameStarted': false
@@ -86,16 +87,17 @@ export const resolvers = {
         // add final player start game
         try {
           // TODO: add more players/viewers
-          const newBoard = await BoardModel.create({
-            squares: DEFAULT_BOARD
-          });
+          const newBoard: InstanceType<Board> = await BoardModel.create({}); // triggers 'save' hook; {}
           session.gameState.gameStarted = true;
-          session.board = newBoard._id;
+          session.board = newBoard._id; // by this time the board does not return an "id" prop yet
           session.blackTeam = args.userId;
 
           // TODO: # of players in queue, etc.
           let saveSession = await session.save();
-          pubsub.publish('MATCH_FOUND', { matchFound: saveSession });
+
+          pubsub.publish('MATCH_FOUND', {
+            matchFound: saveSession.populate('board')
+          });
           return saveSession;
         } catch (e) {
           return e.message;
@@ -114,10 +116,12 @@ export const resolvers = {
     },
     movePiece: async (root: any, args: any, context: any) => {
       try {
-        let session = await SessionModel.findById(args.gameId)
-          // let session: any = await SessionModel.findById('0')
+        let session: InstanceType<Session> = await SessionModel.findById(
+          args.gameId
+        )
           .populate('board')
           .exec();
+        // let board: InstanceType<Board> = session.board;
         let squares = session.board.squares;
         let fromSqr = squares.find(
           s => `${args.from.file}${args.from.rank}` === `${s.file}${s.rank}`
@@ -128,11 +132,11 @@ export const resolvers = {
         // start modifying
         toSqr.piece = fromSqr.piece;
         fromSqr.piece = null;
-        session.markModified('board');
+        session.markModified('board.squares');
         // console.log(`AFTER\nfrom ${fromSqr}\n`, `to ${toSqr}`);
         // end modifying
         let saveSession = await session.save();
-        let saveBoard = saveSession.board;
+        let saveBoard = session.board;
         console.log(saveBoard);
         pubsub.publish('BOARD_CHANGED', { boardChanged: saveBoard });
         return saveBoard;
@@ -166,99 +170,3 @@ export const resolvers = {
     }
   }
 };
-
-const BOARD_SIZE = 8;
-const DEFAULT_BOARD = initBoard(); // prevent remaking board every time
-
-function initBoard(): any[] {
-  let newBoard: any[] = [];
-
-  for (let x = 0; x < BOARD_SIZE; x++) {
-    for (let y = 0; y < BOARD_SIZE; y++) {
-      const newSquare: any = {
-        file: FILE[x + 1],
-        rank: y + 1
-      };
-
-      const newPiece: any = {};
-
-      // set color
-      switch (y + 1) {
-        case 1:
-          switch (x + 1) {
-            case 1:
-            case 8:
-              newPiece.type = 'rook';
-              break;
-            case 2:
-            case 7:
-              newPiece.type = 'knight';
-              break;
-            case 3:
-            case 6:
-              newPiece.type = 'bishop';
-              break;
-            case 4:
-              newPiece.type = 'queen';
-              break;
-            case 5:
-              newPiece.type = 'king';
-          }
-          newPiece.color = 'white';
-          newSquare.piece = newPiece;
-          break;
-        case 2:
-          newPiece.type = 'pawn';
-          newPiece.color = 'white';
-          newSquare.piece = newPiece;
-          break;
-        case 7:
-          newPiece.type = 'pawn';
-          newPiece.color = 'black';
-          newSquare.piece = newPiece;
-          break;
-        case 8:
-          switch (x + 1) {
-            case 1:
-            case 8:
-              newPiece.type = 'rook';
-              break;
-            case 2:
-            case 7:
-              newPiece.type = 'knight';
-              break;
-            case 3:
-            case 6:
-              newPiece.type = 'bishop';
-              break;
-            case 4:
-              newPiece.type = 'queen';
-              break;
-            case 5:
-              newPiece.type = 'king';
-          }
-          newPiece.color = 'black';
-          newSquare.piece = newPiece;
-          break;
-        default:
-          break;
-      }
-
-      newBoard.push(newSquare);
-    }
-  }
-
-  // sort descending in rank and ascending in file
-  // returned order shouldn't be further modified
-  newBoard = newBoard.sort((a, b) => {
-    if (a.rank - b.rank === 0) {
-      if (a.file > b.file) {
-        return 1;
-      } else if (a.file < b.file) {
-        return -1;
-      } else return 0;
-    } else return b.rank - a.rank;
-  });
-
-  return newBoard;
-}

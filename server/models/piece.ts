@@ -1,4 +1,4 @@
-import { prop, Typegoose } from 'typegoose';
+import { prop, Typegoose, pre } from 'typegoose';
 
 type Color = 'white' | 'black';
 const Colors = {
@@ -16,6 +16,11 @@ const PieceTypes = {
   KING: 'king' as PieceType
 };
 
+@pre<Piece>('save', function(next) {
+  console.log(this.color);
+  console.log(next);
+  next();
+})
 export class Piece extends Typegoose {
   @prop({ required: true, enum: Object.values(Colors) })
   color: Color;
@@ -32,4 +37,6 @@ export class Piece extends Typegoose {
   }
 }
 
-export const PieceModel = new Piece().getModelForClass(Piece);
+export const PieceModel = new Piece().getModelForClass(Piece, {
+  schemaOptions: { _id: false }
+});
