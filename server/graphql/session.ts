@@ -82,18 +82,17 @@ export const resolvers = {
         'gameState.gameStarted': false
       }).exec();
 
-      console.log('find session:', session);
       if (session) {
         // add final player start game
         try {
           // TODO: add more players/viewers
-          const newBoard: InstanceType<Board> = await BoardModel.create({}); // triggers 'save' hook; {}
+          const newBoard: InstanceType<Board> = await BoardModel.create({}); // triggers 'save' hook; {} may be required
           session.gameState.gameStarted = true;
           session.board = newBoard._id; // by this time the board does not return an "id" prop yet
           session.blackTeam = args.userId;
 
           // TODO: # of players in queue, etc.
-          let saveSession = await session.save();
+          const saveSession = await session.save();
 
           pubsub.publish('MATCH_FOUND', {
             matchFound: saveSession.populate('board')
@@ -121,8 +120,8 @@ export const resolvers = {
         )
           .populate('board')
           .exec();
-        // let board: InstanceType<Board> = session.board;
-        let squares = session.board.squares;
+        let board = session.board as InstanceType<Board>;
+        let squares = board.squares;
         let fromSqr = squares.find(
           s => `${args.from.file}${args.from.rank}` === `${s.file}${s.rank}`
         );
@@ -132,12 +131,12 @@ export const resolvers = {
         // start modifying
         toSqr.piece = fromSqr.piece;
         fromSqr.piece = null;
-        session.markModified('board.squares');
         // console.log(`AFTER\nfrom ${fromSqr}\n`, `to ${toSqr}`);
         // end modifying
-        let saveSession = await session.save();
-        let saveBoard = session.board;
-        console.log(saveBoard);
+
+        board.markModified('squares');
+        const saveBoard = await board.save();
+        // console.log(saveBoard);
         pubsub.publish('BOARD_CHANGED', { boardChanged: saveBoard });
         return saveBoard;
       } catch (e) {

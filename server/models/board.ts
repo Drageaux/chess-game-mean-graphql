@@ -39,6 +39,9 @@ const SquareModel = new Square().getModelForClass(Square, {
   }
 });
 
+@post<Board>('save', function(board) {
+  console.log(board);
+})
 export class Board extends Typegoose {
   @arrayProp({ items: Square })
   @prop({ default: DEFAULT_BOARD })
