@@ -86,7 +86,7 @@ export const resolvers = {
         // add final player start game
         try {
           // TODO: add more players/viewers
-          const newBoard: InstanceType<Board> = await BoardModel.create({}); // triggers 'save' hook; {} may be required
+          const newBoard: InstanceType<Board> = await new BoardModel().save(); // the devs on GitHub issues manually save
           session.gameState.gameStarted = true;
           session.board = newBoard._id; // by this time the board does not return an "id" prop yet
           session.blackTeam = args.userId;
@@ -104,9 +104,9 @@ export const resolvers = {
       } else {
         // create new session instead if no match
         try {
-          const newSession = await SessionModel.create({
+          const newSession = await new SessionModel({
             whiteTeam: args.userId
-          });
+          }).save();
           return newSession;
         } catch (e) {
           return e.message;
