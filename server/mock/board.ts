@@ -54,6 +54,18 @@ function initBoard(): Square[] {
           newPiece.color = 'white';
           newSquare.piece = newPiece;
           break;
+        case 5:
+          if (x + 1 === 7) {
+            newPiece.type = 'pawn';
+            newPiece.color = 'black';
+            newSquare.piece = newPiece;
+          }
+          if (x + 1 === 8) {
+            newPiece.type = 'pawn';
+            newPiece.color = 'white';
+            newSquare.piece = newPiece;
+          }
+          break;
         case 7:
           newPiece.type = 'pawn';
           newPiece.color = 'black';
