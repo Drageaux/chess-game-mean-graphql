@@ -13,7 +13,8 @@ import {
   GetBoardQuery,
   GetBoardQueryVariables,
   MovePieceGQL,
-  BoardChangedGQL
+  BoardChangedGQL,
+  GetMovesGQL
 } from '@app/types';
 import { throwError } from 'rxjs';
 import { QueryRef } from 'apollo-angular';
@@ -40,7 +41,8 @@ export class BoardComponent implements OnChanges, OnInit, OnDestroy {
   constructor(
     private getBoardGQL: GetBoardGQL,
     private movePieceGQL: MovePieceGQL,
-    private boardChangedGQL: BoardChangedGQL
+    private boardChangedGQL: BoardChangedGQL,
+    private testGetMoves: GetMovesGQL
   ) {}
 
   ngOnChanges(changes: SimpleChanges): void {
@@ -79,13 +81,15 @@ export class BoardComponent implements OnChanges, OnInit, OnDestroy {
         userId: '5cdda44272985718046cba86'
       })
       .subscribe(({ data }) => {
+        // updating here was about 100ms faster than on mutate return
         this.board = data.boardChanged;
+        console.timeEnd('move');
       });
   }
 
   move() {
     const squares = this.board.squares;
-    console.log(squares);
+    console.time('move');
     if (!squares || squares.length === 0) {
       return throwError('Board has no squares');
     }
@@ -98,8 +102,19 @@ export class BoardComponent implements OnChanges, OnInit, OnDestroy {
           from: { file: fromSqr.file, rank: fromSqr.rank },
           to: { file: toSqr.file, rank: toSqr.rank }
         })
-        .subscribe(); // no need to change anything, already subscribed below
+        .subscribe(); // no need to change anything, already subscribed
     }
+  }
+
+  testGetMove() {
+    console.time('test get moves');
+    for (let i = 0; i < 100; i++) {
+      this.subs.sink = this.testGetMoves
+        .fetch({ id: i }, { fetchPolicy: 'network-only' })
+        .subscribe(() => {});
+    }
+
+    console.timeEnd('test get moves');
   }
 
   ngOnDestroy(): void {

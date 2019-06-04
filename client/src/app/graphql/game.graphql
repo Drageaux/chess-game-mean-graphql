@@ -60,6 +60,17 @@ query GetBoard($gameId: ID!, $userId: ID!) {
   }
 }
 
+query GetMoves($id: Int) {
+  testGetMoves(id: $id) {
+    regularMoves {
+      file
+    }
+    eagerMoves {
+      file
+    }
+  }
+}
+
 mutation FindGame($userId: ID!) {
   findGame(userId: $userId) {
     elapsedTime
