@@ -1,7 +1,7 @@
 import { Square } from 'models/board';
 
 // lookup-enum type, easier for JS forward and reverse accessing
-enum File {
+enum FILE {
   'a' = 1,
   'b',
   'c',
@@ -18,7 +18,7 @@ function initBoard(): Square[] {
   for (let x = 0; x < BOARD_SIZE; x++) {
     for (let y = 0; y < BOARD_SIZE; y++) {
       const newSquare: any = {
-        file: File[x + 1],
+        file: FILE[x + 1],
         rank: y + 1
       };
 

@@ -2,7 +2,8 @@ import { prop, Typegoose, InstanceType, pre, arrayProp, post } from 'typegoose';
 import { Piece } from './piece';
 
 // lookup-enum type, easier for JS forward and reverse accessing
-export enum File {
+export type File = 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h';
+export enum FILE {
   'a' = 1,
   'b',
   'c',
@@ -17,8 +18,8 @@ const DEFAULT_BOARD = initBoard(); // prevent remaking board every time
 
 export class Square extends Typegoose {
   // TODO: alias x and y when it's supported
-  @prop({ lowercase: true, enum: File, required: true })
-  file: keyof typeof File;
+  @prop({ lowercase: true, enum: FILE, required: true })
+  file: File;
 
   @prop({ required: true })
   rank: number;
@@ -85,7 +86,7 @@ function initBoard(): Square[] {
   for (let x = 0; x < BOARD_SIZE; x++) {
     for (let y = 0; y < BOARD_SIZE; y++) {
       const newSquare: any = {
-        file: File[x + 1],
+        file: FILE[x + 1],
         rank: y + 1
       };
 
