@@ -1,10 +1,10 @@
 {
   "name": "graphql-express",
-  "main": "server.js",
+  "main": "server.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "tsc": "tsc",
-    "start": "tsc && node ./build/app.js",
+    "start": "tsc && pm2-runtime start ecosystem.config.js --env production",
     "dev": "node_modules/.bin/ts-node-dev server.ts"
   },
   "author": "David Thong Nguyen",
@@ -26,6 +26,7 @@
     "lodash": "^4.17.11",
     "mongoose": "^5.5.2",
     "path": "^0.12.7",
+    "pm2": "^3.5.1",
     "subscriptions-transport-ws": "^0.9.16",
     "typegoose": "^5.6.0"
   },
