@@ -3,6 +3,7 @@ import { mergeSchemas, makeExecutableSchema } from 'graphql-tools';
 
 import { typeDefs as User, resolvers as userResolvers } from './user';
 import { typeDefs as Session, resolvers as sessionResolvers } from './session';
+import { typeDefs as Move, resolvers as moveResolvers } from './move';
 
 const typeDefs = gql`
   type Query {
@@ -19,7 +20,7 @@ const typeDefs = gql`
 `;
 
 const schema = makeExecutableSchema({
-  typeDefs: [typeDefs, User, Session],
-  resolvers: [userResolvers, sessionResolvers]
+  typeDefs: [typeDefs, User, Session, Move],
+  resolvers: [userResolvers, sessionResolvers, moveResolvers]
 });
 export default schema;

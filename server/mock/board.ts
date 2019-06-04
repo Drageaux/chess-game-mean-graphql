@@ -1,8 +1,7 @@
-import { prop, Typegoose, InstanceType, pre, arrayProp, post } from 'typegoose';
-import { Piece } from './piece';
+import { Square } from 'models/board';
 
 // lookup-enum type, easier for JS forward and reverse accessing
-export enum File {
+enum File {
   'a' = 1,
   'b',
   'c',
@@ -13,72 +12,6 @@ export enum File {
   'h'
 }
 const BOARD_SIZE = 8;
-const DEFAULT_BOARD = initBoard(); // prevent remaking board every time
-
-export class Square extends Typegoose {
-  // TODO: alias x and y when it's supported
-  @prop({ lowercase: true, enum: File, required: true })
-  file: keyof typeof File;
-
-  @prop({ required: true })
-  rank: number;
-
-  @prop()
-  piece?: Piece;
-
-  @prop()
-  get name(this: InstanceType<Square>): string {
-    return `${this.file}${this.rank}`;
-  }
-}
-
-export const SquareModel = new Square().getModelForClass(Square, {
-  schemaOptions: {
-    toObject: { getters: true },
-    toJSON: { getters: true }
-  }
-});
-
-@post<Board>('save', function(board) {
-  console.log(board);
-})
-export class Board extends Typegoose {
-  @arrayProp({ items: Square })
-  @prop({ default: DEFAULT_BOARD })
-  squares: Square[];
-
-  @arrayProp({ items: Piece })
-  capturedPieces?: Piece[];
-
-  @prop()
-  get whiteKingLocation() {
-    return this.squares.find((square: Square) => {
-      return (
-        square.piece &&
-        square.piece.type === 'king' &&
-        square.piece.color === 'white'
-      );
-    });
-  }
-
-  @prop()
-  get blackKingLocation() {
-    return this.squares.find((square: Square) => {
-      return (
-        square.piece &&
-        square.piece.type === 'king' &&
-        square.piece.color === 'black'
-      );
-    });
-  }
-}
-
-export const BoardModel = new Board().getModelForClass(Board, {
-  schemaOptions: {
-    toObject: { virtuals: true },
-    toJSON: { virtuals: true }
-  }
-});
 
 function initBoard(): Square[] {
   let newBoard: Square[] = [];
@@ -171,3 +104,5 @@ function initBoard(): Square[] {
 
   return newBoard;
 }
+
+export default initBoard();
