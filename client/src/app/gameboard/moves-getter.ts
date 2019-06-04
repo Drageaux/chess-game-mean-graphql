@@ -8,7 +8,7 @@ import { Piece } from './pieces/piece';
 import { King } from './pieces/king';
 
 // turn this to true to console log time
-const performanceTest = false;
+const performanceTest = true;
 const MIN = 1;
 const MAX = 8;
 

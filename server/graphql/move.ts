@@ -7,29 +7,62 @@ import { PubSub, gql, withFilter } from 'apollo-server-express';
 const pubsub: PubSub = new PubSub();
 
 export const typeDefs = gql`
+  type Moves {
+    eagerMoves: [Square]
+    regularMoves: [Square]
+  }
+
   type Move {
     from: Square
     to: Square
   }
+
+  extend type Query {
+    testGetMoves(id: Int): Moves
+  }
 `;
 
-export const resolvers = {};
+export const resolvers = {
+  Query: {
+    testGetMoves: async (root: any, args: any, context: any) => {
+      // return moveMaker(
+      //   new SquareModel({
+      //     file: 'c',
+      //     rank: 5,
+      //     piece: new PieceModel({ color: 'white', type: 'rook' }) as Piece
+      //   }) as Square,
+      //   mock,
+      //   args.id
+      // );
+      return makeStraightLineMoves(
+        new SquareModel({
+          file: 'c',
+          rank: 5,
+          piece: new PieceModel({ color: 'white', type: 'rook' }) as Piece
+        }) as Square,
+        mock,
+        args.id
+      );
+    }
+  }
+};
 
 import mock from '../mock/board'; // mock board is not a Mongoose model, so no vals for virtuals
 
+interface Moves {
+  regularMoves: Square[];
+  eagerMoves: Square[];
+}
 // should keep a normal move list and a potential move list
-function moveMaker(piece: Piece, from: Square, board: Square[]) {
-  let moves: Square[] = [];
-  logBoard(board);
-  console.time('move');
-  if (piece.type === 'rook') {
-    // xMoves arr and yMoves arr
-    const moveMap: Map<String, Square[]> = new Map();
-    let maxFile = 8;
-    let minRank = 1;
-    let maxRank = 8;
-    const fromFile: any = FILE[from.file];
+function moveMaker(from: Square, board: Square[], id: number): Moves {
+  if (!from || !from.piece) {
+    return null;
+  }
+  let moves: Moves = { regularMoves: [], eagerMoves: [] };
+  // logBoard(board);
+  console.time(`move ${id}`);
 
+  if (from.piece.type === 'rook') {
     // find all obstacles first, then look for closest obstacles
     // then select moves between origin and obstacles
     const allMoves = board.filter(straightMoves(from));
@@ -48,7 +81,8 @@ function moveMaker(piece: Piece, from: Square, board: Square[]) {
       .reduce(closestX(from), null);
 
     // find all pieces in path, return the closest one
-    // add 1 eager move if ally, add 2 eager moves if opponent
+    // add 1 eager move if ally
+    // TODO: add 2 eager moves if opponent and separate move list
     allMoves.forEach((el: Square) => {
       const yStart = yBoundLower ? yBoundLower.rank : 1;
       const yEnd = yBoundUpper ? yBoundUpper.rank : 8;
@@ -61,13 +95,59 @@ function moveMaker(piece: Piece, from: Square, board: Square[]) {
         el.rank >= yStart &&
         el.rank <= yEnd
       ) {
-        moves.push(el);
+        if (el.piece) {
+          if (el.piece.color === from.piece.color) {
+            moves.eagerMoves.push(el);
+          } else if (el.piece.color !== from.piece.color) {
+            moves.eagerMoves.push(el);
+          }
+        }
       }
     });
 
-    console.timeEnd('move');
+    console.timeEnd(`move ${id}`);
   }
   return moves;
+}
+
+const toTwoDBoard = (board: any): any => {
+  const newArr = [];
+  for (let i = 0; i < board.length; i = i + 8) {
+    newArr.push(board.slice(i, i + 8));
+  }
+  return newArr;
+};
+
+function makeStraightLineMoves(from: Square, brd: Square[], id: number) {
+  const result: any[] = [];
+  const fileEnum: number = FILE[from.file];
+
+  console.time(`get straight lines ${id}`);
+  const board = toTwoDBoard(brd);
+  // find the closest piece
+  // border-inclusive if piece is enemy (capturable)
+  // border-exclusive if piece is friendly (non-capturable)
+
+  // go left
+  for (let i = fileEnum - 1; i >= 1; i--) {
+    result.push({ file: from.file, rank: from.rank });
+  }
+  // go right
+  for (let i = fileEnum + 1; i <= 8; i++) {
+    result.push({ file: from.file, rank: from.rank });
+  }
+  // go up
+  for (let i = from.rank + 1; i <= 8; i++) {
+    result.push({ file: from.file, rank: from.rank });
+  }
+  // go down
+  for (let i = from.rank - 1; i >= 1; i--) {
+    result.push({ file: from.file, rank: from.rank });
+  }
+
+  console.timeEnd(`get straight lines ${id}`);
+
+  return result;
 }
 
 // filter function for all squares in a straight line
@@ -115,18 +195,43 @@ const closestY = (from: Square) => (prev: Square, curr: Square): Square => {
 };
 
 const logBoard = (board: Square[]) => {
-  const newArr = [];
-  for (let i = 0; i < board.length; i = i + 8) {
-    newArr.push(board.slice(i, i + 8));
-  }
-
-  for (let row of newArr) {
+  for (let row of toTwoDBoard(board)) {
     console.log(row);
   }
 };
 
-moveMaker(
-  new PieceModel({ color: 'white', type: 'rook' }) as Piece,
-  new SquareModel({ file: 'c', rank: 5 }) as Square,
-  mock
-);
+const test = () => {
+  console.time('test all');
+
+  for (let i = 0; i < 1; i++) {
+    moveMaker(
+      new SquareModel({
+        file: 'c',
+        rank: 5,
+        piece: new PieceModel({ color: 'white', type: 'rook' }) as Piece
+      }) as Square,
+      mock,
+      i
+    );
+  }
+
+  console.timeEnd('test all');
+
+  console.time('test straight line');
+
+  for (let i = 0; i < 1; i++) {
+    makeStraightLineMoves(
+      new SquareModel({
+        file: 'c',
+        rank: 5,
+        piece: new PieceModel({ color: 'white', type: 'rook' }) as Piece
+      }) as Square,
+      mock,
+      i
+    );
+  }
+
+  console.timeEnd('test straight line');
+};
+
+test();

@@ -29,6 +29,16 @@ export type GameState = {
   currentTurn?: Maybe<Scalars["String"]>;
 };
 
+export type Move = {
+  from?: Maybe<Square>;
+  to?: Maybe<Square>;
+};
+
+export type Moves = {
+  eagerMoves?: Maybe<Array<Maybe<Square>>>;
+  regularMoves?: Maybe<Array<Maybe<Square>>>;
+};
+
 export type Mutation = {
   _empty?: Maybe<Scalars["String"]>;
   addUser?: Maybe<BasicUser>;
@@ -68,6 +78,7 @@ export type Query = {
   findUser?: Maybe<BasicUser>;
   getUsers?: Maybe<Array<Maybe<BasicUser>>>;
   playGame?: Maybe<Session>;
+  testGetMoves?: Maybe<Moves>;
 };
 
 export type QueryFindUserArgs = {
@@ -78,6 +89,10 @@ export type QueryPlayGameArgs = {
   gameId: Scalars["ID"];
   userId: Scalars["ID"];
   filterBy?: Maybe<Scalars["String"]>;
+};
+
+export type QueryTestGetMovesArgs = {
+  id?: Maybe<Scalars["Int"]>;
 };
 
 export type Session = {
@@ -192,6 +207,23 @@ export type GetBoardQuery = { __typename?: "Query" } & {
     { __typename?: "Session" } & {
       board: Maybe<{ __typename?: "Board" } & BoardFieldsFragment>;
     } & BasicSessionFieldsFragment
+  >;
+};
+
+export type GetMovesQueryVariables = {
+  id?: Maybe<Scalars["Int"]>;
+};
+
+export type GetMovesQuery = { __typename?: "Query" } & {
+  testGetMoves: Maybe<
+    { __typename?: "Moves" } & {
+      regularMoves: Maybe<
+        Array<Maybe<{ __typename?: "Square" } & Pick<Square, "file">>>
+      >;
+      eagerMoves: Maybe<
+        Array<Maybe<{ __typename?: "Square" } & Pick<Square, "file">>>
+      >;
+    }
   >;
 };
 
@@ -380,6 +412,28 @@ export class GetBoardGQL extends Apollo.Query<
   GetBoardQueryVariables
 > {
   document = GetBoardDocument;
+}
+export const GetMovesDocument = gql`
+  query GetMoves($id: Int) {
+    testGetMoves(id: $id) {
+      regularMoves {
+        file
+      }
+      eagerMoves {
+        file
+      }
+    }
+  }
+`;
+
+@Injectable({
+  providedIn: "root"
+})
+export class GetMovesGQL extends Apollo.Query<
+  GetMovesQuery,
+  GetMovesQueryVariables
+> {
+  document = GetMovesDocument;
 }
 export const FindGameDocument = gql`
   mutation FindGame($userId: ID!) {
