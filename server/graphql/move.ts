@@ -1,8 +1,17 @@
-import { PieceModel } from './../models/piece';
 import { InstanceType } from 'typegoose';
+import { PieceModel } from './../models/piece';
 import { SessionModel, Session } from '../models/session';
 import { Piece } from '../models/piece';
-import { FILE, BoardModel, Board, Square, SquareModel } from '../models/board';
+import {
+  File,
+  FILE,
+  BoardModel,
+  Board,
+  Square,
+  SquareModel
+} from '../models/board';
+import mock from '../mock/board'; // mock board is not a Mongoose model, so no vals for virtuals
+import { Move } from 'models/move';
 import { PubSub, gql, withFilter } from 'apollo-server-express';
 const pubsub: PubSub = new PubSub();
 
@@ -18,7 +27,7 @@ export const typeDefs = gql`
   }
 
   extend type Query {
-    testGetMoves(id: Int): Moves
+    testGetMoves(id: Int): Square!
   }
 `;
 
@@ -34,20 +43,14 @@ export const resolvers = {
       //   mock,
       //   args.id
       // );
-      return makeStraightLineMoves(
-        new SquareModel({
-          file: 'c',
-          rank: 5,
-          piece: new PieceModel({ color: 'white', type: 'rook' }) as Piece
-        }) as Square,
-        mock,
-        args.id
-      );
+      return new SquareModel({
+        file: 'c',
+        rank: 5,
+        piece: new PieceModel({ color: 'white', type: 'rook' }) as Piece
+      });
     }
   }
 };
-
-import mock from '../mock/board'; // mock board is not a Mongoose model, so no vals for virtuals
 
 interface Moves {
   regularMoves: Square[];
@@ -66,6 +69,8 @@ function moveMaker(from: Square, board: Square[], id: number): Moves {
     // find all obstacles first, then look for closest obstacles
     // then select moves between origin and obstacles
     const allMoves = board.filter(straightMoves(from));
+
+    console.timeEnd(`move ${id}`);
     const allObstacles = allMoves.filter(hasPiece);
     const yBoundUpper: Square = allObstacles
       .filter(filterMovesBy('rank', 'larger', from))
@@ -104,46 +109,88 @@ function moveMaker(from: Square, board: Square[], id: number): Moves {
         }
       }
     });
-
-    console.timeEnd(`move ${id}`);
   }
   return moves;
 }
 
-const toTwoDBoard = (board: any): any => {
-  const newArr = [];
-  for (let i = 0; i < board.length; i = i + 8) {
-    newArr.push(board.slice(i, i + 8));
+// input array has to be sorted by higher rank first and then file
+const toBoardMap = (board: Square[]): Map<File, Square[]> => {
+  const newArr: Map<File, Square[]> = new Map();
+
+  for (let i = 0, col = 0; i < board.length; i = i + 8, col++) {
+    // rank of the first 8 is the same, but the files are different, hence col
+    newArr.set((board[col] as Square).file, board.slice(i, i + 8));
   }
   return newArr;
 };
+
+function shouldContinueTrav(from: Square, newMove: Move): boolean {
+  // continue if route is clear
+  if (!newMove.piece) {
+    return true;
+  }
+
+  if (newMove.piece.color !== from.piece.color) {
+    // NOT overlapping onAlly if different color
+    // don't have to stop if the piece is enemy King
+    // because if the enemy King moves anywhere in this line, it's still being attacked
+    if (newMove.piece.type === 'king') {
+      return true;
+    }
+  } else {
+    // overlapping onAlly if same color
+    false;
+  }
+  return false;
+}
+
+function travLine(
+  from: Square,
+  newFile: number,
+  newRank: number,
+  board: Map<File, Square[]>
+): Move {
+  let newMove: Move = null;
+  let to: Square = board.get(FILE[newFile] as File)[newRank];
+  if (to) {
+    newMove = {
+      ...to,
+      onAlly: !to.piece && to.piece.color === from.piece.color
+    };
+  }
+  return newMove;
+}
 
 function makeStraightLineMoves(from: Square, brd: Square[], id: number) {
   const result: any[] = [];
   const fileEnum: number = FILE[from.file];
 
+  logBoard(brd);
   console.time(`get straight lines ${id}`);
-  const board = toTwoDBoard(brd);
+  const board: Map<File, Square[]> = toBoardMap(brd);
   // find the closest piece
   // border-inclusive if piece is enemy (capturable)
   // border-exclusive if piece is friendly (non-capturable)
 
   // go left
   for (let i = fileEnum - 1; i >= 1; i--) {
-    result.push({ file: from.file, rank: from.rank });
+    const newMove = travLine(from, i, from.rank, board);
+    if (!shouldContinueTrav(from, newMove)) {
+      break;
+    }
   }
-  // go right
-  for (let i = fileEnum + 1; i <= 8; i++) {
-    result.push({ file: from.file, rank: from.rank });
-  }
-  // go up
-  for (let i = from.rank + 1; i <= 8; i++) {
-    result.push({ file: from.file, rank: from.rank });
-  }
-  // go down
-  for (let i = from.rank - 1; i >= 1; i--) {
-    result.push({ file: from.file, rank: from.rank });
-  }
+  // // go right
+  // for (let i = fileEnum + 1; i <= 8; i++) {
+  //   result.push({ file: from.file, rank: from.rank });
+  // }
+  // // go up
+  // for (let i = from.rank + 1; i <= 8; i++) {
+  //   result.push({ file: from.file, rank: from.rank });
+  // }
+  // // go down
+  // for (let i = from.rank - 1; i >= 1; i--) {
+  //   result.push({ file: from.file, rank: from.rank });
+  // }
 
   console.timeEnd(`get straight lines ${id}`);
 
@@ -195,7 +242,7 @@ const closestY = (from: Square) => (prev: Square, curr: Square): Square => {
 };
 
 const logBoard = (board: Square[]) => {
-  for (let row of toTwoDBoard(board)) {
+  for (let row of toBoardMap(board)) {
     console.log(row);
   }
 };
@@ -203,7 +250,7 @@ const logBoard = (board: Square[]) => {
 const test = () => {
   console.time('test all');
 
-  for (let i = 0; i < 1; i++) {
+  for (let i = 0; i < 0; i++) {
     moveMaker(
       new SquareModel({
         file: 'c',
