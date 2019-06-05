@@ -113,18 +113,33 @@ function moveMaker(from: Square, board: Square[], id: number): Moves {
   return moves;
 }
 
+const sortBoardByFileThenRank = (board: Square[]): Square[] => {
+  return board.sort((a, b) => {
+    if (a.file === b.file) {
+      if (a.rank > b.rank) {
+        return 1;
+      } else if (a.rank < b.rank) {
+        return -1;
+      } else return 0;
+    } else return FILE[a.file] - FILE[b.file];
+  });
+};
 // input array has to be sorted by higher rank first and then file
 const toBoardMap = (board: Square[]): Map<File, Square[]> => {
   const newArr: Map<File, Square[]> = new Map();
+  const sortedBoard = sortBoardByFileThenRank(board);
 
-  for (let i = 0, col = 0; i < board.length; i = i + 8, col++) {
+  for (let i = 0; i < board.length; i = i + 8) {
     // rank of the first 8 is the same, but the files are different, hence col
-    newArr.set((board[col] as Square).file, board.slice(i, i + 8));
+    newArr.set((sortedBoard[i] as Square).file, sortedBoard.slice(i, i + 8));
   }
   return newArr;
 };
 
 function shouldContinueTrav(from: Square, newMove: Move): boolean {
+  if (!newMove) {
+    return false;
+  }
   // continue if route is clear
   if (!newMove.piece) {
     return true;
@@ -146,16 +161,16 @@ function shouldContinueTrav(from: Square, newMove: Move): boolean {
 
 function travLine(
   from: Square,
-  newFile: number,
+  newFile: File,
   newRank: number,
   board: Map<File, Square[]>
 ): Move {
   let newMove: Move = null;
-  let to: Square = board.get(FILE[newFile] as File)[newRank];
+  let to: Square = board.get(newFile)[newRank - 1];
   if (to) {
     newMove = {
       ...to,
-      onAlly: !to.piece && to.piece.color === from.piece.color
+      onAlly: to.piece && to.piece.color === from.piece.color ? true : false
     };
   }
   return newMove;
@@ -174,23 +189,36 @@ function makeStraightLineMoves(from: Square, brd: Square[], id: number) {
 
   // go left
   for (let i = fileEnum - 1; i >= 1; i--) {
-    const newMove = travLine(from, i, from.rank, board);
+    const newMove = travLine(from, FILE[i] as File, from.rank, board);
+    result.push(newMove);
     if (!shouldContinueTrav(from, newMove)) {
       break;
     }
   }
-  // // go right
-  // for (let i = fileEnum + 1; i <= 8; i++) {
-  //   result.push({ file: from.file, rank: from.rank });
-  // }
-  // // go up
-  // for (let i = from.rank + 1; i <= 8; i++) {
-  //   result.push({ file: from.file, rank: from.rank });
-  // }
-  // // go down
-  // for (let i = from.rank - 1; i >= 1; i--) {
-  //   result.push({ file: from.file, rank: from.rank });
-  // }
+  // go right
+  for (let i = fileEnum + 1; i <= 8; i++) {
+    const newMove = travLine(from, FILE[i] as File, from.rank, board);
+    result.push(newMove);
+    if (!shouldContinueTrav(from, newMove)) {
+      break;
+    }
+  }
+  // go up
+  for (let i = from.rank + 1; i <= 8; i++) {
+    const newMove = travLine(from, from.file, i, board);
+    result.push(newMove);
+    if (!shouldContinueTrav(from, newMove)) {
+      break;
+    }
+  }
+  // go down
+  for (let i = from.rank - 1; i >= 1; i--) {
+    const newMove = travLine(from, from.file, i, board);
+    result.push(newMove);
+    if (!shouldContinueTrav(from, newMove)) {
+      break;
+    }
+  }
 
   console.timeEnd(`get straight lines ${id}`);
 
@@ -242,7 +270,11 @@ const closestY = (from: Square) => (prev: Square, curr: Square): Square => {
 };
 
 const logBoard = (board: Square[]) => {
-  for (let row of toBoardMap(board)) {
+  const newArr = [];
+  for (let i = 0; i < board.length; i = i + 8) {
+    newArr.push(board.slice(i, i + 8));
+  }
+  for (let row of newArr) {
     console.log(row);
   }
 };
