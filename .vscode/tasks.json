@@ -6,7 +6,7 @@
     {
       "label": "typescript-node",
       "type": "typescript",
-      "tsconfig": "server\\tsconfig.json",
+      "tsconfig": "server/tsconfig.json",
       "problemMatcher": ["$tsc"]
     }
   ]
