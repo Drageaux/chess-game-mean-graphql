@@ -107,14 +107,14 @@ export class BoardComponent implements OnChanges, OnInit, OnDestroy {
   }
 
   testGetMove() {
-    console.time('test get moves');
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < 1; i++) {
+      console.time(`test get move ${i}`);
       this.subs.sink = this.testGetMoves
         .fetch({ id: i }, { fetchPolicy: 'network-only' })
-        .subscribe(() => {});
+        .subscribe(() => {
+          console.timeEnd(`test get move ${i}`);
+        });
     }
-
-    console.timeEnd('test get moves');
   }
 
   ngOnDestroy(): void {

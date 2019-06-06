@@ -34,7 +34,7 @@ export type Move = {
   to?: Maybe<Square>;
 };
 
-export type Moves = {
+export type MoveSet = {
   eagerMoves?: Maybe<Array<Maybe<Square>>>;
   regularMoves?: Maybe<Array<Maybe<Square>>>;
 };
@@ -78,7 +78,7 @@ export type Query = {
   findUser?: Maybe<BasicUser>;
   getUsers?: Maybe<Array<Maybe<BasicUser>>>;
   playGame?: Maybe<Session>;
-  testGetMoves?: Maybe<Moves>;
+  testGetMoves?: Maybe<MoveSet>;
 };
 
 export type QueryFindUserArgs = {
@@ -216,12 +216,12 @@ export type GetMovesQueryVariables = {
 
 export type GetMovesQuery = { __typename?: "Query" } & {
   testGetMoves: Maybe<
-    { __typename?: "Moves" } & {
+    { __typename?: "MoveSet" } & {
       regularMoves: Maybe<
-        Array<Maybe<{ __typename?: "Square" } & Pick<Square, "file">>>
+        Array<Maybe<{ __typename?: "Square" } & Pick<Square, "file" | "rank">>>
       >;
       eagerMoves: Maybe<
-        Array<Maybe<{ __typename?: "Square" } & Pick<Square, "file">>>
+        Array<Maybe<{ __typename?: "Square" } & Pick<Square, "file" | "rank">>>
       >;
     }
   >;
@@ -418,9 +418,11 @@ export const GetMovesDocument = gql`
     testGetMoves(id: $id) {
       regularMoves {
         file
+        rank
       }
       eagerMoves {
         file
+        rank
       }
     }
   }

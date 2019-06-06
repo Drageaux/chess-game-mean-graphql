@@ -62,11 +62,15 @@ query GetBoard($gameId: ID!, $userId: ID!) {
 
 query GetMoves($id: Int) {
   testGetMoves(id: $id) {
+    # file
+    # rank
     regularMoves {
       file
+      rank
     }
     eagerMoves {
       file
+      rank
     }
   }
 }
