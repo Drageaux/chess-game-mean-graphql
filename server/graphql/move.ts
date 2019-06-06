@@ -2,14 +2,7 @@ import { InstanceType } from 'typegoose';
 import { PieceModel } from './../models/piece';
 import { SessionModel, Session } from '../models/session';
 import { Piece } from '../models/piece';
-import {
-  File,
-  FILE,
-  BoardModel,
-  Board,
-  Square,
-  SquareModel
-} from '../models/board';
+import { File, BoardModel, Board, Square, SquareModel } from '../models/board';
 import mock from '../mock/board'; // mock board is not a Mongoose model, so no vals for virtuals
 import { Move } from 'models/move';
 import { PubSub, gql, withFilter } from 'apollo-server-express';
@@ -74,7 +67,6 @@ const makeStraightLineMoves = (
     regularMoves: [],
     eagerMoves: []
   };
-  const fileEnum: number = FILE[from.file];
 
   logBoard(oneDBoard);
   console.time(`get straight lines ${id}`);
@@ -84,16 +76,16 @@ const makeStraightLineMoves = (
   // border-exclusive if piece is friendly (non-capturable)
 
   // go left
-  for (let i = fileEnum - 1; i >= 1; i--) {
-    const newMove = travLine(from, FILE[i] as File, from.rank, board);
+  for (let i = from.file - 1; i >= 1; i--) {
+    const newMove = travLine(from, i, from.rank, board);
     result.regularMoves.push(newMove);
     if (!shouldContinueTrav(from, newMove)) {
       break;
     }
   }
   // go right
-  for (let i = fileEnum + 1; i <= 8; i++) {
-    const newMove = travLine(from, FILE[i] as File, from.rank, board);
+  for (let i = from.file + 1; i <= 8; i++) {
+    const newMove = travLine(from, i, from.rank, board);
     result.regularMoves.push(newMove);
     if (!shouldContinueTrav(from, newMove)) {
       break;
@@ -121,6 +113,11 @@ const makeStraightLineMoves = (
   return result;
 };
 
+const makeDiagonalLineMoves = () => {};
+
+/*************************************************************************/
+/********************************* HELPER ********************************/
+/*************************************************************************/
 const shouldContinueTrav = (from: Square, newMove: Move): boolean => {
   if (!newMove) {
     return false;
@@ -169,7 +166,7 @@ const sortBoardByFileThenRank = (board: Square[]): Square[] => {
       } else if (a.rank < b.rank) {
         return -1;
       } else return 0;
-    } else return FILE[a.file] - FILE[b.file];
+    } else return a.file - b.file;
   });
 };
 

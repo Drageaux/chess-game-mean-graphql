@@ -1,9 +1,8 @@
 import { prop, Typegoose, InstanceType, pre, arrayProp, post } from 'typegoose';
-import { Piece } from './piece';
+import { Piece, PieceType, Color } from './piece';
 
 // lookup-enum type, easier for JS forward and reverse accessing
-export type File = 'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h';
-export enum FILE {
+export enum File {
   'a' = 1,
   'b',
   'c',
@@ -18,7 +17,7 @@ const DEFAULT_BOARD = initBoard(); // prevent remaking board every time
 
 export class Square extends Typegoose {
   // TODO: alias x and y when it's supported
-  @prop({ lowercase: true, enum: FILE, required: true })
+  @prop({ lowercase: true, enum: File, required: true })
   file: File;
 
   @prop({ required: true })
@@ -44,8 +43,7 @@ export const SquareModel = new Square().getModelForClass(Square, {
   console.log(board);
 })
 export class Board extends Typegoose {
-  @arrayProp({ items: Square })
-  @prop({ default: DEFAULT_BOARD })
+  @arrayProp({ items: Square, default: DEFAULT_BOARD, required: true })
   squares: Square[];
 
   @arrayProp({ items: Piece })
@@ -56,8 +54,8 @@ export class Board extends Typegoose {
     return this.squares.find((square: Square) => {
       return (
         square.piece &&
-        square.piece.type === 'king' &&
-        square.piece.color === 'white'
+        square.piece.type === PieceType.King &&
+        square.piece.color === Color.White
       );
     });
   }
@@ -67,26 +65,22 @@ export class Board extends Typegoose {
     return this.squares.find((square: Square) => {
       return (
         square.piece &&
-        square.piece.type === 'king' &&
-        square.piece.color === 'black'
+        square.piece.type === PieceType.King &&
+        square.piece.color === Color.Black
       );
     });
   }
 }
 
-export const BoardModel = new Board().getModelForClass(Board, {
-  schemaOptions: {
-    toObject: { virtuals: true },
-    toJSON: { virtuals: true }
-  }
-});
+export const BoardModel = new Board().getModelForClass(Board);
 
 function initBoard(): Square[] {
   let newBoard: Square[] = [];
   for (let x = 0; x < BOARD_SIZE; x++) {
     for (let y = 0; y < BOARD_SIZE; y++) {
-      const newSquare: any = {
-        file: FILE[x + 1],
+      // @ts-ignore quick fix
+      const newSquare: Square = {
+        file: (x + 1) as File,
         rank: y + 1
       };
 
@@ -98,56 +92,56 @@ function initBoard(): Square[] {
           switch (x + 1) {
             case 1:
             case 8:
-              newPiece.type = 'rook';
+              newPiece.type = PieceType.Rook;
               break;
             case 2:
             case 7:
-              newPiece.type = 'knight';
+              newPiece.type = PieceType.Knight;
               break;
             case 3:
             case 6:
-              newPiece.type = 'bishop';
+              newPiece.type = PieceType.Bishop;
               break;
             case 4:
-              newPiece.type = 'queen';
+              newPiece.type = PieceType.Queen;
               break;
             case 5:
-              newPiece.type = 'king';
+              newPiece.type = PieceType.King;
           }
-          newPiece.color = 'white';
+          newPiece.color = Color.White;
           newSquare.piece = newPiece;
           break;
         case 2:
-          newPiece.type = 'pawn';
-          newPiece.color = 'white';
+          newPiece.type = PieceType.Pawn;
+          newPiece.color = Color.White;
           newSquare.piece = newPiece;
           break;
         case 7:
-          newPiece.type = 'pawn';
-          newPiece.color = 'black';
+          newPiece.type = PieceType.Pawn;
+          newPiece.color = Color.Black;
           newSquare.piece = newPiece;
           break;
         case 8:
           switch (x + 1) {
             case 1:
             case 8:
-              newPiece.type = 'rook';
+              newPiece.type = PieceType.Rook;
               break;
             case 2:
             case 7:
-              newPiece.type = 'knight';
+              newPiece.type = PieceType.Knight;
               break;
             case 3:
             case 6:
-              newPiece.type = 'bishop';
+              newPiece.type = PieceType.Bishop;
               break;
             case 4:
-              newPiece.type = 'queen';
+              newPiece.type = PieceType.Queen;
               break;
             case 5:
-              newPiece.type = 'king';
+              newPiece.type = PieceType.King;
           }
-          newPiece.color = 'black';
+          newPiece.color = Color.Black;
           newSquare.piece = newPiece;
           break;
         default:

@@ -1,20 +1,18 @@
 import { prop, Typegoose, pre } from 'typegoose';
 
-type Color = 'white' | 'black';
-const Colors = {
-  WHITE: 'white' as Color,
-  BLACK: 'black' as Color
-};
+export enum Color {
+  White = 'white',
+  Black = 'black'
+}
 
-type PieceType = 'pawn' | 'knight' | 'bishop' | 'rook' | 'queen' | 'king';
-const PieceTypes = {
-  PAWN: 'pawn' as PieceType,
-  KNIGHT: 'knight' as PieceType,
-  BISHOP: 'bishop' as PieceType,
-  ROOK: 'rook' as PieceType,
-  QUEEN: 'queen' as PieceType,
-  KING: 'king' as PieceType
-};
+export enum PieceType {
+  Pawn = 'pawn',
+  Knight = 'knight',
+  Bishop = 'bishop',
+  Rook = 'rook',
+  Queen = 'queen',
+  King = 'king'
+}
 
 @pre<Piece>('save', function(next) {
   console.log(this.color);
@@ -22,10 +20,10 @@ const PieceTypes = {
   next();
 })
 export class Piece extends Typegoose {
-  @prop({ required: true, enum: Object.values(Colors) })
+  @prop({ required: true, enum: Color })
   color: Color;
 
-  @prop({ required: true, enum: Object.values(PieceTypes) })
+  @prop({ required: true, enum: PieceType })
   type: PieceType;
 
   @prop({ default: false })
