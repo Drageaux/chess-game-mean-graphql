@@ -25,19 +25,19 @@ export class UserResolver {
     return await UserModel.find({});
   }
 
-  @Mutation(returns => User)
+  @Mutation(returns => Boolean)
   async addUser(
     @PubSub() pubSub: PubSubEngine,
     @Arg('user') userInput: UserInput
-  ): Promise<User> {
+  ): Promise<boolean> {
     try {
-      const newUser = await new UserModel({ ...userInput } as User);
-      await pubSub.publish('USER_ADDED', newUser);
-      return {
+      const newUser = await new UserModel({ ...userInput } as User).save();
+      await pubSub.publish('USER_ADDED', {
         email: newUser.email,
         userName: newUser.userName,
         id: newUser.id
-      } as User;
+      } as User);
+      return true;
     } catch (e) {
       return e.message;
     }
