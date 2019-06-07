@@ -7,4 +7,8 @@ export class Move {
   rank: number;
   piece?: Piece;
   onAlly: boolean;
+
+  name?(): string {
+    return `${this.file}${this.rank}`;
+  }
 }

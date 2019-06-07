@@ -218,10 +218,18 @@ export type GetMovesQuery = { __typename?: "Query" } & {
   testGetMoves: Maybe<
     { __typename?: "MoveSet" } & {
       regularMoves: Maybe<
-        Array<Maybe<{ __typename?: "Square" } & Pick<Square, "file" | "rank">>>
+        Array<
+          Maybe<
+            { __typename?: "Square" } & Pick<Square, "file" | "rank" | "name">
+          >
+        >
       >;
       eagerMoves: Maybe<
-        Array<Maybe<{ __typename?: "Square" } & Pick<Square, "file" | "rank">>>
+        Array<
+          Maybe<
+            { __typename?: "Square" } & Pick<Square, "file" | "rank" | "name">
+          >
+        >
       >;
     }
   >;
@@ -419,10 +427,12 @@ export const GetMovesDocument = gql`
       regularMoves {
         file
         rank
+        name
       }
       eagerMoves {
         file
         rank
+        name
       }
     }
   }

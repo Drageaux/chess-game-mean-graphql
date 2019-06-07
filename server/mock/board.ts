@@ -1,7 +1,8 @@
-import { Square } from 'models/board';
+import { Square } from '../models/board';
+import { PieceType, Color } from '../models/piece';
 
 // lookup-enum type, easier for JS forward and reverse accessing
-enum FILE {
+enum File {
   'a' = 1,
   'b',
   'c',
@@ -17,8 +18,9 @@ function initBoard(): Square[] {
   let newBoard: Square[] = [];
   for (let x = 0; x < BOARD_SIZE; x++) {
     for (let y = 0; y < BOARD_SIZE; y++) {
-      const newSquare: any = {
-        file: FILE[x + 1],
+      // @ts-ignore quick fix
+      const newSquare: Square = {
+        file: (x + 1) as File,
         rank: y + 1
       };
 
@@ -30,68 +32,56 @@ function initBoard(): Square[] {
           switch (x + 1) {
             case 1:
             case 8:
-              newPiece.type = 'rook';
+              newPiece.type = PieceType.Rook;
               break;
             case 2:
             case 7:
-              newPiece.type = 'knight';
+              newPiece.type = PieceType.Knight;
               break;
             case 3:
             case 6:
-              newPiece.type = 'bishop';
+              newPiece.type = PieceType.Bishop;
               break;
             case 4:
-              newPiece.type = 'queen';
+              newPiece.type = PieceType.Queen;
               break;
             case 5:
-              newPiece.type = 'king';
+              newPiece.type = PieceType.King;
           }
-          newPiece.color = 'white';
+          newPiece.color = Color.White;
           newSquare.piece = newPiece;
           break;
         case 2:
-          newPiece.type = 'pawn';
-          newPiece.color = 'white';
+          newPiece.type = PieceType.Pawn;
+          newPiece.color = Color.White;
           newSquare.piece = newPiece;
           break;
-        case 5:
-          if (x + 1 === 7) {
-            newPiece.type = 'pawn';
-            newPiece.color = 'black';
-            newSquare.piece = newPiece;
-          }
-          if (x + 1 === 8) {
-            newPiece.type = 'pawn';
-            newPiece.color = 'white';
-            newSquare.piece = newPiece;
-          }
-          break;
         case 7:
-          newPiece.type = 'pawn';
-          newPiece.color = 'black';
+          newPiece.type = PieceType.Pawn;
+          newPiece.color = Color.Black;
           newSquare.piece = newPiece;
           break;
         case 8:
           switch (x + 1) {
             case 1:
             case 8:
-              newPiece.type = 'rook';
+              newPiece.type = PieceType.Rook;
               break;
             case 2:
             case 7:
-              newPiece.type = 'knight';
+              newPiece.type = PieceType.Knight;
               break;
             case 3:
             case 6:
-              newPiece.type = 'bishop';
+              newPiece.type = PieceType.Bishop;
               break;
             case 4:
-              newPiece.type = 'queen';
+              newPiece.type = PieceType.Queen;
               break;
             case 5:
-              newPiece.type = 'king';
+              newPiece.type = PieceType.King;
           }
-          newPiece.color = 'black';
+          newPiece.color = Color.Black;
           newSquare.piece = newPiece;
           break;
         default:
@@ -101,20 +91,6 @@ function initBoard(): Square[] {
       newBoard.push(newSquare);
     }
   }
-
-  // sort descending in rank and ascending in file
-  // returned order shouldn't be further modified
-  newBoard = newBoard.sort((a, b) => {
-    if (a.rank - b.rank === 0) {
-      if (a.file > b.file) {
-        return 1;
-      } else if (a.file < b.file) {
-        return -1;
-      } else return 0;
-    } else return b.rank - a.rank;
-  });
-
   return newBoard;
 }
-
 export default initBoard();

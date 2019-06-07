@@ -67,10 +67,12 @@ query GetMoves($id: Int) {
     regularMoves {
       file
       rank
+      name
     }
     eagerMoves {
       file
       rank
+      name
     }
   }
 }

@@ -1,5 +1,5 @@
 import { InstanceType } from 'typegoose';
-import { PieceModel } from './../models/piece';
+import { PieceModel, Color, PieceType } from './../models/piece';
 import { SessionModel, Session } from '../models/session';
 import { Piece } from '../models/piece';
 import { File, BoardModel, Board, Square, SquareModel } from '../models/board';
@@ -27,19 +27,30 @@ export const typeDefs = gql`
 export const resolvers = {
   Query: {
     testGetMoves: async (root: any, args: any, context: any) => {
-      return getMoves(
-        new SquareModel({
-          file: 'c',
-          rank: 5,
-          piece: new PieceModel({ color: 'white', type: 'rook' }) as Piece
-        }) as Square,
-        mock
-      );
+      // return getMoves(
+      //   new SquareModel({
+      //     file: 'c',
+      //     rank: 5,
+      //     piece: new PieceModel({ color: 'white', type: 'rook' }) as Piece
+      //   }) as Square,
+      //   mock
+      // );
       // return new SquareModel({
       //   file: 'c',
       //   rank: 5,
       //   piece: new PieceModel({ color: 'white', type: 'rook' }) as Piece
       // });
+      return getMoves(
+        new SquareModel({
+          file: File.c,
+          rank: 5,
+          piece: new PieceModel({
+            color: Color.White,
+            type: PieceType.Bishop
+          }) as Piece
+        }) as Square,
+        mock
+      );
     }
   }
 };
@@ -51,11 +62,12 @@ interface MoveSet {
 
 const getMoves = (from: Square, board: Square[]): MoveSet => {
   switch (from.piece.type) {
-    case 'rook':
+    case PieceType.Rook:
       return makeStraightLineMoves(from, board);
     default:
-      return null;
+      break;
   }
+  return null;
 };
 
 const makeStraightLineMoves = (
@@ -68,9 +80,9 @@ const makeStraightLineMoves = (
     eagerMoves: []
   };
 
-  logBoard(oneDBoard);
   console.time(`get straight lines ${id}`);
   const board: Map<File, Square[]> = toBoardMap(oneDBoard);
+
   // find the closest piece
   // border-inclusive if piece is enemy (capturable)
   // border-exclusive if piece is friendly (non-capturable)
@@ -113,11 +125,88 @@ const makeStraightLineMoves = (
   return result;
 };
 
-const makeDiagonalLineMoves = () => {};
+const makeDiagonalLineMoves = (
+  from: Square,
+  oneDBoard: Square[],
+  id?: number
+): MoveSet => {
+  const result: MoveSet = {
+    regularMoves: [],
+    eagerMoves: []
+  };
+
+  console.time(`get diagonal lines ${id}`);
+  const board: Map<File, Square[]> = toBoardMap(oneDBoard);
+  // find the closest piece
+  // border-inclusive if piece is enemy (capturable)
+  // border-exclusive if piece is friendly (non-capturable)
+  let trCont = true;
+  let blCont = true;
+  let tlCont = true;
+  let brCont = true;
+  let distance = 1;
+
+  while (distance <= 8 && (blCont || brCont || trCont || tlCont)) {
+    const leftFile = from.file - distance;
+    const bottomRank = from.rank - distance;
+    const rightFile = from.file + distance;
+    const topRank = from.rank + distance;
+
+    // go bottom-left
+    if (blCont && leftFile >= 1 && bottomRank >= 1) {
+      const blNewMove = travLine(from, leftFile, bottomRank, board);
+      result.regularMoves.push(blNewMove);
+      blCont = shouldContinueTrav(from, blNewMove);
+    }
+
+    // go top-left
+    if (tlCont && leftFile >= 1 && topRank <= 8) {
+      const tlNewMove = travLine(from, leftFile, topRank, board);
+      result.regularMoves.push(tlNewMove);
+      tlCont = shouldContinueTrav(from, tlNewMove);
+    }
+
+    // go top-right
+    if (trCont && rightFile <= 8 && topRank <= 8) {
+      const trNewMove = travLine(from, leftFile, topRank, board);
+      result.regularMoves.push(trNewMove);
+      trCont = shouldContinueTrav(from, trNewMove);
+    }
+
+    // go bottom-right
+    if (brCont && rightFile <= 8 && bottomRank >= 1) {
+      const brNewMove = travLine(from, rightFile, bottomRank, board);
+      result.regularMoves.push(brNewMove);
+      brCont = shouldContinueTrav(from, brNewMove);
+    }
+
+    distance++;
+  }
+  console.timeEnd(`get diagonal lines ${id}`);
+
+  return result;
+};
 
 /*************************************************************************/
 /********************************* HELPER ********************************/
 /*************************************************************************/
+const travLine = (
+  from: Square,
+  newFile: File,
+  newRank: number,
+  board: Map<File, Square[]>
+): Move => {
+  let newMove: Move = null;
+  let to: Square = board.get(newFile)[newRank - 1];
+  if (to) {
+    newMove = {
+      ...to,
+      onAlly: to.piece && to.piece.color === from.piece.color ? true : false
+    };
+  }
+  return newMove;
+};
+
 const shouldContinueTrav = (from: Square, newMove: Move): boolean => {
   if (!newMove) {
     return false;
@@ -141,23 +230,6 @@ const shouldContinueTrav = (from: Square, newMove: Move): boolean => {
   return false;
 };
 
-const travLine = (
-  from: Square,
-  newFile: File,
-  newRank: number,
-  board: Map<File, Square[]>
-): Move => {
-  let newMove: Move = null;
-  let to: Square = board.get(newFile)[newRank - 1];
-  if (to) {
-    newMove = {
-      ...to,
-      onAlly: to.piece && to.piece.color === from.piece.color ? true : false
-    };
-  }
-  return newMove;
-};
-
 const sortBoardByFileThenRank = (board: Square[]): Square[] => {
   return board.sort((a, b) => {
     if (a.file === b.file) {
@@ -166,7 +238,7 @@ const sortBoardByFileThenRank = (board: Square[]): Square[] => {
       } else if (a.rank < b.rank) {
         return -1;
       } else return 0;
-    } else return a.file - b.file;
+    } else return a.file > b.file ? 1 : a.file < b.file ? -1 : 0;
   });
 };
 
@@ -198,7 +270,7 @@ const test = () => {
   for (let i = 0; i < 1; i++) {
     makeStraightLineMoves(
       new SquareModel({
-        file: 'c',
+        file: File.c,
         rank: 5,
         piece: new PieceModel({ color: 'white', type: 'rook' }) as Piece
       }) as Square,

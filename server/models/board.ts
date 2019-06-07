@@ -17,7 +17,7 @@ const DEFAULT_BOARD = initBoard(); // prevent remaking board every time
 
 export class Square extends Typegoose {
   // TODO: alias x and y when it's supported
-  @prop({ lowercase: true, enum: File, required: true })
+  @prop({ enum: File, required: true })
   file: File;
 
   @prop({ required: true })
@@ -43,7 +43,8 @@ export const SquareModel = new Square().getModelForClass(Square, {
   console.log(board);
 })
 export class Board extends Typegoose {
-  @arrayProp({ items: Square, default: DEFAULT_BOARD, required: true })
+  @arrayProp({ items: Square })
+  @prop({ default: DEFAULT_BOARD })
   squares: Square[];
 
   @arrayProp({ items: Piece })
