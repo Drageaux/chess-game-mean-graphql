@@ -4,7 +4,8 @@ import {
   Field,
   InterfaceType,
   ID,
-  registerEnumType
+  registerEnumType,
+  Int
 } from 'type-graphql';
 import { User } from './user';
 
@@ -20,15 +21,15 @@ registerEnumType(Color, {
 @ObjectType()
 export class GameState extends Typegoose {
   @Field()
-  @prop({ default: false, required: true })
+  @prop({ default: false })
   gameStarted: boolean;
 
   @Field()
-  @prop({ default: false, required: true })
+  @prop({ default: false })
   gameOver: boolean;
 
   @Field(type => Color)
-  @prop({ enum: Color, required: true, default: Color.White })
+  @prop({ enum: Color, default: Color.White })
   currentTurn: Color;
 
   @Field()
@@ -36,21 +37,16 @@ export class GameState extends Typegoose {
     default: new Map<Color, boolean>([
       [Color.White, false],
       [Color.Black, false]
-    ]),
-    required: true
+    ])
   })
   checked: Map<Color, boolean>;
-
-  // TODO: @Field()
-  // @prop({ ref: Board })
-  // board: Ref<Board>;
 }
 
+@ObjectType()
 @pre<Session>('remove', function(next) {
   // BoardModel.findByIdAndRemove(this.board);
   next();
 })
-@ObjectType()
 export class Session extends Typegoose {
   @Field(type => ID)
   readonly id: string;
@@ -59,24 +55,30 @@ export class Session extends Typegoose {
   @arrayProp({ itemsRef: User })
   players?: Ref<User>[];
 
-  @prop({ default: Date.now, required: true })
-  createdAt: Date;
-
+  @Field()
   @prop({ default: Date.now })
-  lastUpdated?: Date;
+  readonly createdAt: Date;
 
+  @Field()
+  @prop({ default: Date.now })
+  lastUpdated: Date;
+
+  @Field(type => User, { nullable: true })
   @prop({ ref: User })
   whiteTeam?: Ref<User>;
 
+  @Field(type => User, { nullable: true })
   @prop({ ref: User })
   blackTeam?: Ref<User>;
 
+  @Field(type => GameState, { nullable: true })
   @prop({ default: new GameState() })
   gameState?: GameState;
 
-  @prop({ ref: Board })
-  board?: Board;
+  // @prop({ ref: Board })
+  // board?: Board;
 
+  @Field(type => Int, { nullable: true })
   @prop()
   get elapsedTime(): number {
     // should be in millseconds
