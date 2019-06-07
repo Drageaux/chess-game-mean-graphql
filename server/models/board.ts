@@ -77,8 +77,8 @@ export const BoardModel = new Board().getModelForClass(Board);
 
 function initBoard(): Square[] {
   let newBoard: Square[] = [];
-  for (let x = 0; x < BOARD_SIZE; x++) {
-    for (let y = 0; y < BOARD_SIZE; y++) {
+  for (let x = 1; x < BOARD_SIZE; x++) {
+    for (let y = 1; y < BOARD_SIZE; y++) {
       // @ts-ignore quick fix
       const newSquare: Square = {
         file: (x + 1) as File,
@@ -91,22 +91,22 @@ function initBoard(): Square[] {
       switch (y + 1) {
         case 1:
           switch (x + 1) {
-            case 1:
-            case 8:
+            case File.a:
+            case File.h:
               newPiece.type = PieceType.Rook;
               break;
-            case 2:
-            case 7:
+            case File.b:
+            case File.g:
               newPiece.type = PieceType.Knight;
               break;
-            case 3:
-            case 6:
+            case File.c:
+            case File.f:
               newPiece.type = PieceType.Bishop;
               break;
-            case 4:
+            case File.d:
               newPiece.type = PieceType.Queen;
               break;
-            case 5:
+            case File.e:
               newPiece.type = PieceType.King;
           }
           newPiece.color = Color.White;
@@ -124,22 +124,22 @@ function initBoard(): Square[] {
           break;
         case 8:
           switch (x + 1) {
-            case 1:
-            case 8:
+            case File.a:
+            case File.h:
               newPiece.type = PieceType.Rook;
               break;
-            case 2:
-            case 7:
+            case File.b:
+            case File.g:
               newPiece.type = PieceType.Knight;
               break;
-            case 3:
-            case 6:
+            case File.c:
+            case File.f:
               newPiece.type = PieceType.Bishop;
               break;
-            case 4:
+            case File.d:
               newPiece.type = PieceType.Queen;
               break;
-            case 5:
+            case File.e:
               newPiece.type = PieceType.King;
           }
           newPiece.color = Color.Black;
