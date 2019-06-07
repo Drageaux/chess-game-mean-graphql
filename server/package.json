@@ -28,6 +28,7 @@
     "path": "^0.12.7",
     "pm2": "^3.5.1",
     "subscriptions-transport-ws": "^0.9.16",
+    "type-graphql": "^0.17.4",
     "typegoose": "^5.6.0"
   },
   "devDependencies": {

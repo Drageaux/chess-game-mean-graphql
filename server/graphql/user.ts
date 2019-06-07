@@ -1,5 +1,7 @@
+import 'reflect-metadata';
 import { UserModel, User } from '../models/user';
 import { PubSub, gql } from 'apollo-server-express';
+import { Field } from 'apollo-engine-reporting-protobuf';
 const pubsub: PubSub = new PubSub();
 
 export const typeDefs = gql`
@@ -62,3 +64,9 @@ export const resolvers = {
     }
   }
 };
+
+@InterfaceType()
+abstract class User {
+  @Field(type => ID)
+  id: string;
+}
