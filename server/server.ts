@@ -8,7 +8,7 @@ const compression = require('compression');
 const cors = require('cors');
 import { ApolloServer } from 'apollo-server-express';
 import { createServer } from 'http';
-import createSchema from './graphql';
+import createSchema from './graphql/schema';
 
 const env = process.env.NODE_ENV || 'development';
 const app = express();

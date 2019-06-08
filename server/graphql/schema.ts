@@ -4,7 +4,7 @@ import { mergeSchemas, makeExecutableSchema } from 'graphql-tools';
 import { User } from '../entities/user';
 import { UserResolver } from '../resolvers/user-resolver';
 import { resolvers as userResolvers } from './user';
-import { typeDefs as Session, resolvers as sessionResolvers } from './session';
+import { SessionResolver } from '../resolvers/session-resolver';
 import { typeDefs as Move, resolvers as moveResolvers } from './move';
 import { buildTypeDefsAndResolvers, buildSchema } from 'type-graphql';
 
@@ -31,7 +31,7 @@ async function createSchema() {
   //   resolvers
   // });
   const schema = buildSchema({
-    resolvers: [UserResolver],
+    resolvers: [UserResolver, SessionResolver],
     validate: false // disable automatic validation or pass the default config object
   });
   return schema;

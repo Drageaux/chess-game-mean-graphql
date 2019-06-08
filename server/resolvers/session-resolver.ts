@@ -1,3 +1,4 @@
+import { ObjectId } from 'mongodb';
 import mongoose from 'mongoose';
 import {
   Resolver,
@@ -12,9 +13,10 @@ import {
 } from 'type-graphql';
 import { InstanceType } from 'typegoose';
 import { Session, SessionModel } from '../entities/session';
+import { ObjectIdScalar } from '../graphql/object-id-scalar';
 
 @Resolver(of => Session)
-export class UserResolver {
+export class SessionResolver {
   @Query(returns => Session, { nullable: true })
   async playGame(@Arg('gameId') gameId: string): Promise<Session> {
     return await SessionModel.findById(gameId)
@@ -25,7 +27,7 @@ export class UserResolver {
   @Mutation(returns => Session)
   async findGame(
     @PubSub() pubSub: PubSubEngine,
-    @Arg('userId') userId: string
+    @Arg('userId', type => ObjectIdScalar) userId: ObjectId
   ): Promise<Session> {
     // TODO: alternate black and white team for player
     // TODO: prioritize players that came first
@@ -41,7 +43,7 @@ export class UserResolver {
         // const newBoard: InstanceType<Board> = await new BoardModel().save(); // the devs on GitHub issues manually save
         session.gameState.gameStarted = true;
         // session.board = newBoard._id; // by this time the board does not return an "id" prop yet
-        session.blackTeam = mongoose.Types.ObjectId(userId);
+        session.blackTeam = userId;
 
         // TODO: # of players in queue, etc.
         const saveSession = await session.save();
@@ -67,7 +69,10 @@ export class UserResolver {
   }
 
   @Subscription({ topics: 'MATCH_FOUND' })
-  matchFound(@Root() payload: Session): Session {
+  matchFound(
+    @Root() payload: Session,
+    @Arg('userId', type => ObjectIdScalar) userId: ObjectId
+  ): Session {
     return payload;
   }
 }

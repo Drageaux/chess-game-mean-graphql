@@ -19,6 +19,15 @@ registerEnumType(Color, {
 });
 
 @ObjectType()
+class CheckedMap extends Map {
+  @Field()
+  white: boolean;
+
+  @Field()
+  black: boolean;
+}
+
+@ObjectType()
 export class GameState extends Typegoose {
   @Field()
   @prop({ default: false })
@@ -32,7 +41,7 @@ export class GameState extends Typegoose {
   @prop({ enum: Color, default: Color.White })
   currentTurn: Color;
 
-  @Field()
+  @Field(type => CheckedMap)
   @prop({
     default: new Map<Color, boolean>([
       [Color.White, false],
