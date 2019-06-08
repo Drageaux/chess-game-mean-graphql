@@ -10,6 +10,7 @@ import {
   PubSubEngine,
   Root
 } from 'type-graphql';
+import { InstanceType } from 'typegoose';
 import { User, UserModel } from '../entities/user';
 import { UserInput } from './inputs/user-input';
 
@@ -31,8 +32,11 @@ export class UserResolver {
     @Arg('user') userInput: UserInput
   ): Promise<boolean> {
     try {
-      const newUser = await new UserModel({ ...userInput } as User).save();
-      await pubSub.publish('USER_ADDED', {
+      const newUser: InstanceType<User> = await new UserModel({
+        ...userInput
+      } as User).save();
+
+      pubSub.publish('USER_ADDED', {
         email: newUser.email,
         userName: newUser.userName,
         id: newUser.id

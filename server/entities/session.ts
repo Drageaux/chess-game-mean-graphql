@@ -85,3 +85,5 @@ export class Session extends Typegoose {
     return Date.now() - this.createdAt.getTime();
   }
 }
+
+export const SessionModel = new Session().getModelForClass(Session);
