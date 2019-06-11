@@ -47,13 +47,14 @@ export class Board extends Typegoose {
 
 export const BoardModel = new Board().getModelForClass(Board);
 
-const initBoard = (): Square[] => {
+function initBoard(): Square[] {
   let newBoard: Square[] = [];
   for (let x = 1; x < BOARD_SIZE; x++) {
     for (let y = 1; y < BOARD_SIZE; y++) {
       //  quick fix
       let newSquare: Square = new Square();
-      (newSquare.file = (x + 1) as File), (newSquare.rank = y + 1);
+      newSquare.file = (x + 1) as File;
+      newSquare.rank = y + 1;
 
       const newPiece: Piece = new Piece();
 
@@ -136,4 +137,4 @@ const initBoard = (): Square[] => {
   });
 
   return newBoard;
-};
+}
