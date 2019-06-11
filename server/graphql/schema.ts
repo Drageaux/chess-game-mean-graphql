@@ -1,9 +1,7 @@
 import { gql } from 'apollo-server-express';
 import { mergeSchemas, makeExecutableSchema } from 'graphql-tools';
 
-import { User } from '../entities/user';
 import { UserResolver } from '../resolvers/user-resolver';
-import { resolvers as userResolvers } from './user';
 import { SessionResolver } from '../resolvers/session-resolver';
 import { typeDefs as Move, resolvers as moveResolvers } from './move';
 import { buildTypeDefsAndResolvers, buildSchema } from 'type-graphql';
