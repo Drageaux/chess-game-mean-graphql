@@ -12,7 +12,7 @@ export class User extends Typegoose {
   userName?: string;
 
   @Field({ nullable: true })
-  @prop()
+  @prop({ validate: /\S+@\S+\.\S+/ })
   email?: string;
 }
 
