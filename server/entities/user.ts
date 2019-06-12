@@ -4,8 +4,8 @@ import { ObjectId } from 'mongodb';
 
 @ObjectType()
 export class User extends Typegoose {
-  @Field(type => ID)
-  readonly id: string;
+  @Field(type => ID) // type => ID disables output error for GraphQL
+  readonly id: ObjectId;
 
   @Field({ nullable: true })
   @prop()
