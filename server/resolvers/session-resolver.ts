@@ -79,22 +79,4 @@ export class SessionResolver {
   ): Session {
     return payload;
   }
-
-  // @Query()
-  // async testGetMoves(): Promise<{
-  //   regularMoves: Square[];
-  //   eagerMoves: Square[];
-  // }> {
-  //   return null;
-  // }
-
-  @Mutation(returns => Board)
-  async movePiece(): Promise<Board> {
-    return await new Board();
-  }
-
-  @Subscription({ topics: 'BOARD_CHANGED' })
-  boardChanged(@Root() payload: Board): Board {
-    return new Board();
-  }
 }

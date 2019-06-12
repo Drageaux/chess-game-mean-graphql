@@ -3,8 +3,12 @@ import { mergeSchemas, makeExecutableSchema } from 'graphql-tools';
 
 import { UserResolver } from '../resolvers/user-resolver';
 import { SessionResolver } from '../resolvers/session-resolver';
+import { BoardResolver } from '../resolvers/board-resolver';
+
 import { typeDefs as Move, resolvers as moveResolvers } from './move';
 import { buildTypeDefsAndResolvers, buildSchema } from 'type-graphql';
+import { ObjectId } from 'mongodb';
+import { ObjectIdScalar } from './object-id-scalar';
 
 // const typeDefs = gql`
 //   type Query {
@@ -29,8 +33,9 @@ async function createSchema() {
   //   resolvers
   // });
   const schema = buildSchema({
-    resolvers: [UserResolver, SessionResolver],
-    validate: false // disable automatic validation or pass the default config object
+    resolvers: [UserResolver, SessionResolver, BoardResolver],
+    validate: false, // disable automatic validation or pass the default config object
+    scalarsMap: [{ type: ObjectId, scalar: ObjectIdScalar }]
   });
   return schema;
 }
