@@ -53,9 +53,9 @@ export class SessionResolver {
         const saveSession = await session.save();
 
         pubSub.publish('MATCH_FOUND', {
-          matchFound: saveSession.populate('board')
+          data: saveSession.populate('board')
         });
-        return { elapsedTime: saveSession.elapsedTime } as Session;
+        return saveSession;
       } catch (e) {
         return e.message;
       }
@@ -74,9 +74,9 @@ export class SessionResolver {
 
   @Subscription({ topics: 'MATCH_FOUND' })
   matchFound(
-    @Root() payload: Session,
+    @Root() payload: { data: Session },
     @Arg('userId', type => ObjectIdScalar) userId: ObjectId
   ): Session {
-    return payload;
+    return payload.data;
   }
 }

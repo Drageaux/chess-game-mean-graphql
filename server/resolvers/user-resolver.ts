@@ -39,11 +39,7 @@ export class UserResolver {
         ...userInput
       } as User).save();
 
-      pubSub.publish('USER_ADDED', {
-        email: newUser.email,
-        userName: newUser.userName,
-        id: newUser.id
-      } as User);
+      pubSub.publish('USER_ADDED', { data: newUser });
       return true;
     } catch (e) {
       return e.message;
