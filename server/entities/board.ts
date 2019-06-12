@@ -13,7 +13,7 @@ const DEFAULT_BOARD = initBoard(); // prevent remaking board every time
 })
 export class Board extends Typegoose {
   @Field(type => ID)
-  readonly id: ObjectId;
+  readonly _id: ObjectId;
 
   @Field(type => [Square])
   @arrayProp({ items: Square })
@@ -53,19 +53,18 @@ export const BoardModel = new Board().getModelForClass(Board);
 
 function initBoard(): Square[] {
   let newBoard: Square[] = [];
-  for (let x = 1; x < BOARD_SIZE; x++) {
-    for (let y = 1; y < BOARD_SIZE; y++) {
-      //  quick fix
+  for (let x = 1; x <= BOARD_SIZE; x++) {
+    for (let y = 1; y <= BOARD_SIZE; y++) {
       let newSquare: Square = new Square();
-      newSquare.file = (x + 1) as File;
-      newSquare.rank = y + 1;
+      newSquare.file = x as File;
+      newSquare.rank = y;
 
       const newPiece: Piece = new Piece();
 
       // set color
-      switch (y + 1) {
+      switch (y) {
         case 1:
-          switch (x + 1) {
+          switch (x) {
             case File.a:
             case File.h:
               newPiece.type = PieceType.Rook;
@@ -98,7 +97,7 @@ function initBoard(): Square[] {
           newSquare.piece = newPiece;
           break;
         case 8:
-          switch (x + 1) {
+          switch (x) {
             case File.a:
             case File.h:
               newPiece.type = PieceType.Rook;

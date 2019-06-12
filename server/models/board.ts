@@ -81,16 +81,16 @@ function initBoard(): Square[] {
     for (let y = 1; y < BOARD_SIZE; y++) {
       // @ts-ignore quick fix
       const newSquare: Square = {
-        file: (x + 1) as File,
-        rank: y + 1
+        file: x as File,
+        rank: y
       };
 
       const newPiece: any = {};
 
       // set color
-      switch (y + 1) {
+      switch (y) {
         case 1:
-          switch (x + 1) {
+          switch (x) {
             case File.a:
             case File.h:
               newPiece.type = PieceType.Rook;
@@ -123,7 +123,7 @@ function initBoard(): Square[] {
           newSquare.piece = newPiece;
           break;
         case 8:
-          switch (x + 1) {
+          switch (x) {
             case File.a:
             case File.h:
               newPiece.type = PieceType.Rook;

@@ -59,7 +59,7 @@ export class GameState extends Typegoose {
 })
 export class Session extends Typegoose {
   @Field(type => ID)
-  readonly id: string;
+  readonly _id: string;
 
   @Field(type => [User], { nullable: true })
   @arrayProp({ itemsRef: User })
@@ -69,9 +69,9 @@ export class Session extends Typegoose {
   @prop({ default: Date.now })
   readonly createdAt: Date;
 
-  @Field()
+  @Field({ nullable: true })
   @prop({ default: Date.now })
-  lastUpdated: Date;
+  lastUpdated?: Date;
 
   @Field(type => User, { nullable: true })
   @prop({ ref: User })

@@ -36,4 +36,6 @@ export class Square extends Typegoose {
   }
 }
 
-export const SquareModel = new Square().getModelForClass(Square);
+export const SquareModel = new Square().getModelForClass(Square, {
+  schemaOptions: { _id: false }
+});

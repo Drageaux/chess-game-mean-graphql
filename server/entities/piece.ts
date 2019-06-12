@@ -30,11 +30,11 @@ export class Piece extends Typegoose {
   @prop({ required: true, enum: PieceType })
   type: PieceType;
 
-  @Field()
+  @Field({ nullable: true })
   @prop({ default: false })
-  captured: boolean;
+  captured?: boolean;
 
-  @Field()
+  @Field({ nullable: true })
   @prop()
   get name(): string {
     return `${this.color} ${this.type}`;
