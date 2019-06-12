@@ -9,6 +9,7 @@ import { typeDefs as Move, resolvers as moveResolvers } from './move';
 import { buildTypeDefsAndResolvers, buildSchema } from 'type-graphql';
 import { ObjectId } from 'mongodb';
 import { ObjectIdScalar } from './object-id-scalar';
+import { TypegooseMiddleware } from './typegoose-middleware';
 
 // const typeDefs = gql`
 //   type Query {
@@ -34,7 +35,11 @@ async function createSchema() {
   // });
   const schema = buildSchema({
     resolvers: [UserResolver, SessionResolver, BoardResolver],
-    validate: false, // disable automatic validation or pass the default config object
+    // disable automatic validation or pass the default config object
+    validate: false,
+    // use document converting middleware
+    globalMiddlewares: [TypegooseMiddleware],
+    // use ObjectId scalar mapping
     scalarsMap: [{ type: ObjectId, scalar: ObjectIdScalar }]
   });
   return schema;
