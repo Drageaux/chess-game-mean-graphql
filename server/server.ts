@@ -10,6 +10,7 @@ import { ApolloServer } from 'apollo-server-express';
 import { createServer } from 'http';
 import createSchema from './graphql/schema';
 import { GeneratingSchemaError } from 'type-graphql';
+import { GraphQLError } from 'graphql';
 
 const env = process.env.NODE_ENV || 'development';
 const app = express();
@@ -58,6 +59,9 @@ async function bootstrap() {
       },
       formatError: (err: any) => {
         log(error('[APOLLO] Error:', err));
+        if (err instanceof GraphQLError) {
+          log(error('[APOLLO] Error Source:', err.source.body));
+        }
         return err;
       },
       formatResponse: (response: any) => {
