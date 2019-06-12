@@ -1,6 +1,6 @@
-import { MiddlewareFn } from '../../src';
 import { Model, Document } from 'mongoose';
 import { getClassForDocument } from 'typegoose';
+import { MiddlewareFn } from 'type-graphql';
 
 export const TypegooseMiddleware: MiddlewareFn = async (_, next) => {
   const result = await next();
