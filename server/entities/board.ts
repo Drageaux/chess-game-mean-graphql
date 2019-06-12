@@ -26,7 +26,7 @@ export class Board extends Typegoose {
 
   @Field(type => Square, { nullable: true })
   @prop()
-  get whiteKingLocation(): Square {
+  get whiteKingLocation(this: InstanceType<Board>): Square {
     return this.squares.find((square: Square) => {
       return (
         square.piece &&
@@ -38,7 +38,7 @@ export class Board extends Typegoose {
 
   @Field(type => Square, { nullable: true })
   @prop()
-  get blackKingLocation(): Square {
+  get blackKingLocation(this: InstanceType<Board>): Square {
     return this.squares.find((square: Square) => {
       return (
         square.piece &&

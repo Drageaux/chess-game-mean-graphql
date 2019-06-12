@@ -36,7 +36,7 @@ export class Piece extends Typegoose {
 
   @Field({ nullable: true })
   @prop()
-  get name(): string {
+  get name(this: InstanceType<Piece>): string {
     return `${this.color} ${this.type}`;
   }
 }
