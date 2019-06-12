@@ -30,18 +30,44 @@ export class BoardResolver {
 
   @Mutation(returns => Board)
   async movePiece(
+    @PubSub() pubSub: PubSubEngine,
     @Arg('gameId', type => ObjectIdScalar) gameId: ObjectId,
     @Arg('from') from: SquareXYInput,
     @Arg('to') to: SquareXYInput
   ): Promise<Board> {
-    return await new Board();
+    try {
+      let session: InstanceType<Session> = await SessionModel.findById(gameId)
+        .populate('board')
+        .exec();
+      let board = session.board as InstanceType<Board>;
+      let squares = board.squares;
+      let fromSqr = squares.find(s => `${from.file}${from.rank}` === s.name);
+      let toSqr = squares.find(s => `${to.file}${to.rank}` === s.name);
+      // start modifying
+      if (fromSqr.piece) {
+        toSqr.piece = fromSqr.piece;
+        fromSqr.piece = null;
+      } else {
+        throw new Error('Origin Square must have a Piece');
+      }
+      // console.log(`AFTER\nfrom ${fromSqr}\n`, `to ${toSqr}`);
+      // end modifying
+
+      board.markModified('squares');
+      const saveBoard = await board.save();
+      // console.log(saveBoard);
+      pubSub.publish('BOARD_CHANGED', { data: saveBoard });
+      return saveBoard;
+    } catch (e) {
+      return e.message;
+    }
   }
 
   @Subscription({ topics: 'BOARD_CHANGED' })
   boardChanged(
-    @Root() payload: Board,
+    @Root() payload: { data: Board },
     @Arg('userId', type => ObjectIdScalar) userId: ObjectId
   ): Board {
-    return new Board();
+    return payload.data;
   }
 }

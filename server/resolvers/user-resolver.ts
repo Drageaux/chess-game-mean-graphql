@@ -47,7 +47,7 @@ export class UserResolver {
   }
 
   @Subscription({ topics: 'USER_ADDED' })
-  userAdded(@Root() payload: User): User {
-    return payload;
+  userAdded(@Root() payload: { data: User }): User {
+    return payload.data;
   }
 }
