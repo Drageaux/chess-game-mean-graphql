@@ -33,8 +33,8 @@ fragment boardFields on Board {
   }
 }
 
-query PlayGame($gameId: ID!, $userId: ID!) {
-  playGame(gameId: $gameId, userId: $userId) {
+query PlayGame($gameId: ObjectId!) {
+  playGame(gameId: $gameId) {
     ...basicSessionFields
     players {
       ...userWithId
@@ -51,8 +51,8 @@ query PlayGame($gameId: ID!, $userId: ID!) {
   }
 }
 
-query GetBoard($gameId: ID!, $userId: ID!) {
-  playGame(gameId: $gameId, userId: $userId) {
+query GetBoard($gameId: ObjectId!) {
+  playGame(gameId: $gameId) {
     ...basicSessionFields
     board {
       ...boardFields
@@ -60,42 +60,47 @@ query GetBoard($gameId: ID!, $userId: ID!) {
   }
 }
 
-query GetMoves($id: Int) {
-  testGetMoves(id: $id) {
-    # file
-    # rank
-    regularMoves {
-      file
-      rank
-      name
-    }
-    eagerMoves {
-      file
-      rank
-      name
-    }
-  }
-}
+import { Square } from '..entities/square';
+# query GetMoves($id: Int) {
+#   testGetMoves(id: $id) {
+#     # file
+#     # rank
+#     regularMoves {
+#       file
+#       rank
+#       name
+#     }
+#     eagerMoves {
+#       file
+#       rank
+#       name
+#     }
+#   }
+# }
 
-mutation FindGame($userId: ID!) {
+mutation FindGame($userId: ObjectId!) {
   findGame(userId: $userId) {
     elapsedTime
   }
 }
 
-mutation MovePiece($gameId: ID!, $from: SquareXYInput!, $to: SquareXYInput!) {
+mutation MovePiece(
+  $gameId: ObjectId!
+  $from: SquareXYInput!
+  $to: SquareXYInput!
+) {
   movePiece(gameId: $gameId, from: $from, to: $to) {
     ...boardFields
   }
 }
 
-subscription MatchFound($userId: ID!) {
+subscription MatchFound($userId: ObjectId!) {
   matchFound(userId: $userId) {
     ...basicSessionFields
   }
 }
 
-subscription BoardChanged($userId: ID!) {
+subscription BoardChanged($userId: ObjectId!) {
   boardChanged(userId: $userId) {
     ...boardFields
   }

@@ -8,6 +8,7 @@ import {
   Int
 } from 'type-graphql';
 import { User } from './user';
+import { Board } from './board';
 
 enum Color {
   White = 'white',
@@ -84,8 +85,9 @@ export class Session extends Typegoose {
   @prop({ default: new GameState() })
   gameState?: GameState;
 
-  // @prop({ ref: Board })
-  // board?: Board;
+  @Field(type => Board, { nullable: true })
+  @prop({ ref: Board })
+  board?: Ref<Board>;
 
   @Field(type => Int, { nullable: true })
   @prop()

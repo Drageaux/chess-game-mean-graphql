@@ -22,15 +22,19 @@ export enum PieceType {
   next();
 })
 export class Piece extends Typegoose {
+  @Field()
   @prop({ required: true, enum: Color })
   color: Color;
 
+  @Field()
   @prop({ required: true, enum: PieceType })
   type: PieceType;
 
+  @Field()
   @prop({ default: false })
-  captured?: boolean;
+  captured: boolean;
 
+  @Field()
   @prop()
   get name(): string {
     return `${this.color} ${this.type}`;

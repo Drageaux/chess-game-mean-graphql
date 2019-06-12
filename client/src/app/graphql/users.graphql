@@ -9,7 +9,7 @@ fragment userNoId on User {
   email
 }
 
-query FindUserById($id: ID!) {
+query FindUserById($id: ObjectId!) {
   findUser(id: $id) {
     ...userWithId
   }
@@ -21,9 +21,7 @@ query GetAllUsers {
 }
 
 mutation AddUser($userName: String!, $email: String!) {
-  addUser(userName: $userName, email: $email) {
-    ...userNoId
-  }
+  addUser(user: { userName: $userName, email: $email })
 }
 
 # mutation removeUser($id: String!) {

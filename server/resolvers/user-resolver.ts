@@ -13,11 +13,14 @@ import {
 import { InstanceType } from 'typegoose';
 import { User, UserModel } from '../entities/user';
 import { UserInput } from './inputs/user-input';
+import { ObjectIdScalar } from '../graphql/object-id-scalar';
 
 @Resolver(of => User)
 export class UserResolver {
   @Query(returns => User, { nullable: true })
-  async findUser(@Arg('id') id: string): Promise<User> {
+  async findUser(
+    @Arg('id', type => ObjectIdScalar) id: ObjectId
+  ): Promise<User> {
     return await UserModel.findById(id);
   }
 

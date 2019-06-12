@@ -12,13 +12,17 @@ import {
   Root
 } from 'type-graphql';
 import { InstanceType } from 'typegoose';
-import { Session, SessionModel } from '../entities/session';
 import { ObjectIdScalar } from '../graphql/object-id-scalar';
+import { Session, SessionModel } from '../entities/session';
+import { Board, BoardModel } from '../entities/board';
+import { Square } from '../entities/square';
 
 @Resolver(of => Session)
 export class SessionResolver {
   @Query(returns => Session, { nullable: true })
-  async playGame(@Arg('gameId') gameId: string): Promise<Session> {
+  async playGame(
+    @Arg('gameId', type => ObjectIdScalar) gameId: ObjectId
+  ): Promise<Session> {
     return await SessionModel.findById(gameId)
       .populate('board')
       .exec();
@@ -40,9 +44,9 @@ export class SessionResolver {
       // add final player start game
       try {
         // TODO: add more players/viewers
-        // const newBoard: InstanceType<Board> = await new BoardModel().save(); // the devs on GitHub issues manually save
+        const newBoard: InstanceType<Board> = await new BoardModel().save(); // the devs on GitHub issues manually save
         session.gameState.gameStarted = true;
-        // session.board = newBoard._id; // by this time the board does not return an "id" prop yet
+        session.board = newBoard._id; // by this time the board does not return an "id" virtual prop yet
         session.blackTeam = userId;
 
         // TODO: # of players in queue, etc.
@@ -74,5 +78,23 @@ export class SessionResolver {
     @Arg('userId', type => ObjectIdScalar) userId: ObjectId
   ): Session {
     return payload;
+  }
+
+  // @Query()
+  // async testGetMoves(): Promise<{
+  //   regularMoves: Square[];
+  //   eagerMoves: Square[];
+  // }> {
+  //   return null;
+  // }
+
+  @Mutation(returns => Board)
+  async movePiece(): Promise<Board> {
+    return await new Board();
+  }
+
+  @Subscription({ topics: 'BOARD_CHANGED' })
+  boardChanged(@Root() payload: Board): Board {
+    return new Board();
   }
 }

@@ -13,17 +13,20 @@ const DEFAULT_BOARD = initBoard(); // prevent remaking board every time
 })
 export class Board extends Typegoose {
   @Field(type => ID)
-  readonly _id: ObjectId;
+  readonly id: ObjectId;
 
+  @Field(type => [Square])
   @arrayProp({ items: Square })
   @prop({ default: DEFAULT_BOARD })
   squares: Square[];
 
+  @Field(type => [Piece], { nullable: true })
   @arrayProp({ items: Piece })
   capturedPieces?: Piece[];
 
+  @Field(type => Square, { nullable: true })
   @prop()
-  get whiteKingLocation() {
+  get whiteKingLocation(): Square {
     return this.squares.find((square: Square) => {
       return (
         square.piece &&
@@ -33,8 +36,9 @@ export class Board extends Typegoose {
     });
   }
 
+  @Field(type => Square, { nullable: true })
   @prop()
-  get blackKingLocation() {
+  get blackKingLocation(): Square {
     return this.squares.find((square: Square) => {
       return (
         square.piece &&

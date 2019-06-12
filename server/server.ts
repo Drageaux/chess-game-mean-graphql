@@ -2,13 +2,14 @@ import 'reflect-metadata';
 import express from 'express';
 import path from 'path';
 import bodyParser from 'body-parser';
-import log, { error, system, success, warning } from './log';
-
 const compression = require('compression');
 const cors = require('cors');
+import log, { error, system, success, warning } from './log';
+
 import { ApolloServer } from 'apollo-server-express';
 import { createServer } from 'http';
 import createSchema from './graphql/schema';
+import { GeneratingSchemaError } from 'type-graphql';
 
 const env = process.env.NODE_ENV || 'development';
 const app = express();
@@ -104,7 +105,9 @@ async function bootstrap() {
       );
     });
   } catch (e) {
-    log(error(e));
+    if (e instanceof GeneratingSchemaError) {
+      log(error(e.details.toString()));
+    }
   }
 }
 
