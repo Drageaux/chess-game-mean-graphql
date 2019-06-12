@@ -24,7 +24,7 @@ export class HomeComponent implements OnInit {
       .subscribe((result: SubscriptionResult<MatchFoundSubscription>) => {
         console.log(result);
         matchFound.unsubscribe();
-        this.router.navigate(['/game', result.data.matchFound.id]);
+        this.router.navigate(['/game', result.data.matchFound._id]);
       });
 
     // just getting the state of the queue,

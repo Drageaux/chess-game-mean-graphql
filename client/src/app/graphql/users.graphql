@@ -1,5 +1,5 @@
 fragment userWithId on User {
-  id
+  _id
   userName
   email
 }
@@ -26,14 +26,14 @@ mutation AddUser($userName: String!, $email: String!) {
 
 # mutation removeUser($id: String!) {
 #   removeUser(id: $id) {
-#     id
+#     _id
 #     userName
 #   }
 # }
 
 # mutation updateUser($id: String!, $userName: String!) {
 #   updateUser(id: $id, userName: $userName) {
-#     id
+#     _id
 #     userName
 #   }
 # }

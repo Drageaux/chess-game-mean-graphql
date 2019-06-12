@@ -1,6 +1,6 @@
 <app-board
   *ngIf="gameSession; else loading"
-  [gameId]="gameSession?.id"
+  [gameId]="gameSession?._id"
   [currTurn]="gameSession?.gameState?.currentTurn"
 >
   <!-- {{ gameSession | json }} -->
