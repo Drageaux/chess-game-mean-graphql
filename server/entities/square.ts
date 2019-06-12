@@ -4,7 +4,7 @@ import { Piece } from './piece';
 
 // lookup-enum type, easier for JS forward and reverse accessing
 export enum File {
-  'a',
+  'a' = 1,
   'b',
   'c',
   'd',
