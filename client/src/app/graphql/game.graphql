@@ -1,5 +1,5 @@
 fragment basicSessionFields on Session {
-  id
+  _id
   createdAt
   lastUpdated
 }
@@ -7,6 +7,8 @@ fragment basicSessionFields on Session {
 fragment pieceFields on Piece {
   color
   type
+  captured
+  name
 }
 
 fragment squareXYFields on Square {
@@ -14,8 +16,13 @@ fragment squareXYFields on Square {
   rank
 }
 
+fragment squareFields on Square {
+  file
+  rank
+}
+
 fragment boardFields on Board {
-  id
+  _id
   squares {
     ...squareXYFields
     name
@@ -46,7 +53,7 @@ query PlayGame($gameId: ObjectId!) {
     }
     # get id to check availability and reroute if nonexistent
     board {
-      id
+      _id
     }
   }
 }
@@ -60,7 +67,6 @@ query GetBoard($gameId: ObjectId!) {
   }
 }
 
-import { Square } from '..entities/square';
 # query GetMoves($id: Int) {
 #   testGetMoves(id: $id) {
 #     # file
