@@ -26,15 +26,21 @@
       <span *ngIf="s.rank === 1" class="annotation files">
         {{ s.file }}
       </span>
-      <span *ngIf="s.file === 'a'" class="annotation ranks">{{ s.rank }}</span>
+      <span *ngIf="s.file === eFile.A" class="annotation ranks">{{
+        s.rank
+      }}</span>
       <i
         *ngIf="s?.piece"
-        class="fas fa-chess-{{ s.piece?.type }} {{ s.piece?.color }}"
+        class="fas fa-chess-{{ s.piece?.type | lowercase }} {{
+          s.piece?.color | lowercase
+        }}"
         [ngClass]="{
-          white: s.piece?.color === 'white',
-          black: s.piece?.color === 'black',
-          'white-turn': s.piece?.color === 'white' && currTurn === 'white',
-          'black-turn': s.piece?.color === 'black' && currTurn === 'black'
+          white: s.piece?.color === eColor.White,
+          black: s.piece?.color === eColor.Black,
+          'white-turn':
+            s.piece?.color === eColor.White && currTurn === eColor.White,
+          'black-turn':
+            s.piece?.color === eColor.Black && currTurn === eColor.Black
         }"
       ></i>
     </div>

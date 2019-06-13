@@ -21,7 +21,6 @@ export class GameComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.subs.sink = this.playGameGQL
       .fetch({
-        userId: '5cdda44272985718046cba86',
         gameId: this.route.snapshot.params.gameId
       })
       .pipe(map(({ data }) => data.playGame))

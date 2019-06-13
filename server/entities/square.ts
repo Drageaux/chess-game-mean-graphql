@@ -21,7 +21,8 @@ export class Square extends Typegoose {
   @Field()
   @prop()
   get name(this: InstanceType<Square>): string {
-    return `${this.file}${this.rank}`;
+    // it's stored as a number so should return the letter
+    return `${File[this.file]}${this.rank}`;
   }
 }
 
