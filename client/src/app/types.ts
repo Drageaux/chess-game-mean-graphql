@@ -33,6 +33,18 @@ export enum Color {
   Black = "Black"
 }
 
+/** The column notation of a Square on a Board */
+export enum File {
+  A = "a",
+  B = "b",
+  C = "c",
+  D = "d",
+  E = "e",
+  F = "f",
+  G = "g",
+  H = "h"
+}
+
 export type GameState = {
   gameStarted: Scalars["Boolean"];
   gameOver: Scalars["Boolean"];
@@ -61,17 +73,27 @@ export type MutationMovePieceArgs = {
 };
 
 export type Piece = {
-  color: Scalars["String"];
-  type: Scalars["String"];
+  type: PieceType;
+  color: Color;
   captured?: Maybe<Scalars["Boolean"]>;
   name?: Maybe<Scalars["String"]>;
 };
+
+/** The basic Piece Type */
+export enum PieceType {
+  Pawn = "Pawn",
+  Knight = "Knight",
+  Bishop = "Bishop",
+  Rook = "Rook",
+  Queen = "Queen",
+  King = "King"
+}
 
 export type Player = {
   _id: Scalars["ID"];
   userName?: Maybe<Scalars["String"]>;
   email?: Maybe<Scalars["String"]>;
-  color: Scalars["String"];
+  color: Color;
 };
 
 export type Query = {
@@ -101,14 +123,14 @@ export type Session = {
 };
 
 export type Square = {
-  file: Scalars["Float"];
+  file: File;
   rank: Scalars["Int"];
   piece?: Maybe<Piece>;
   name: Scalars["String"];
 };
 
 export type SquareXyInput = {
-  file: Scalars["Float"];
+  file: File;
   rank: Scalars["Int"];
 };
 
