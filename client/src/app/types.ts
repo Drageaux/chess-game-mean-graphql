@@ -55,7 +55,7 @@ export type GameState = {
 export type Mutation = {
   addUser: Scalars["Boolean"];
   findGame: Session;
-  movePiece: Board;
+  movePiece: Scalars["Boolean"];
 };
 
 export type MutationAddUserArgs = {
@@ -240,9 +240,10 @@ export type MovePieceMutationVariables = {
   to: SquareXyInput;
 };
 
-export type MovePieceMutation = { __typename?: "Mutation" } & {
-  movePiece: { __typename?: "Board" } & BoardFieldsFragment;
-};
+export type MovePieceMutation = { __typename?: "Mutation" } & Pick<
+  Mutation,
+  "movePiece"
+>;
 
 export type MatchFoundSubscriptionVariables = {
   userId: Scalars["ObjectId"];
@@ -440,11 +441,8 @@ export const MovePieceDocument = gql`
     $from: SquareXYInput!
     $to: SquareXYInput!
   ) {
-    movePiece(gameId: $gameId, from: $from, to: $to) {
-      ...boardFields
-    }
+    movePiece(gameId: $gameId, from: $from, to: $to)
   }
-  ${boardFieldsFragmentDoc}
 `;
 
 @Injectable({

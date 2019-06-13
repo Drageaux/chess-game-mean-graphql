@@ -31,6 +31,7 @@ import { map } from 'rxjs/operators';
 })
 export class BoardComponent implements OnChanges, OnInit, OnDestroy {
   private subs = new SubSink();
+  // expose inside component so template can access
   public eFile = File;
   public eColor = Color;
   public ePieceType = PieceType;
@@ -101,6 +102,7 @@ export class BoardComponent implements OnChanges, OnInit, OnDestroy {
     const toSqr: Square = squares.find(x => `${x.file}${x.rank}` === 'e4');
     if (fromSqr && toSqr) {
       console.time('move');
+
       this.subs.sink = this.movePieceGQL
         .mutate({
           gameId: this.gameId,

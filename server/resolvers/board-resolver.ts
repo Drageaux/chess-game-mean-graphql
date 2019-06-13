@@ -28,13 +28,13 @@ export class BoardResolver {
   //   return null;
   // }
 
-  @Mutation(returns => Board)
+  @Mutation(returns => Boolean)
   async movePiece(
     @PubSub() pubSub: PubSubEngine,
     @Arg('gameId', type => ObjectIdScalar) gameId: ObjectId,
     @Arg('from') from: SquareXYInput,
     @Arg('to') to: SquareXYInput
-  ): Promise<Board> {
+  ): Promise<Boolean> {
     try {
       let session: InstanceType<Session> = await SessionModel.findById(gameId)
         .populate('board')
@@ -57,7 +57,7 @@ export class BoardResolver {
       const saveBoard = await board.save();
       // console.log(saveBoard);
       pubSub.publish('BOARD_CHANGED', { data: saveBoard });
-      return saveBoard;
+      return true;
     } catch (e) {
       return e.message;
     }

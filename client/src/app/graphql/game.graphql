@@ -95,9 +95,7 @@ mutation MovePiece(
   $from: SquareXYInput!
   $to: SquareXYInput!
 ) {
-  movePiece(gameId: $gameId, from: $from, to: $to) {
-    ...boardFields
-  }
+  movePiece(gameId: $gameId, from: $from, to: $to)
 }
 
 subscription MatchFound($userId: ObjectId!) {
