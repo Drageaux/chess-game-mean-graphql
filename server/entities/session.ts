@@ -9,15 +9,7 @@ import {
 } from 'type-graphql';
 import { User } from './user';
 import { Board } from './board';
-
-enum Color {
-  White = 'white',
-  Black = 'black'
-}
-registerEnumType(Color, {
-  name: 'Color',
-  description: 'The basic team colors'
-});
+import { Color } from './enums/color';
 
 @ObjectType()
 class CheckedMap extends Map {

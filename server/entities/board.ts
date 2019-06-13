@@ -1,8 +1,9 @@
 import { prop, Typegoose, InstanceType, arrayProp, post } from 'typegoose';
 import { ObjectType, Field, InterfaceType, ID } from 'type-graphql';
 import { ObjectId } from 'mongodb';
-import { File, Square } from './square';
-import { PieceType, Color, Piece } from './piece';
+import { Square } from './square';
+import { Piece } from './piece';
+import { File, Color, PieceType } from './enums';
 
 const BOARD_SIZE = 8;
 const DEFAULT_BOARD = initBoard(); // prevent remaking board every time

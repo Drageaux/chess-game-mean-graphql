@@ -1,10 +1,11 @@
 import { InputType, Field, Int } from 'type-graphql';
 
-import { File, Square } from '../../entities/square';
+import { Square } from '../../entities/square';
+import { File } from '../../entities/enums';
 
 @InputType()
 export class SquareXYInput implements Partial<Square> {
-  @Field()
+  @Field(type => File)
   file: File;
 
   @Field(type => Int)

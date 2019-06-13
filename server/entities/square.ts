@@ -1,22 +1,11 @@
 import { prop, Typegoose, InstanceType } from 'typegoose';
 import { ObjectType, Field, InterfaceType, ID, Int } from 'type-graphql';
 import { Piece } from './piece';
-
-// lookup-enum type, easier for JS forward and reverse accessing
-export enum File {
-  'a' = 1,
-  'b',
-  'c',
-  'd',
-  'e',
-  'f',
-  'g',
-  'h'
-}
+import { File } from './enums';
 
 @ObjectType()
 export class Square extends Typegoose {
-  @Field()
+  @Field(type => File)
   // TODO: alias x and y when it's supported
   @prop({ enum: File, required: true })
   file: File;
