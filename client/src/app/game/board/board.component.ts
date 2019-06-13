@@ -36,7 +36,7 @@ export class BoardComponent implements OnChanges, OnInit, OnDestroy {
   public ePieceType = PieceType;
 
   @Input() gameId: string;
-  @Input() currTurn: 'white' | 'black';
+  @Input() currTurn: Color;
   getBoardQuery: QueryRef<GetBoardQuery, GetBoardQueryVariables>;
   board: Board;
 
