@@ -1,12 +1,10 @@
-import { gql } from 'apollo-server-express';
-import { mergeSchemas, makeExecutableSchema } from 'graphql-tools';
+import { default as log, error } from './../log';
 
 import { UserResolver } from '../resolvers/user-resolver';
 import { SessionResolver } from '../resolvers/session-resolver';
 import { BoardResolver } from '../resolvers/board-resolver';
 
-import { typeDefs as Move, resolvers as moveResolvers } from './move';
-import { buildTypeDefsAndResolvers, buildSchema } from 'type-graphql';
+import { buildSchema } from 'type-graphql';
 import { ObjectId } from 'mongodb';
 import { ObjectIdScalar } from './object-id-scalar';
 import { TypegooseMiddleware } from './typegoose-middleware';
@@ -33,7 +31,7 @@ async function createSchema() {
   //   typeDefs,
   //   resolvers
   // });
-  const schema = buildSchema({
+  return buildSchema({
     resolvers: [UserResolver, SessionResolver, BoardResolver],
     // disable automatic validation or pass the default config object
     validate: false,
@@ -41,8 +39,10 @@ async function createSchema() {
     globalMiddlewares: [TypegooseMiddleware],
     // use ObjectId scalar mapping
     scalarsMap: [{ type: ObjectId, scalar: ObjectIdScalar }]
+  }).catch(err => {
+    log(error('[APOLLO] Schema Build Error:', err));
+    return err;
   });
-  return schema;
 }
 
 export default createSchema;

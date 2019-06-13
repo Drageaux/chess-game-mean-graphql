@@ -21,21 +21,21 @@ app.use('*', cors());
 app.use(compression());
 
 async function bootstrap() {
+  // setup MongoDB
+  require('./config');
+
+  // setup GraphQL
+  const validateToken = (authToken: any) => {
+    // ... validate token and return a Promise, rejects in case of an error
+  };
+
+  const findUser = (authToken: any) => {
+    return (tokenValidationResult: any) => {
+      // ... finds user by auth token and return a Promise, rejects in case of an error
+    };
+  };
+
   try {
-    // setup MongoDB
-    require('./config');
-
-    // setup GraphQL
-    const validateToken = (authToken: any) => {
-      // ... validate token and return a Promise, rejects in case of an error
-    };
-
-    const findUser = (authToken: any) => {
-      return (tokenValidationResult: any) => {
-        // ... finds user by auth token and return a Promise, rejects in case of an error
-      };
-    };
-
     const schema = await createSchema();
     const apollo: ApolloServer = new ApolloServer({
       schema,
