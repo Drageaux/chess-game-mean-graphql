@@ -24,32 +24,37 @@ export class Board extends Typegoose {
   @arrayProp({ items: Piece })
   capturedPieces?: Piece[];
 
-  @Field(type => Square, { nullable: true })
-  @prop()
-  get whiteKingLocation(this: InstanceType<Board>): Square {
-    return this.squares.find((square: Square) => {
-      return (
-        square.piece &&
-        square.piece.type === PieceType.King &&
-        square.piece.color === Color.White
-      );
-    });
-  }
+  // @Field(type => Square, { nullable: true })
+  // @prop()
+  // get whiteKingLocation(this: InstanceType<Board>): Square {
+  //   return this.squares.find((square: Square) => {
+  //     return (
+  //       square.piece &&
+  //       square.piece.type === PieceType.King &&
+  //       square.piece.color === Color.White
+  //     );
+  //   });
+  // }
 
-  @Field(type => Square, { nullable: true })
-  @prop()
-  get blackKingLocation(this: InstanceType<Board>): Square {
-    return this.squares.find((square: Square) => {
-      return (
-        square.piece &&
-        square.piece.type === PieceType.King &&
-        square.piece.color === Color.Black
-      );
-    });
-  }
+  // @Field(type => Square, { nullable: true })
+  // @prop()
+  // get blackKingLocation(this: InstanceType<Board>): Square {
+  //   return this.squares.find((square: Square) => {
+  //     return (
+  //       square.piece &&
+  //       square.piece.type === PieceType.King &&
+  //       square.piece.color === Color.Black
+  //     );
+  //   });
+  // }
 }
 
-export const BoardModel = new Board().getModelForClass(Board);
+export const BoardModel = new Board().getModelForClass(Board, {
+  schemaOptions: {
+    toObject: { virtuals: true },
+    toJSON: { virtuals: true }
+  }
+});
 
 function initBoard(): Square[] {
   let newBoard: Square[] = [];
