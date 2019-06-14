@@ -17,8 +17,7 @@ export class Board extends Typegoose {
   readonly _id: ObjectId;
 
   @Field(type => [Square])
-  @arrayProp({ items: Square })
-  @prop({ default: DEFAULT_BOARD })
+  @arrayProp({ items: Square, default: DEFAULT_BOARD })
   squares: Square[];
 
   @Field(type => [Piece], { nullable: true })
