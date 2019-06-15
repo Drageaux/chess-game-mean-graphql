@@ -62,9 +62,10 @@ export class BoardResolver {
         .populate('board')
         .exec();
       let board = session.board as InstanceType<Board>;
-      let squares = board.squares;
+      let squares = board.squares as InstanceType<Square[]>;
       let fromSqr = squares.find(
-        sqr => `${File[from.file]}${from.rank}` == sqr.name
+        (sqr: InstanceType<Square>) =>
+          `${File[from.file]}${from.rank}` === sqr.get('name')
       );
       let toSqr = squares.find(
         sqr => `${File[to.file]}${to.rank}` === sqr.name

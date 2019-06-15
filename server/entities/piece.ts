@@ -28,12 +28,20 @@ export class Piece extends Typegoose {
   captured?: boolean;
 
   @Field({ nullable: true })
+  name(): string {
+    return this._name;
+  }
+
   @prop()
-  get name(this: InstanceType<Piece>): string {
+  get _name(this: InstanceType<Piece>): string {
     return `${this.color} ${this.type}`;
   }
 }
 
 export const PieceModel = new Piece().getModelForClass(Piece, {
-  schemaOptions: { _id: false }
+  schemaOptions: {
+    _id: false,
+    toObject: { virtuals: true },
+    toJSON: { virtuals: true }
+  }
 });
