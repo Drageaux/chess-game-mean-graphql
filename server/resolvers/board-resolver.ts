@@ -23,13 +23,21 @@ import { GraphQLError } from 'graphql';
 
 @Resolver(of => Board)
 export class BoardResolver {
-  @FieldResolver(returns => Square)
+  @FieldResolver(returns => Square, { nullable: true })
   async whiteKingLocation(@Root() board: Board) {
     return board._whiteKingLocation;
   }
-  @FieldResolver(returns => Square)
+
+  @FieldResolver(returns => Square, { nullable: true })
   async blackKingLocation(@Root() board: Board) {
     return board._blackKingLocation;
+  }
+
+  @Query(returns => Board)
+  async getBoard(
+    @Arg('boardId', type => ObjectIdScalar) boardId: ObjectId
+  ): Promise<Board> {
+    return await BoardModel.findById(boardId).exec();
   }
   // @Query()
   // async testGetMoves(): Promise<{
@@ -42,18 +50,17 @@ export class BoardResolver {
   @Mutation(returns => Boolean)
   async movePiece(
     @PubSub() pubSub: PubSubEngine,
-    @Arg('gameId', type => ObjectIdScalar) gameId: ObjectId,
+    @Arg('boardId', type => ObjectIdScalar) boardId: ObjectId,
     @Arg('from') from: SquareXYInput,
     @Arg('to') to: SquareXYInput
   ): Promise<boolean> {
-    let session: InstanceType<Session> = await SessionModel.findById(gameId)
-      .populate('board')
-      .exec();
-    let board = session.board as InstanceType<Board>;
-    let squares = board.squares as InstanceType<Square[]>;
+    let board: any = await BoardModel.findById(boardId).exec();
+    board = board.toObject();
+
+    let squares = board.squares as Square[];
     let fromSqr = squares.find(
       (sqr: InstanceType<Square>) =>
-        `${File[from.file]}${from.rank}` === sqr.get('name')
+        `${File[from.file]}${from.rank}` === sqr.name
     );
     let toSqr = squares.find(sqr => `${File[to.file]}${to.rank}` === sqr.name);
     // start modifying

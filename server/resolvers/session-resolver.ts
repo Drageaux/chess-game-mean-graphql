@@ -24,12 +24,9 @@ export class SessionResolver {
     @Arg('gameId', type => ObjectIdScalar) gameId: ObjectId,
     @Arg('includeBoard', { nullable: true }) includeBoard?: boolean
   ): Promise<Session> {
-    const query = SessionModel.findById(gameId);
-    if (includeBoard) {
-      return await query.populate('board').exec();
-    } else {
-      return await query.lean().exec();
-    }
+    return await SessionModel.findById(gameId)
+      .lean()
+      .exec();
   }
 
   @Mutation(returns => Session)
