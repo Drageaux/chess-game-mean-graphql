@@ -69,7 +69,7 @@ export type MutationFindGameArgs = {
 export type MutationMovePieceArgs = {
   to: SquareXyInput;
   from: SquareXyInput;
-  gameId: Scalars["ObjectId"];
+  boardId: Scalars["ObjectId"];
 };
 
 export type Piece = {
@@ -100,6 +100,7 @@ export type Query = {
   findUser?: Maybe<User>;
   getUsers: Array<User>;
   playGame?: Maybe<Session>;
+  getBoard: Board;
 };
 
 export type QueryFindUserArgs = {
@@ -109,6 +110,10 @@ export type QueryFindUserArgs = {
 export type QueryPlayGameArgs = {
   includeBoard?: Maybe<Scalars["Boolean"]>;
   gameId: Scalars["ObjectId"];
+};
+
+export type QueryGetBoardArgs = {
+  boardId: Scalars["ObjectId"];
 };
 
 export type Session = {
@@ -125,11 +130,8 @@ export type Session = {
 
 export type Square = {
   file: File;
-  x: File;
   rank: Scalars["Int"];
-  y: Scalars["Int"];
   piece?: Maybe<Piece>;
-  name: Scalars["String"];
 };
 
 export type SquareXyInput = {
@@ -186,15 +188,15 @@ export type BoardFieldsFragment = { __typename?: "Board" } & Pick<
   "_id"
 > & {
     squares: Array<
-      { __typename?: "Square" } & Pick<Square, "name"> & {
-          piece: Maybe<{ __typename?: "Piece" } & PieceFieldsFragment>;
-        } & SquareXyFieldsFragment
+      { __typename?: "Square" } & {
+        piece: Maybe<{ __typename?: "Piece" } & PieceFieldsFragment>;
+      } & SquareXyFieldsFragment
     >;
     whiteKingLocation: Maybe<
-      { __typename?: "Square" } & Pick<Square, "name"> & SquareXyFieldsFragment
+      { __typename?: "Square" } & SquareXyFieldsFragment
     >;
     blackKingLocation: Maybe<
-      { __typename?: "Square" } & Pick<Square, "name"> & SquareXyFieldsFragment
+      { __typename?: "Square" } & SquareXyFieldsFragment
     >;
   };
 
@@ -218,15 +220,11 @@ export type PlayGameQuery = { __typename?: "Query" } & {
 };
 
 export type GetBoardQueryVariables = {
-  gameId: Scalars["ObjectId"];
+  boardId: Scalars["ObjectId"];
 };
 
 export type GetBoardQuery = { __typename?: "Query" } & {
-  playGame: Maybe<
-    { __typename?: "Session" } & {
-      board: Maybe<{ __typename?: "Board" } & BoardFieldsFragment>;
-    } & BasicSessionFieldsFragment
-  >;
+  getBoard: { __typename?: "Board" } & BoardFieldsFragment;
 };
 
 export type FindGameMutationVariables = {
@@ -238,7 +236,7 @@ export type FindGameMutation = { __typename?: "Mutation" } & {
 };
 
 export type MovePieceMutationVariables = {
-  gameId: Scalars["ObjectId"];
+  boardId: Scalars["ObjectId"];
   from: SquareXyInput;
   to: SquareXyInput;
 };
@@ -339,18 +337,15 @@ export const boardFieldsFragmentDoc = gql`
     _id
     squares {
       ...squareXYFields
-      name
       piece {
         ...pieceFields
       }
     }
     whiteKingLocation {
       ...squareXYFields
-      name
     }
     blackKingLocation {
       ...squareXYFields
-      name
     }
   }
   ${squareXYFieldsFragmentDoc}
@@ -400,15 +395,11 @@ export class PlayGameGQL extends Apollo.Query<
   document = PlayGameDocument;
 }
 export const GetBoardDocument = gql`
-  query GetBoard($gameId: ObjectId!) {
-    playGame(gameId: $gameId, includeBoard: true) {
-      ...basicSessionFields
-      board {
-        ...boardFields
-      }
+  query GetBoard($boardId: ObjectId!) {
+    getBoard(boardId: $boardId) {
+      ...boardFields
     }
   }
-  ${basicSessionFieldsFragmentDoc}
   ${boardFieldsFragmentDoc}
 `;
 
@@ -440,11 +431,11 @@ export class FindGameGQL extends Apollo.Mutation<
 }
 export const MovePieceDocument = gql`
   mutation MovePiece(
-    $gameId: ObjectId!
+    $boardId: ObjectId!
     $from: SquareXYInput!
     $to: SquareXYInput!
   ) {
-    movePiece(gameId: $gameId, from: $from, to: $to)
+    movePiece(boardId: $boardId, from: $from, to: $to)
   }
 `;
 

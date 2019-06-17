@@ -25,18 +25,18 @@ fragment boardFields on Board {
   _id
   squares {
     ...squareXYFields
-    name
+    # name
     piece {
       ...pieceFields
     }
   }
   whiteKingLocation {
     ...squareXYFields
-    name
+    # name
   }
   blackKingLocation {
     ...squareXYFields
-    name
+    # name
   }
 }
 
@@ -58,12 +58,9 @@ query PlayGame($gameId: ObjectId!) {
   }
 }
 
-query GetBoard($gameId: ObjectId!) {
-  playGame(gameId: $gameId, includeBoard: true) {
-    ...basicSessionFields
-    board {
-      ...boardFields
-    }
+query GetBoard($boardId: ObjectId!) {
+  getBoard(boardId: $boardId) {
+    ...boardFields
   }
 }
 
@@ -91,11 +88,11 @@ mutation FindGame($userId: ObjectId!) {
 }
 
 mutation MovePiece(
-  $gameId: ObjectId!
+  $boardId: ObjectId!
   $from: SquareXYInput!
   $to: SquareXYInput!
 ) {
-  movePiece(gameId: $gameId, from: $from, to: $to)
+  movePiece(boardId: $boardId, from: $from, to: $to)
 }
 
 subscription MatchFound($userId: ObjectId!) {

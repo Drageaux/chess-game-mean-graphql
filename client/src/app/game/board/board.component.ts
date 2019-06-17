@@ -36,7 +36,7 @@ export class BoardComponent implements OnChanges, OnInit, OnDestroy {
   public eColor = Color;
   public ePieceType = PieceType;
 
-  @Input() gameId: string;
+  @Input() boardId: string;
   @Input() currTurn: Color;
   getBoardQuery: QueryRef<GetBoardQuery, GetBoardQueryVariables>;
   board: Board;
@@ -61,12 +61,12 @@ export class BoardComponent implements OnChanges, OnInit, OnDestroy {
   ngOnInit() {
     this.subs.sink = this.getBoardGQL
       .fetch({
-        gameId: this.gameId
+        boardId: this.boardId
       })
-      .pipe(map(({ data }) => data.playGame))
+      .pipe(map(({ data }) => data.getBoard))
       .subscribe(result => {
         console.log(result);
-        this.board = result.board;
+        this.board = result;
       });
 
     // this.subs.sink = this.getBoardQuery.valueChanges
@@ -105,7 +105,7 @@ export class BoardComponent implements OnChanges, OnInit, OnDestroy {
 
       this.subs.sink = this.movePieceGQL
         .mutate({
-          gameId: this.gameId,
+          boardId: this.boardId,
           from: { file: fromSqr.file, rank: fromSqr.rank },
           to: { file: toSqr.file, rank: toSqr.rank }
         })
