@@ -21,11 +21,15 @@ import { Square } from '../entities/square';
 export class SessionResolver {
   @Query(returns => Session, { nullable: true })
   async playGame(
-    @Arg('gameId', type => ObjectIdScalar) gameId: ObjectId
+    @Arg('gameId', type => ObjectIdScalar) gameId: ObjectId,
+    @Arg('includeBoard', { nullable: true }) includeBoard?: boolean
   ): Promise<Session> {
-    return await SessionModel.findById(gameId)
-      .populate('board')
-      .exec();
+    const query = SessionModel.findById(gameId);
+    if (includeBoard) {
+      return await query.populate('board').exec();
+    } else {
+      return await query.lean().exec();
+    }
   }
 
   @Mutation(returns => Session)

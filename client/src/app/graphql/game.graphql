@@ -59,7 +59,7 @@ query PlayGame($gameId: ObjectId!) {
 }
 
 query GetBoard($gameId: ObjectId!) {
-  playGame(gameId: $gameId) {
+  playGame(gameId: $gameId, includeBoard: true) {
     ...basicSessionFields
     board {
       ...boardFields

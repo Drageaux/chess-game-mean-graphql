@@ -107,6 +107,7 @@ export type QueryFindUserArgs = {
 };
 
 export type QueryPlayGameArgs = {
+  includeBoard?: Maybe<Scalars["Boolean"]>;
   gameId: Scalars["ObjectId"];
 };
 
@@ -124,7 +125,9 @@ export type Session = {
 
 export type Square = {
   file: File;
+  x: File;
   rank: Scalars["Int"];
+  y: Scalars["Int"];
   piece?: Maybe<Piece>;
   name: Scalars["String"];
 };
@@ -398,7 +401,7 @@ export class PlayGameGQL extends Apollo.Query<
 }
 export const GetBoardDocument = gql`
   query GetBoard($gameId: ObjectId!) {
-    playGame(gameId: $gameId) {
+    playGame(gameId: $gameId, includeBoard: true) {
       ...basicSessionFields
       board {
         ...boardFields
