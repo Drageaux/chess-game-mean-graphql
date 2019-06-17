@@ -24,9 +24,8 @@ export class Board extends Typegoose {
   @arrayProp({ items: Piece })
   capturedPieces?: Piece[];
 
-  @Field(type => Square, { nullable: true })
   @prop()
-  get whiteKingLocation(): Square {
+  get _whiteKingLocation(this: InstanceType<Board>): Square {
     return this.squares.find((square: Square) => {
       return (
         square.piece &&
@@ -36,9 +35,8 @@ export class Board extends Typegoose {
     });
   }
 
-  @Field(type => Square, { nullable: true })
   @prop()
-  get blackKingLocation(): Square {
+  get _blackKingLocation(this: InstanceType<Board>): Square {
     return this.squares.find((square: Square) => {
       return (
         square.piece &&
@@ -49,12 +47,7 @@ export class Board extends Typegoose {
   }
 }
 
-export const BoardModel = new Board().getModelForClass(Board, {
-  schemaOptions: {
-    toObject: { getters: true, virtuals: true },
-    toJSON: { getters: true, virtuals: true }
-  }
-});
+export const BoardModel = new Board().getModelForClass(Board);
 
 function initBoard(): Square[] {
   let newBoard: Square[] = [];

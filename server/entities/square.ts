@@ -37,8 +37,6 @@ export class Square extends Typegoose {
 
 export const SquareModel = new Square().getModelForClass(Square, {
   schemaOptions: {
-    _id: false,
-    toObject: { getters: true, virtuals: true },
-    toJSON: { getters: true, virtuals: true }
+    _id: false
   }
 });

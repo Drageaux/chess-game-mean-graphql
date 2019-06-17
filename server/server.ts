@@ -61,6 +61,7 @@ async function bootstrap() {
         log(error('[APOLLO] Error:', err));
         if (err instanceof GraphQLError) {
           log(error('[APOLLO] Error Source:', err.source.body));
+          log(error('[APOLLO] Error Stack:', err.originalError.stack));
         }
         return err;
       },
