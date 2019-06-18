@@ -1,3 +1,9 @@
+<ul>
+  <li class="text" *ngFor="let item of gb.items | async">
+    {{ item.name }}
+  </li>
+</ul>
+
 <div class="text-center">
   <h4>current turn: {{ gb.currTurn }}</h4>
   <h5>{{ gb.checked.white || gb.checked.black ? 'checked' : '' }}</h5>
@@ -26,40 +32,44 @@
         (click)="handleSquareClick(s)"
         id="square-{{ '' + s.file + s.rank }}"
       >
-        <!-- activate square if a piece is trying to move -->
-        <div
-          *ngIf="gb.moving && gb.currMovesMap.has('' + s.file + s.rank)"
-          class="move"
-        ></div>
-        <div
-          class="current"
-          *ngIf="
-            gb.moving &&
-            gb.currSquare.file === s.file &&
-            gb.currSquare.rank === s.rank
-          "
-        ></div>
-        <!-- FIXME: this overlay pushes up chess icons somehow -->
-        <div
-          class="offensive"
-          *ngIf="
-            isAdmin &&
-            ((gb.currTurn == 'white' &&
-              gb.attackMovesMaps.black.has('' + s.file + s.rank)) ||
-              (gb.currTurn == 'black' &&
-                gb.attackMovesMaps.white.has('' + s.file + s.rank)))
-          "
-        ></div>
-        <i
-          *ngIf="s?.piece"
-          class="fas fa-chess-{{ s.piece?.name }}"
-          [ngClass]="{
-            white: s.piece?.color === 'white',
-            black: s.piece?.color === 'black',
-            'white-turn': s.piece?.color === 'white' && gb.currTurn === 'white',
-            'black-turn': s.piece?.color === 'black' && gb.currTurn === 'black'
-          }"
-        ></i>
+        <div class="board-square-content">
+          <!-- activate square if a piece is trying to move -->
+          <div
+            *ngIf="gb.moving && gb.currMovesMap.has('' + s.file + s.rank)"
+            class="move"
+          ></div>
+          <div
+            class="current"
+            *ngIf="
+              gb.moving &&
+              gb.currSquare.file === s.file &&
+              gb.currSquare.rank === s.rank
+            "
+          ></div>
+          <!-- FIXME: this overlay pushes up chess icons somehow -->
+          <div
+            class="offensive"
+            *ngIf="
+              isAdmin &&
+              ((gb.currTurn == 'white' &&
+                gb.attackMovesMaps.black.has('' + s.file + s.rank)) ||
+                (gb.currTurn == 'black' &&
+                  gb.attackMovesMaps.white.has('' + s.file + s.rank)))
+            "
+          ></div>
+          <i
+            *ngIf="s?.piece"
+            class="fas fa-chess-{{ s.piece?.name }}"
+            [ngClass]="{
+              white: s.piece?.color === 'white',
+              black: s.piece?.color === 'black',
+              'white-turn':
+                s.piece?.color === 'white' && gb.currTurn === 'white',
+              'black-turn':
+                s.piece?.color === 'black' && gb.currTurn === 'black'
+            }"
+          ></i>
+        </div>
       </div>
     </div>
   </div>
