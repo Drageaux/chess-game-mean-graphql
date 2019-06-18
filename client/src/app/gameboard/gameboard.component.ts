@@ -1,4 +1,4 @@
-import { Subscription } from 'rxjs';
+import { Subscription, Observable } from 'rxjs';
 import { Component } from '@angular/core';
 import { Gameboard } from './gameboard';
 import { Square } from './square';
@@ -7,7 +7,12 @@ import { King } from './pieces/king';
 import { Move } from './move';
 import { default as parser } from './board-parser';
 import { distinctUntilChanged } from 'rxjs/operators';
-import { } from '@app/types';
+import {
+  AngularFirestore,
+  AngularFirestoreDocument
+} from '@angular/fire/firestore';
+import { Game } from '@app/interfaces';
+import { Color } from '@app/enums';
 
 @Component({
   selector: 'app-gameboard',
@@ -22,8 +27,27 @@ export class GameboardComponent {
   gb = new Gameboard();
   board2: Square[][] = [];
 
-  constructor() {
+  // firestore
+  private gameDoc: AngularFirestoreDocument<Game>;
+  game: Observable<Game>;
 
+  constructor(private db: AngularFirestore) {
+    this.gameDoc = this.db.doc<Game>('/games/0svakWzstAjEkmqMN1qt');
+    this.game = this.gameDoc.valueChanges();
+  }
+  update() {
+    this.gameDoc.update({ gameOver: true });
+  }
+  createNewGame() {
+    this.db.collection('games').add({
+      gameStarted: false,
+      gameOver: false,
+      currentTurn: Color.White,
+      checked: new Map<Color, boolean>([
+        [Color.White, false],
+        [Color.Black, false]
+      ])
+    } as Game);
   }
 
   /*********************

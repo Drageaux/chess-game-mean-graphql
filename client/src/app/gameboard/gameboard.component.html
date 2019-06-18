@@ -1,8 +1,5 @@
-<ul>
-  <li class="text" *ngFor="let item of gb.items | async">
-    {{ item.name }}
-  </li>
-</ul>
+{{ game | async | json }}
+<button (click)="update()">test</button>
 
 <div class="text-center">
   <h4>current turn: {{ gb.currTurn }}</h4>
