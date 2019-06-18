@@ -24,7 +24,7 @@ export class Square extends Typegoose {
   }
 
   @Field(type => Piece, { nullable: true })
-  @prop()
+  @prop({ _id: false })
   piece?: Piece;
 
   @Field()

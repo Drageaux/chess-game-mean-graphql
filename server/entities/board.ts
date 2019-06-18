@@ -17,7 +17,7 @@ export class Board extends Typegoose {
   readonly _id: ObjectId;
 
   @Field(type => [Square])
-  @arrayProp({ items: Square, default: DEFAULT_BOARD })
+  @arrayProp({ items: Square, default: DEFAULT_BOARD, _id: false })
   squares: Square[];
 
   @Field(type => [Piece], { nullable: true })
@@ -47,7 +47,12 @@ export class Board extends Typegoose {
   }
 }
 
-export const BoardModel = new Board().getModelForClass(Board);
+export const BoardModel = new Board().getModelForClass(Board, {
+  schemaOptions: {
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+  }
+});
 
 function initBoard(): Square[] {
   let newBoard: Square[] = [];

@@ -54,15 +54,17 @@ export class BoardResolver {
     @Arg('from') from: SquareXYInput,
     @Arg('to') to: SquareXYInput
   ): Promise<boolean> {
-    let board: any = await BoardModel.findById(boardId).exec();
-    board = board.toObject();
+    let board: InstanceType<Board> = await BoardModel.findById(boardId).exec();
 
     let squares = board.squares as Square[];
     let fromSqr = squares.find(
       (sqr: InstanceType<Square>) =>
-        `${File[from.file]}${from.rank}` === sqr.name
+        `${File[from.file]}${from.rank}` === `${File[sqr.file]}${sqr.rank}`
     );
-    let toSqr = squares.find(sqr => `${File[to.file]}${to.rank}` === sqr.name);
+    let toSqr = squares.find(
+      (sqr: InstanceType<Square>) =>
+        `${File[to.file]}${to.rank}` === `${File[sqr.file]}${sqr.rank}`
+    );
     // start modifying
     if (fromSqr && fromSqr.piece) {
       toSqr.piece = fromSqr.piece;
