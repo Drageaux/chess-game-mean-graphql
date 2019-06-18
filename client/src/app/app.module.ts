@@ -5,6 +5,10 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
+// Firebase
+import { AngularFireModule } from '@angular/fire';
+import { AngularFirestoreModule } from '@angular/fire/firestore';
+import { environment } from '../environments/environment';
 // Apollo
 import { GraphQLModule } from './graphql.module';
 // Custom
@@ -18,6 +22,8 @@ import { GameboardModule } from './gameboard/gameboard.module';
   imports: [
     BrowserModule,
     HttpClientModule, // provides HttpClient for HttpLink
+    AngularFireModule.initializeApp(environment.firebase),
+    AngularFirestoreModule, // imports firebase/firestore, only needed for database features
     GraphQLModule, // import GraphQLModule
     AppRoutingModule,
     FormsModule,
