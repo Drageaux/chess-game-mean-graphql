@@ -50,13 +50,20 @@ export class HomeComponent implements OnInit, OnDestroy {
       .get()
       .pipe(
         map(snapShot => {
+          console.log('snapshot =>', snapShot);
           // if no game with spot for second player, create game
           if (snapShot.empty) {
             this.createNewGame(userId);
           } else {
-            snapShot.forEach(doc => {
-              console.log(doc.data());
-            });
+            for (const doc of snapShot.docs) {
+              const game = doc.data() as Game;
+              if (userId === game.whiteTeam.id) {
+                console.log('Already joined game queue. Waiting for match...');
+              } else {
+                doc.ref.update({ blackTeam: userDocRef });
+                break;
+              }
+            }
           }
         })
       );
@@ -68,20 +75,23 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   createNewGame(userId: string) {
-    this.db.collection('games').add({
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      whiteTeam: this.db.doc(`/users/${userId}`).ref,
-      blackTeam: null,
-      gameState: {
-        gameStarted: false,
-        gameOver: false,
-        currentTurn: Color.White,
-        checked: {
-          white: false,
-          black: false
+    this.db
+      .collection('games')
+      .add({
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        whiteTeam: this.db.doc(`/users/${userId}`).ref,
+        blackTeam: null,
+        gameState: {
+          gameStarted: false,
+          gameOver: false,
+          currentTurn: Color.White,
+          checked: {
+            white: false,
+            black: false
+          }
         }
-      }
-    } as Game);
+      } as Game)
+      .then(() => console.log('Joined game queue. Waiting for match...'));
   }
 
   queue(userId: string) {
