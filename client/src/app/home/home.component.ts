@@ -1,17 +1,18 @@
-import { Observable, combineLatest } from 'rxjs';
+import { Observable, combineLatest, from, of } from 'rxjs';
 import { MatchFoundSubscription } from './../types';
 import { FindUserByIdGQL, MatchFoundGQL, FindGameGQL } from '@app/types';
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { collection } from 'rxfire/firestore';
-import { map, take } from 'rxjs/operators';
+import { collection, doc } from 'rxfire/firestore';
+import { map, take, switchMap } from 'rxjs/operators';
 import { SubscriptionResult } from 'apollo-angular';
 import {
   AngularFirestoreDocument,
   AngularFirestore,
   QuerySnapshot,
-  QueryDocumentSnapshot
+  QueryDocumentSnapshot,
+  DocumentReference
 } from '@angular/fire/firestore';
 import * as firebase from 'firebase/app';
 import { Game } from '@app/interfaces';
@@ -45,43 +46,72 @@ export class HomeComponent implements OnInit, OnDestroy {
     // can only find reference by getting this DocumentReference
     const userDocRef = this.db.doc(`users/${userId}`).ref;
 
-    const gamesWithEmptySpot = this.db
-      .collection<Game>('games', ref =>
-        ref
-          .where('blackTeam', '==', null)
-          .where('gameState.gameStarted', '==', false)
-      )
-      .get()
-      .pipe(
-        map(snapShot => {
-          console.log('snapshot =>', snapShot);
-          // if no game with spot for second player, create game
-          if (snapShot.empty) {
-            this.createNewGame(userId);
-          } else {
-            for (const doc of snapShot.docs) {
-              const game = doc.data() as Game;
-              if (userId === game.whiteTeam.id) {
-                console.log('Already joined game queue. Waiting for match...');
-              } else {
-                doc.ref.update({ blackTeam: userDocRef });
-                break;
-              }
+    const gamesQuery = this.db.collection<Game>('games', ref =>
+      ref
+        .where('blackTeam', '==', null)
+        .where('gameState.gameStarted', '==', false)
+    );
+
+    const joinOrCreateGame = gamesQuery.get().pipe(
+      // switchMap also subscribes to inner Observable
+      switchMap(snapShot => {
+        console.log('snapshot =>', snapShot);
+        // create new game instead if no match
+        if (snapShot.empty) {
+          return this.createNewGame(userId); // returns new game obs
+        } else {
+          for (const d of snapShot.docs) {
+            const game = d.data() as Game;
+            // get game where someone is white team but not this user
+            if (userId === game.whiteTeam.id) {
+              console.log('Already joined game queue. Waiting for match...');
+              return of(null);
+            } else {
+              // add this user as final player
+              return from(
+                d.ref.update({
+                  blackTeam: userDocRef,
+                  'gameState.gameStarted': true
+                } as Partial<Game>)
+              ).pipe(map(() => d.ref)); // returns updated game obs
             }
           }
-        })
-      );
+        }
+      }),
+      // format the doc into human readable interface
+      switchMap((gameRef: DocumentReference) => {
+        if (gameRef) {
+          // receive gameId
+          return doc(gameRef).pipe(
+            map(snapshot => ({ id: snapshot.id, ...snapshot.data() } as Game))
+          );
+        } else {
+          return null;
+        }
+      })
+    );
 
-    this.subs.sink = gamesWithEmptySpot.subscribe();
-    // .onSnapshot(snapshot => {
+    this.subs.sink = joinOrCreateGame
+      // navigate to game page
+      .subscribe((foundGame: Game) => {
+        console.log(foundGame);
 
-    // });
+        if (
+          foundGame.id &&
+          foundGame.whiteTeam &&
+          foundGame.blackTeam &&
+          foundGame.gameState.gameStarted
+        ) {
+          this.router.navigate(['/gameboard', foundGame.id]);
+        }
+      });
   }
 
-  createNewGame(userId: string) {
-    this.db
-      .collection('games')
-      .add({
+  createNewGame(userId: string): Observable<DocumentReference> {
+    // TODO: add more players/viewers
+    // TODO: # of players in queue, etc.
+    return from(
+      this.db.collection<Game>('games').add({
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
         whiteTeam: this.db.doc(`/users/${userId}`).ref,
         blackTeam: null,
@@ -95,7 +125,8 @@ export class HomeComponent implements OnInit, OnDestroy {
           }
         }
       } as Game)
-      .then(() => console.log('Joined game queue. Waiting for match...'));
+    );
+    // .then(() => console.log('Joined game queue. Waiting for match...'));
   }
 
   // deprecated

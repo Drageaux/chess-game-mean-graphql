@@ -18,9 +18,10 @@ export interface GameState {
 }
 
 export interface Game {
+  id: string;
   createdAt: Timestamp;
   whiteTeam?: DocumentReference;
-  blackTeam?: User;
+  blackTeam?: DocumentReference;
   gameState: GameState;
   board?: any[];
 }

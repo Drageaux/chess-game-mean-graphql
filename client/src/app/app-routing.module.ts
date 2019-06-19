@@ -16,7 +16,7 @@ const routes: Routes = [
     component: GameComponent
   },
   {
-    path: 'gameboard',
+    path: 'gameboard/:gameId',
     component: GameboardComponent
   },
   {
