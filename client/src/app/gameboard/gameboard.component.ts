@@ -36,18 +36,7 @@ export class GameboardComponent {
     this.game = this.gameDoc.valueChanges();
   }
   update() {
-    this.gameDoc.update({ gameOver: true });
-  }
-  createNewGame() {
-    this.db.collection('games').add({
-      gameStarted: false,
-      gameOver: false,
-      currentTurn: Color.White,
-      checked: new Map<Color, boolean>([
-        [Color.White, false],
-        [Color.Black, false]
-      ])
-    } as Game);
+    // this.gameDoc.update({ gameOver: true });
   }
 
   /*********************
