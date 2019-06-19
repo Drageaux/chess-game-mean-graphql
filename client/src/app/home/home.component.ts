@@ -45,7 +45,6 @@ export class HomeComponent implements OnInit, OnDestroy {
   findGame(userId: string) {
     // can only find reference by getting this DocumentReference
     const userDocRef = this.db.doc(`users/${userId}`).ref;
-
     const gamesQuery = this.db.collection<Game>('games', ref =>
       ref
         .where('blackTeam', '==', null)
@@ -58,6 +57,7 @@ export class HomeComponent implements OnInit, OnDestroy {
         console.log('snapshot =>', snapShot);
         // create new game instead if no match
         if (snapShot.empty) {
+          console.log('Joining game queue...');
           return this.createNewGame(userId); // returns new game obs
         } else {
           for (const d of snapShot.docs) {
@@ -126,7 +126,6 @@ export class HomeComponent implements OnInit, OnDestroy {
         }
       } as Game)
     );
-    // .then(() => console.log('Joined game queue. Waiting for match...'));
   }
 
   // deprecated
