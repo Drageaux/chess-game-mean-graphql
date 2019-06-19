@@ -46,7 +46,11 @@ export class HomeComponent implements OnInit, OnDestroy {
     const userDocRef = this.db.doc(`users/${userId}`).ref;
 
     const gamesWithEmptySpot = this.db
-      .collection<Game>('games', ref => ref.where('blackTeam', '==', null))
+      .collection<Game>('games', ref =>
+        ref
+          .where('blackTeam', '==', null)
+          .where('gameState.gameStarted', '==', false)
+      )
       .get()
       .pipe(
         map(snapShot => {
@@ -94,6 +98,7 @@ export class HomeComponent implements OnInit, OnDestroy {
       .then(() => console.log('Joined game queue. Waiting for match...'));
   }
 
+  // deprecated
   queue(userId: string) {
     const matchFound = this.matchFoundGQL
       .subscribe({ userId }) // when variables match args, return values
