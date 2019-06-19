@@ -36,13 +36,14 @@ export class SessionResolver {
   ): Promise<Session> {
     // TODO: alternate black and white team for player
     // TODO: prioritize players that came first
+    // get session where someone is white team but not this user
     let session: InstanceType<Session> = await SessionModel.findOne({
-      whiteTeam: { $ne: userId }, // if is first player, prevent joining as second player
+      whiteTeam: { $ne: userId },
       blackTeam: null,
       'gameState.gameStarted': false
     }).exec();
     if (session) {
-      // add final player start game
+      // add this user as final player; start game
       try {
         // TODO: add more players/viewers
         const newBoard: InstanceType<Board> = await new BoardModel().save(); // the devs on GitHub issues manually save

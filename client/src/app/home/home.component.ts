@@ -1,8 +1,11 @@
-import { Observable } from 'rxjs';
+import { Observable, combineLatest } from 'rxjs';
 import { MatchFoundSubscription } from './../types';
 import { FindUserByIdGQL, MatchFoundGQL, FindGameGQL } from '@app/types';
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
+
+import { collection } from 'rxfire/firestore';
+import { map, take } from 'rxjs/operators';
 import { SubscriptionResult } from 'apollo-angular';
 import {
   AngularFirestoreDocument,
@@ -10,16 +13,18 @@ import {
   QuerySnapshot,
   QueryDocumentSnapshot
 } from '@angular/fire/firestore';
+import * as firebase from 'firebase/app';
 import { Game } from '@app/interfaces';
-import { map, take } from 'rxjs/operators';
 import { Color } from '@app/enums';
+import { SubSink } from 'subsink';
 
 @Component({
   selector: 'app-home',
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.scss']
 })
-export class HomeComponent implements OnInit {
+export class HomeComponent implements OnInit, OnDestroy {
+  private subs = new SubSink();
   private gameDoc: AngularFirestoreDocument<Game>;
   game: Observable<Game>;
 
@@ -32,34 +37,41 @@ export class HomeComponent implements OnInit {
 
   ngOnInit() {}
 
+  ngOnDestroy(): void {
+    this.subs.unsubscribe();
+  }
+
   findGame(userId: string) {
+    // can only find reference by getting this DocumentReference
     const userDocRef = this.db.doc(`users/${userId}`).ref;
 
-    const findGame = this.db
-      .collection<Game>('games', ref => {
-        return ref.where('whiteTeam', '==', userDocRef);
-        // .where('whiteTeam', '<', userId); // TODO: chain with null blackTeam query
-        // .where('gameState.gameStarted', '==', false);
-      })
+    const gamesWithEmptySpot = this.db
+      .collection<Game>('games', ref => ref.where('blackTeam', '==', null))
       .get()
       .pipe(
-        take(1),
-        map(querySnapShot => {
-          console.log(querySnapShot);
-          // new game if this user isn't white team
-          if (querySnapShot.empty) {
+        map(snapShot => {
+          // if no game with spot for second player, create game
+          if (snapShot.empty) {
             this.createNewGame(userId);
           } else {
-            console.log('already finding game');
+            snapShot.forEach(doc => {
+              console.log(doc.data());
+            });
           }
         })
-      )
-      .subscribe();
+      );
+
+    this.subs.sink = gamesWithEmptySpot.subscribe();
+    // .onSnapshot(snapshot => {
+
+    // });
   }
 
   createNewGame(userId: string) {
     this.db.collection('games').add({
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       whiteTeam: this.db.doc(`/users/${userId}`).ref,
+      blackTeam: null,
       gameState: {
         gameStarted: false,
         gameOver: false,

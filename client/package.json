@@ -37,6 +37,7 @@
     "jquery": "^3.4.0",
     "lodash": "^4.17.11",
     "popper": "^1.0.1",
+    "rxfire": "^3.6.0",
     "rxjs": "~6.3.3",
     "subscriptions-transport-ws": "^0.9.16",
     "subsink": "^1.0.0",

@@ -1,5 +1,6 @@
 import { Color } from '@app/enums';
 import { DocumentReference } from '@angular/fire/firestore';
+import { Timestamp } from '@firebase/firestore-types';
 
 export interface User {
   userName?: string;
@@ -17,6 +18,7 @@ export interface GameState {
 }
 
 export interface Game {
+  createdAt: Timestamp;
   whiteTeam?: DocumentReference;
   blackTeam?: User;
   gameState: GameState;
