@@ -82,7 +82,7 @@ export class GameService {
             );
             const newBoardRef = this.db.collection<Board>('boards').doc(newId) // saves the new ID here, no need to set as field
               .ref;
-            newBoardRef.set(newBoardObj); // async from this flow, to speed up process
+            newBoardRef.set(newBoardObj); // NOTE: async/detached from this flow, to speed up the process
 
             // add this user as final player
             return from(

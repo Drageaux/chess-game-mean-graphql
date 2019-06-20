@@ -1,3 +1,8 @@
 <button (click)="update()">test</button>
 
-<app-board [board]="board | async"></app-board>
+<app-board
+  *ngIf="game | async; else loading"
+  [board]="board | async"
+  [currTurn]="(game | async)?.gameState?.currentTurn"
+></app-board>
+<ng-template #loading>Loading...</ng-template>
