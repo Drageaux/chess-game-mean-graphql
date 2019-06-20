@@ -23,7 +23,7 @@ export interface Game {
   whiteTeam?: DocumentReference;
   blackTeam?: DocumentReference;
   gameState: GameState;
-  board?: any[];
+  board?: DocumentReference;
 }
 
 export class Piece {
@@ -38,7 +38,8 @@ export class Square {
   piece: Piece;
 }
 
-export abstract class Board {
+export class Board {
+  id: string;
   squares: Square[];
 
   get whiteKingLocation() {

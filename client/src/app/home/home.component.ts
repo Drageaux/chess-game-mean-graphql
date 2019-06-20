@@ -61,8 +61,10 @@ export class HomeComponent implements OnInit, OnDestroy {
           foundGame.whiteTeam &&
           foundGame.blackTeam &&
           foundGame.gameState &&
-          foundGame.gameState.gameStarted
+          foundGame.gameState.gameStarted &&
+          foundGame.board
         ) {
+          console.log('Found game. Initializing...');
           this.router.navigate(['/gameboard', foundGame.id]);
         }
       }, console.error);
