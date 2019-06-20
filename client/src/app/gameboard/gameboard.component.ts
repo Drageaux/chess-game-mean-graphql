@@ -6,7 +6,7 @@ import { Piece } from './pieces/piece';
 import { King } from './pieces/king';
 import { Move } from './move';
 import { default as parser } from './board-parser';
-import { distinctUntilChanged } from 'rxjs/operators';
+import { distinctUntilChanged, map } from 'rxjs/operators';
 import {
   AngularFirestore,
   AngularFirestoreDocument
@@ -29,7 +29,7 @@ export class GameboardComponent implements OnInit {
   private subs = new SubSink();
   private;
   gb = new Gameboard();
-  board2: Square[][] = []; // test
+  // board2: Square[][] = []; // test
 
   // firestore
   private gameDoc: AngularFirestoreDocument<Game>;
@@ -41,7 +41,7 @@ export class GameboardComponent implements OnInit {
     this.gameDoc = this.db.doc<Game>(
       `/games/${this.route.snapshot.params.gameId}`
     );
-    this.gameDoc.valueChanges().subscribe(console.log);
+    this.gameDoc.valueChanges().pipe(map(val => {}));
   }
 
   update() {

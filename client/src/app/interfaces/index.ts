@@ -40,6 +40,7 @@ export class Square {
 
 export abstract class Board {
   squares: Square[];
+
   get whiteKingLocation() {
     return this.squares.find((square: Square) => {
       return (
