@@ -20,7 +20,9 @@ export class BoardComponent implements OnInit, OnDestroy {
 
   constructor() {}
 
-  ngOnInit() {}
+  ngOnInit() {
+    console.log(this.board);
+  }
 
   ngOnDestroy(): void {
     this.subs.unsubscribe();

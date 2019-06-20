@@ -76,23 +76,22 @@ export class GameService {
           case FindGameStatus.join:
             console.log('Found game. Initializing...');
             // create new board
-            return from(
-              this.db
-                .collection<Board>('boards')
-                .add(JSON.parse(JSON.stringify(this.DEFAULT_BOARD)))
-            ).pipe(
-              switchMap(boardRef => {
-                // add this user as final player
-                return from(
-                  foundGame.ref.update({
-                    blackTeam: userDocRef,
-                    'gameState.gameStarted': true,
-                    board: boardRef
-                  } as Partial<Game>)
-                );
-              }),
-              map(() => foundGame.ref) // returns updated game's ref
+            const newId = this.db.createId();
+            const newBoardObj = JSON.parse(
+              JSON.stringify({ ...this.DEFAULT_BOARD })
             );
+            const newBoardRef = this.db.collection<Board>('boards').doc(newId) // saves the new ID here, no need to set as field
+              .ref;
+            newBoardRef.set(newBoardObj); // async from this flow, to speed up process
+
+            // add this user as final player
+            return from(
+              foundGame.ref.update({
+                blackTeam: userDocRef,
+                'gameState.gameStarted': true,
+                board: newBoardRef
+              } as Partial<Game>)
+            ).pipe(map(() => foundGame.ref)); // returns updated game's ref
           default:
             return throwError('Invalid find game action');
         }

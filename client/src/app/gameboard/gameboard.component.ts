@@ -6,12 +6,12 @@ import { Piece } from './pieces/piece';
 import { King } from './pieces/king';
 import { Move } from './move';
 import { default as parser } from './board-parser';
-import { distinctUntilChanged, map } from 'rxjs/operators';
+import { distinctUntilChanged, map, take } from 'rxjs/operators';
 import {
   AngularFirestore,
   AngularFirestoreDocument
 } from '@angular/fire/firestore';
-import { Game } from '@app/interfaces';
+import { Game, Board } from '@app/interfaces';
 import { Color } from '@app/enums';
 import { SubSink } from 'subsink';
 import { ActivatedRoute } from '@angular/router';
@@ -34,14 +34,31 @@ export class GameboardComponent implements OnInit {
   // firestore
   private gameDoc: AngularFirestoreDocument<Game>;
   game: Observable<Game>;
+  private boardDoc: AngularFirestoreDocument<Board>;
+  board: Observable<Board>;
 
   constructor(private route: ActivatedRoute, private db: AngularFirestore) {}
 
   ngOnInit() {
     this.gameDoc = this.db.doc<Game>(
-      `/games/${this.route.snapshot.params.gameId}`
+      `games/${this.route.snapshot.params.gameId}`
     );
-    this.gameDoc.valueChanges().pipe(map(val => {}));
+    this.game = this.gameDoc.valueChanges();
+
+    this.subs.sink = this.game
+      .pipe(
+        take(1),
+        map(val => {
+          this.boardDoc = this.db.doc<Board>(`boards/${val.board.id}`);
+          this.board = this.boardDoc.valueChanges();
+        })
+      )
+      .subscribe();
+    // const boardDoc = this.db.doc<Board>(
+    //   `games/${this.route.snapshot.params.gameId}/board`
+    // );
+    // const game = this.db
+    // const board = boardDoc.valueChanges().subscribe(console.log);
   }
 
   update() {
