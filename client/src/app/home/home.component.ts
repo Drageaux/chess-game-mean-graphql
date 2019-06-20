@@ -50,7 +50,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     // wait until found the game
     this.subs.sink = playGame
       // navigate to game page
-      .subscribe((foundGame: Game | null) => {
+      .subscribe((foundGame: Game) => {
         if (foundGame) {
           console.log(foundGame);
         }
@@ -63,12 +63,9 @@ export class HomeComponent implements OnInit, OnDestroy {
           foundGame.gameState &&
           foundGame.gameState.gameStarted
         ) {
-          this.db.collection('/board').add({
-            squares: []
-          } as Partial<Board>);
-          // this.router.navigate(['/gameboard', foundGame.id]);
+          this.router.navigate(['/gameboard', foundGame.id]);
         }
-      });
+      }, console.error);
   }
 
   // deprecated

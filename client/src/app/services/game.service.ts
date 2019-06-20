@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { of, from, Observable } from 'rxjs';
+import { of, from, Observable, throwError } from 'rxjs';
 import { switchMap, map } from 'rxjs/operators';
 import * as firebase from 'firebase/app';
 import { doc } from 'rxfire/firestore';
@@ -31,7 +31,7 @@ export class GameService {
     let foundGame: QueryDocumentSnapshot;
 
     return gameCollection.get().pipe(
-      // switchMap also subscribes to inner Observable
+      // decides what action to take
       map(snapShot => {
         console.log('snapshot =>', snapShot);
         // create new game instead if no match
@@ -42,26 +42,28 @@ export class GameService {
             const game = d.data() as Game;
             // get game where someone is white team but not this user
             if (userId === game.whiteTeam.id) {
-              // return of(null);
               return FindGameStatus.wait;
             } else {
               foundGame = d;
               return FindGameStatus.join;
             }
           }
+          return null;
         }
       }),
-      switchMap(status => {
+      // switchMap also subscribes to inner Observable
+      switchMap((status: FindGameStatus) => {
         switch (status) {
           case FindGameStatus.wait:
-            console.log('Already joined game queue. Waiting for match...');
-            return of(null);
+            return throwError(
+              'Already joined game queue. Waiting for match...'
+            );
           case FindGameStatus.create:
             console.log('Joining game queue...');
             // create new game and watch for change
             return this.createNewGame(userId).pipe(
               switchMap(docRef => doc(docRef)), // rxfire's doc() listen for changes
-              map(snapshot => snapshot.ref)
+              map(snapshot => snapshot.ref) // return new game's ref
             );
           case FindGameStatus.join:
             console.log('Found game. Initializing...');
@@ -71,13 +73,13 @@ export class GameService {
                 blackTeam: userDocRef,
                 'gameState.gameStarted': true
               } as Partial<Game>)
-            ).pipe(map(() => foundGame.ref)); // returns updated game obs
+            ).pipe(map(() => foundGame.ref)); // returns updated game's ref
           default:
-            return of(null);
+            return throwError('Invalid find game action');
         }
       }),
       // format the doc into human readable interface
-      switchMap((gameRef: DocumentReference | null) =>
+      switchMap((gameRef: DocumentReference) =>
         from(gameRef.get()).pipe(
           map(snapshot => ({ id: snapshot.id, ...snapshot.data() } as Game))
         )
@@ -101,10 +103,13 @@ export class GameService {
             white: false,
             black: false
           }
-        }
+        },
+        board: null
       } as Game)
     );
   }
 
-  private createInitialBoard(): Square[] {}
+  private createInitialBoard(): Square[] {
+    return [];
+  }
 }
