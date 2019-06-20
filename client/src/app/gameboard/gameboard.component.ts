@@ -1,5 +1,5 @@
 import { Subscription, Observable } from 'rxjs';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { Gameboard } from './gameboard';
 import { Square } from './square';
 import { Piece } from './pieces/piece';
@@ -13,30 +13,41 @@ import {
 } from '@angular/fire/firestore';
 import { Game } from '@app/interfaces';
 import { Color } from '@app/enums';
+import { SubSink } from 'subsink';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-gameboard',
   templateUrl: './gameboard.component.html',
   styleUrls: ['./gameboard.component.scss']
 })
-export class GameboardComponent {
+export class GameboardComponent implements OnInit {
   // TODO: auth
   isAdmin = true;
 
   // const
+  private subs = new SubSink();
+  private;
   gb = new Gameboard();
-  board2: Square[][] = [];
+  board2: Square[][] = []; // test
 
   // firestore
   private gameDoc: AngularFirestoreDocument<Game>;
   game: Observable<Game>;
 
-  constructor(private db: AngularFirestore) {
-    this.gameDoc = this.db.doc<Game>('/games/0svakWzstAjEkmqMN1qt');
-    this.game = this.gameDoc.valueChanges();
+  constructor(private route: ActivatedRoute, private db: AngularFirestore) {}
+
+  ngOnInit() {
+    this.gameDoc = this.db.doc<Game>(
+      `/games/${this.route.snapshot.params.gameId}`
+    );
+    this.gameDoc.valueChanges().subscribe(console.log);
   }
+
   update() {
-    // this.gameDoc.update({ gameOver: true });
+    // this.gameDoc.update({
+    //   'gameState.gameOver': true
+    // });
   }
 
   /*********************
