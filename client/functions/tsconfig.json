@@ -2,10 +2,10 @@
   "compilerOptions": {
     "baseUrl": ".",
     "module": "commonjs",
-    "noImplicitReturns": true,
-    "noUnusedLocals": true,
+    // "noImplicitReturns": true,
+    // "noUnusedLocals": true,
     "outDir": "lib",
-    "sourceMap": true,
+    "sourceMap": false,
     "strict": true,
     "target": "es2017",
     "paths": {
@@ -13,5 +13,6 @@
     }
   },
   "compileOnSave": true,
-  "include": ["src"]
+  "include": ["src"],
+  "exclude": ["src/board"]
 }
