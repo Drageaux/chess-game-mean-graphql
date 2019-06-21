@@ -1,11 +1,12 @@
+import { AngularFireDatabase } from '@angular/fire/database';
 import { Injectable } from '@angular/core';
 import { of, from, Observable, throwError } from 'rxjs';
 import { switchMap, map } from 'rxjs/operators';
 import * as firebase from 'firebase/app';
 import { doc } from 'rxfire/firestore';
 import { AngularFirestore, DocumentReference } from '@angular/fire/firestore';
-import { File, Color, PieceType } from '@app/enums';
-import { Game, Square, Piece, Board } from '@app/interfaces';
+import { File, Color, PieceType } from '@shared/enums';
+import { Game, Square, Piece, Board } from '@shared/interfaces';
 import { QueryDocumentSnapshot } from '@firebase/firestore-types';
 
 enum FindGameStatus {
@@ -22,16 +23,18 @@ const BOARD_SIZE = 8;
 export class GameService {
   private DEFAULT_BOARD: Board;
 
-  constructor(private db: AngularFirestore) {
-    const newBoard = new Board();
-    newBoard.squares = this.initBoard();
+  constructor(
+    private afs: AngularFirestore,
+    private rtdb: AngularFireDatabase
+  ) {
+    const newBoard: Board = { squares: this.initBoard() };
     this.DEFAULT_BOARD = newBoard;
   }
 
   playGame(userId: string): Observable<Game> {
     // can only find reference by getting this DocumentReference
-    const userDocRef = this.db.doc(`users/${userId}`).ref;
-    const gameCollection = this.db.collection<Game>('games', ref =>
+    const userDocRef = this.afs.doc(`users/${userId}`).ref;
+    const gameCollection = this.afs.collection<Game>('games', ref =>
       ref
         .where('blackTeam', '==', null)
         .where('gameState.gameStarted', '==', false)
@@ -76,20 +79,22 @@ export class GameService {
           case FindGameStatus.join:
             console.log('Found game. Initializing...');
             // create new board
-            const newId = this.db.createId();
+            const boards = this.rtdb.list<Board>('boards');
             const newBoardObj = JSON.parse(
               JSON.stringify({ ...this.DEFAULT_BOARD })
             );
-            const newBoardRef = this.db.collection<Board>('boards').doc(newId) // saves the new ID here, no need to set as field
-              .ref;
-            newBoardRef.set(newBoardObj); // NOTE: async/detached from this flow, to speed up the process
+
+            const newId = boards.push(newBoardObj).key;
+            // const newBoardRef = this.rtdb.collection<Board>('boards').doc(newId) // saves the new ID here, no need to set as field
+            //   .ref;
+            // newBoardRef.set(newBoardObj); // NOTE: async/detached from this flow, to speed up the process
 
             // add this user as final player
             return from(
               foundGame.ref.update({
                 blackTeam: userDocRef,
                 'gameState.gameStarted': true,
-                board: newBoardRef
+                board: newId
               } as Partial<Game>)
             ).pipe(map(() => foundGame.ref)); // returns updated game's ref
           default:
@@ -110,9 +115,9 @@ export class GameService {
     // TODO: # of players in queue, etc.
     // adding a plain JS object so it's not getting error
     return from(
-      this.db.collection<Game>('games').add({
+      this.afs.collection<Game>('games').add({
         createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-        whiteTeam: this.db.doc(`/users/${userId}`).ref,
+        whiteTeam: this.afs.doc(`/users/${userId}`).ref,
         blackTeam: null,
         gameState: {
           gameStarted: false,
@@ -132,11 +137,11 @@ export class GameService {
     let newBoard: Square[] = [];
     for (let x = 1; x <= BOARD_SIZE; x++) {
       for (let y = 1; y <= BOARD_SIZE; y++) {
-        const newSquare: Square = new Square();
+        const newSquare = {} as Square;
         newSquare.file = x as File;
         newSquare.rank = y;
 
-        const newPiece: Piece = new Piece();
+        const newPiece = {} as Piece;
 
         // set color
         switch (y) {

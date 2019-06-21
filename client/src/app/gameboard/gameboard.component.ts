@@ -1,3 +1,4 @@
+import { AngularFireDatabase } from '@angular/fire/database';
 import { Subscription, Observable } from 'rxjs';
 import { Component, OnInit } from '@angular/core';
 import { Gameboard } from './gameboard';
@@ -32,25 +33,27 @@ export class GameboardComponent implements OnInit {
   // board2: Square[][] = []; // test
 
   // firestore
-  private gameDoc: AngularFirestoreDocument<Game>;
   game: Observable<Game>;
-  private boardDoc: AngularFirestoreDocument<Board>;
   board: Observable<Board>;
 
-  constructor(private route: ActivatedRoute, private db: AngularFirestore) {}
+  constructor(
+    private route: ActivatedRoute,
+    private afs: AngularFirestore,
+    private rtdb: AngularFireDatabase
+  ) {}
 
   ngOnInit() {
-    this.gameDoc = this.db.doc<Game>(
-      `games/${this.route.snapshot.params.gameId}`
-    );
-    this.game = this.gameDoc.valueChanges();
+    this.game = this.afs
+      .doc<Game>(`games/${this.route.snapshot.params.gameId}`)
+      .valueChanges();
 
     this.subs.sink = this.game
       .pipe(
         take(1),
         map(val => {
-          this.boardDoc = this.db.doc<Board>(`boards/${val.board.id}`);
-          this.board = this.boardDoc.valueChanges();
+          this.board = this.rtdb
+            .object<Board>(`boards/${val.board}`)
+            .valueChanges();
         })
       )
       .subscribe();

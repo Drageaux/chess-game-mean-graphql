@@ -1,7 +1,7 @@
 import { Component, OnInit, OnChanges, OnDestroy, Input } from '@angular/core';
 import { SubSink } from 'subsink';
-import { File, Color, PieceType } from '@app/types';
-import { Board } from '@app/interfaces';
+import { File, Color, PieceType } from '@shared/enums';
+import { Board } from '@shared/interfaces';
 
 @Component({
   selector: 'app-board',

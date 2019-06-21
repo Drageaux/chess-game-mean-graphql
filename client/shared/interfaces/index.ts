@@ -18,12 +18,12 @@ export interface GameState {
 }
 
 export interface Game {
-  id: string;
+  readonly id: string;
   createdAt: Timestamp;
   whiteTeam?: DocumentReference;
   blackTeam?: DocumentReference;
   gameState: GameState;
-  board?: DocumentReference;
+  board?: DocumentReference | string;
 }
 
 export interface Piece {
@@ -39,7 +39,7 @@ export interface Square {
 }
 
 export interface Board {
-  id: string;
+  readonly id?: string;
   squares: Square[];
 
   // get whiteKingLocation() {

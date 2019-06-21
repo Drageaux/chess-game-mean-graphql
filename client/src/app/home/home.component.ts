@@ -15,8 +15,8 @@ import {
   DocumentReference
 } from '@angular/fire/firestore';
 import * as firebase from 'firebase/app';
-import { Game, Board } from '@app/interfaces';
-import { Color } from '@app/enums';
+import { Game, Board } from '@shared/interfaces';
+import { Color } from '@shared/enums';
 import { SubSink } from 'subsink';
 import { GameService } from '@app/services/game.service';
 

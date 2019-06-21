@@ -8,6 +8,7 @@ import { FormsModule } from '@angular/forms';
 // Firebase
 import { AngularFireModule } from '@angular/fire';
 import { AngularFirestoreModule } from '@angular/fire/firestore';
+import { AngularFireDatabaseModule } from '@angular/fire/database';
 import { environment } from '../environments/environment';
 // Apollo
 import { GraphQLModule } from './graphql.module';
@@ -24,6 +25,7 @@ import { GameboardModule } from './gameboard/gameboard.module';
     HttpClientModule, // provides HttpClient for HttpLink
     AngularFireModule.initializeApp(environment.firebase),
     AngularFirestoreModule, // imports firebase/firestore, only needed for database features
+    AngularFireDatabaseModule,
     GraphQLModule, // import GraphQLModule
     AppRoutingModule,
     FormsModule,
