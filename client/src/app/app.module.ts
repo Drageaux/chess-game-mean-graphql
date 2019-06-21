@@ -9,6 +9,10 @@ import { FormsModule } from '@angular/forms';
 import { AngularFireModule } from '@angular/fire';
 import { AngularFirestoreModule } from '@angular/fire/firestore';
 import { AngularFireDatabaseModule } from '@angular/fire/database';
+import {
+  AngularFireFunctionsModule,
+  FUNCTIONS_ORIGIN
+} from '@angular/fire/functions';
 import { environment } from '../environments/environment';
 // Apollo
 import { GraphQLModule } from './graphql.module';
@@ -26,6 +30,7 @@ import { GameboardModule } from './gameboard/gameboard.module';
     AngularFireModule.initializeApp(environment.firebase),
     AngularFirestoreModule, // imports firebase/firestore, only needed for database features
     AngularFireDatabaseModule,
+    AngularFireFunctionsModule,
     GraphQLModule, // import GraphQLModule
     AppRoutingModule,
     FormsModule,
@@ -34,7 +39,14 @@ import { GameboardModule } from './gameboard/gameboard.module';
     GameModule,
     GameboardModule
   ],
-  providers: [],
+  providers: [
+    {
+      provide: FUNCTIONS_ORIGIN,
+      useValue: environment.production
+        ? `https://${environment.firebase.projectId}.web.app`
+        : 'http://localhost:5001'
+    }
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule {}

@@ -16,6 +16,7 @@ import { Game, Board } from '@shared/interfaces';
 import { Color } from '@shared/enums';
 import { SubSink } from 'subsink';
 import { ActivatedRoute } from '@angular/router';
+import { AngularFireFunctions } from '@angular/fire/functions';
 
 @Component({
   selector: 'app-gameboard',
@@ -39,7 +40,8 @@ export class GameboardComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private afs: AngularFirestore,
-    private rtdb: AngularFireDatabase
+    private rtdb: AngularFireDatabase,
+    private fns: AngularFireFunctions
   ) {}
 
   ngOnInit() {
@@ -57,6 +59,10 @@ export class GameboardComponent implements OnInit {
         })
       )
       .subscribe();
+
+    const callable = this.fns.httpsCallable('addMessage');
+    const data$ = callable({ text: 'hello' });
+    data$.subscribe(console.log);
     // const boardDoc = this.db.doc<Board>(
     //   `games/${this.route.snapshot.params.gameId}/board`
     // );

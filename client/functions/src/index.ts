@@ -19,6 +19,7 @@ export const addMessage = functions.https.onRequest(async (req, res) => {
   // Grab the text parameter.
   const original: string = req.query.text;
   // Push the new message into the Realtime Database using the Firebase Admin SDK.
+  console.log(original);
   const snapshot = await admin
     .database()
     .ref('/messages')
