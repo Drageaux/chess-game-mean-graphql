@@ -1,10 +1,13 @@
+import { Square } from '@shared/interfaces';
+import { File } from '@shared/enums';
+
 // The Cloud Functions for Firebase SDK to create Cloud Functions and setup triggers.
 import * as functions from 'firebase-functions';
-
 // The Firebase Admin SDK to access the Firebase Realtime Database.
 import * as admin from 'firebase-admin';
 admin.initializeApp();
 
+const square: Square = { file: File.a, rank: 1 };
 // Start writing Firebase Functions
 // https://firebase.google.com/docs/functions/typescript
 
@@ -36,5 +39,7 @@ export const makeUppercase = functions.database
     // You must return a Promise when performing asynchronous tasks inside a Functions such as
     // writing to the Firebase Realtime Database.
     // Setting an "uppercase" sibling in the Realtime Database returns a Promise.
-    return snapshot.ref.parent!.child('uppercase').set(uppercase);
+    if (snapshot.ref.parent) {
+      return snapshot.ref.parent.child('uppercase').set(uppercase);
+    }
   });

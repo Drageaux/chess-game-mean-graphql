@@ -14,7 +14,8 @@
     "lib": ["es2018", "dom", "esnext.asynciterable"],
     "paths": {
       "@app/*": ["app/*"],
-      "@assets/*": ["assets/*"]
+      "@assets/*": ["assets/*"],
+      "@shared/*": ["../shared/*"]
     }
   },
   "typedocOptions": {}
