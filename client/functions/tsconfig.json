@@ -1,18 +1,17 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
+    // "traceResolution": true,
+    "baseUrl": "src",
     "module": "commonjs",
+    "moduleResolution": "node",
     // "noImplicitReturns": true,
     // "noUnusedLocals": true,
     "outDir": "lib",
-    "sourceMap": false,
+    "sourceMap": true,
     "strict": true,
     "target": "es2017",
-    "paths": {
-      "@shared/*": ["../shared/*"]
-    }
+    "rootDirs": ["src", "shared"]
   },
   "compileOnSave": true,
-  "include": ["src"],
-  "exclude": ["src/board"]
+  "exclude": ["board"]
 }

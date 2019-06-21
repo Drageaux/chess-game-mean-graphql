@@ -1,5 +1,5 @@
-import { Square } from '@shared/interfaces';
-import { File } from '@shared/enums';
+import { Square } from '../../shared/interfaces';
+import { File } from '../../shared/enums';
 
 // The Cloud Functions for Firebase SDK to create Cloud Functions and setup triggers.
 import * as functions from 'firebase-functions';
