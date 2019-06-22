@@ -1,4 +1,8 @@
 {
+  "emulators": {
+    "firestore": { "port": "5002" },
+    "database": { "port": "5003" }
+  },
   "functions": {
     "predeploy": [
       "npm --prefix \"$RESOURCE_DIR\" run lint",
@@ -8,11 +12,7 @@
   },
   "hosting": {
     "public": "dist",
-    "ignore": [
-      "firebase.json",
-      "**/.*",
-      "**/node_modules/**"
-    ],
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
       {
         "source": "/chess-game-873f6/us-central1/addMessage",
