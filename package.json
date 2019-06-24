@@ -10,6 +10,11 @@
     "start": "npm run start --prefix server",
     "doc:client": "typedoc ./client/src --options ./client/typedoc.json --out ./docs/client --readme ./client/README.md"
   },
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Drageaux/chess-game-mean-graphql.git"
+  },
   "devDependencies": {
     "concurrently": "^4.1.0",
     "typedoc": "^0.14.2"

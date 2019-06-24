@@ -15,8 +15,8 @@
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
     "rewrites": [
       {
-        "source": "/chess-game-873f6/us-central1/addMessage",
-        "function": "/chess-game-873f6/us-central1/addMessage"
+        "source": "/chess-game-873f6/us-central1/api/*",
+        "function": "/chess-game-873f6/us-central1/api"
       },
       {
         "source": "**",

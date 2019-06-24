@@ -1,4 +1,11 @@
 {
+  "/chess-game-873f6/us-central1/*": {
+    "target": "http://localhost:5000/chess-game-873f6/us-central1",
+    "secure": false,
+    "logLevel": "debug",
+    "changeOrigin": true,
+    "pathRewrite": { "^/chess-game-873f6/us-central1": "" }
+  },
   "/graphql/*": {
     "target": "http://localhost:3000/graphql",
     "secure": false,

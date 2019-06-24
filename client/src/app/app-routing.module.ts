@@ -1,20 +1,20 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { UsersComponent } from './user/users.component';
+// import { UsersComponent } from './user/users.component';
 import { HomeComponent } from './home/home.component';
-import { GameComponent } from './game/game.component';
+// import { GameComponent } from './game/game.component';
 import { GameboardComponent } from './gameboard/gameboard.component';
 
 const routes: Routes = [
-  {
-    path: 'users',
-    component: UsersComponent,
-    pathMatch: 'full'
-  },
-  {
-    path: 'game/:gameId',
-    component: GameComponent
-  },
+  // {
+  //   path: 'users',
+  //   component: UsersComponent,
+  //   pathMatch: 'full'
+  // },
+  // {
+  //   path: 'game/:gameId',
+  //   component: GameComponent
+  // },
   {
     path: 'gameboard/:gameId',
     component: GameboardComponent
