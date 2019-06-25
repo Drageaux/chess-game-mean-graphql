@@ -13,6 +13,6 @@
     "resolveJsonModule": true
   },
   "compileOnSave": true,
-  "include": ["src/**/*", "shared/**/*", "../.priv"],
+  "include": ["src/**/*", "shared/**/*"],
   "exclude": ["node_modules", "src/board"]
 }

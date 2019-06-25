@@ -7,7 +7,7 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 
 // Assign router to the express.Router() instance
-export let router: Router = Router();
+const router: Router = Router();
 
 const db = admin.database();
 const ref = db.ref('/messages');
@@ -21,6 +21,7 @@ router.get('/', (req, res) => {
 router.post('/', async (req: Request, res: Response) => {
   // Grab the text parameter.
   const text = req.body.text;
+  console.log(text);
   // Push the new message into the Realtime Database using the Firebase Admin SDK.
   const snapshot = await ref.push(
     JSON.parse(JSON.stringify({ original: text }))
@@ -34,3 +35,5 @@ router.post('/', async (req: Request, res: Response) => {
   // res.redirect(303, snapshot.ref.toString());
   res.json({ data: snapshot.ref.toString() });
 });
+
+export default router;

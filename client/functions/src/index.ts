@@ -22,7 +22,6 @@ admin.initializeApp({
 const app = express();
 // https://expressjs.com/en/advanced/best-practice-security.html#at-a-minimum-disable-x-powered-by-header
 app.disable('x-powered-by');
-const router = express.Router();
 // support parsing of application/json type post data
 app.use(bodyParser.json());
 // support parsing of application/x-www-form-urlencoded post data
@@ -30,9 +29,8 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors({ origin: true }));
 
 /* Router Setup */
-import * as messagesApi from './messages.controller';
-router.use('/messages', messagesApi.router);
-app.use('/', router);
+import routes from './routes';
+app.use('/', routes);
 
 // Again, lets be nice and help the poor wandering servers, any requests to /api
 // that are not /api/users will result in 404.
@@ -47,10 +45,8 @@ export const api = functions.https.onRequest((request, response) => {
   return app(request, response);
 });
 
-const square: Square = { file: File.a, rank: 1 };
 // Start writing Firebase Functions
 // https://firebase.google.com/docs/functions/typescript
-
 export const helloWorld = functions.https.onRequest((req, res) => {
   res.send('Hello from Firebase!');
 });
