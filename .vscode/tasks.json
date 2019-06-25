@@ -6,7 +6,7 @@
     {
       "label": "typescript-node",
       "type": "typescript",
-      "tsconfig": "server/tsconfig.json",
+      "tsconfig": "client\\functions\\tsconfig.json",
       "problemMatcher": ["$tsc"],
       "presentation": {
         "echo": true,

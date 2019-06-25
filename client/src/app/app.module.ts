@@ -43,7 +43,7 @@ import { GameboardModule } from './gameboard/gameboard.module';
     {
       provide: FUNCTIONS_ORIGIN,
       useValue: environment.production
-        ? `https://${environment.firebase.projectId}.web.app`
+        ? '/chess-game-873f6/us-central1'
         : 'http://localhost:5001'
     }
   ],

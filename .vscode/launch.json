@@ -9,10 +9,10 @@
       "request": "launch",
       "name": "Debug TypeScript in Node.js",
       "preLaunchTask": "typescript-node",
-      "program": "${workspaceFolder}/server/server.ts",
-      "cwd": "${workspaceFolder}/server",
+      "program": "${workspaceFolder}/client/functions/src/index.ts",
+      "cwd": "${workspaceFolder}/client/functions",
       "protocol": "inspector",
-      "outFiles": ["${workspaceFolder}/server/bin/**/*.js"]
+      "outFiles": ["${workspaceFolder}/client/functions/lib/**/*.js"]
     }
   ]
 }

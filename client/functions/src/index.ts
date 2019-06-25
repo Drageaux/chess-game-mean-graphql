@@ -1,6 +1,7 @@
 import { Square } from '../../shared/interfaces';
 import { File } from '../../shared/enums';
 
+// Express
 import * as express from 'express';
 import * as bodyParser from 'body-parser';
 import * as cors from 'cors';
@@ -8,10 +9,17 @@ import * as cors from 'cors';
 import * as functions from 'firebase-functions';
 // The Firebase Admin SDK to access the Firebase Realtime Database.
 import * as admin from 'firebase-admin';
+
+console.log('local? =>', process.env.NODE_ENV);
+console.log('cred app default =>', process.env.GOOGLE_APPLICATION_CREDENTIALS);
+
 // TODO: Replace the following with your app's Firebase project configuration
+const serviceAccount = require('./serviceAccount.json');
 const adminConfig = JSON.parse(process.env.FIREBASE_CONFIG as string);
-// adminConfig.credential = admin.credential.cert(serviceAccount)
-admin.initializeApp(adminConfig);
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+  databaseURL: 'https://chess-game-873f6.firebaseio.com'
+});
 
 /* Express */
 const app = express();
@@ -28,7 +36,6 @@ app.use(cors({ origin: true }));
 import * as messagesApi from './messages.controller';
 router.use('/messages', messagesApi.router);
 app.use('/', router);
-console.log('test');
 
 // Again, lets be nice and help the poor wandering servers, any requests to /api
 // that are not /api/users will result in 404.

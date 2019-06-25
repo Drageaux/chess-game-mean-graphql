@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     // "traceResolution": true,
-    "baseUrl": "src",
+    "baseUrl": ".",
     "module": "commonjs",
     "moduleResolution": "node",
     // "noImplicitReturns": true,
@@ -10,8 +10,9 @@
     "sourceMap": true,
     "strict": true,
     "target": "es2017",
-    "rootDirs": ["src", "shared"]
+    "resolveJsonModule": true
   },
   "compileOnSave": true,
-  "exclude": ["src/board"]
+  "include": ["src/**/*", "shared/**/*", "../.priv"],
+  "exclude": ["node_modules", "src/board"]
 }
