@@ -8,7 +8,10 @@ import * as cors from 'cors';
 import * as functions from 'firebase-functions';
 // The Firebase Admin SDK to access the Firebase Realtime Database.
 import * as admin from 'firebase-admin';
-admin.initializeApp();
+// TODO: Replace the following with your app's Firebase project configuration
+const adminConfig = JSON.parse(process.env.FIREBASE_CONFIG as string);
+// adminConfig.credential = admin.credential.cert(serviceAccount)
+admin.initializeApp(adminConfig);
 
 /* Express */
 const app = express();
@@ -34,7 +37,6 @@ app.get('/*', async (req: express.Request, res: express.Response) => {
   res.status(404).send('This route does not exist.');
 });
 export const api = functions.https.onRequest((request, response) => {
-  console.log(JSON.stringify(request.path));
   if (!request.path) {
     request.url = `/${request.url}`; // prepend '/' to keep query params if any
   }

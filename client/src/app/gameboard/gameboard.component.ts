@@ -60,7 +60,7 @@ export class GameboardComponent implements OnInit {
       )
       .subscribe();
 
-    const callable = this.fns.httpsCallable('api/messages/');
+    const callable = this.fns.httpsCallable('api/messages');
     const data$ = callable({ text: 'hello' });
     data$.subscribe(console.log);
     // const boardDoc = this.db.doc<Board>(

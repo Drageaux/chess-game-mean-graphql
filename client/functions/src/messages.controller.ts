@@ -14,14 +14,13 @@ router.get('/', (req, res) => {
 });
 
 router.post('/', (req: Request, res: Response) => {
-  console.log(JSON.stringify(req.params));
   // Grab the text parameter.
-  const original = req.params.text;
+  const original = req.body.text;
   // Push the new message into the Realtime Database using the Firebase Admin SDK.
   const snapshot = admin
     .database()
     .ref('/messages')
-    .push({ original: original });
+    .push({ original });
   // // Redirect with 303 SEE OTHER to the URL of the pushed object in the Firebase console.
   // res.redirect(303, snapshot.ref.toString());
   res.json(snapshot.ref.toJSON);
