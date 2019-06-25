@@ -10,9 +10,6 @@ import * as functions from 'firebase-functions';
 // The Firebase Admin SDK to access the Firebase Realtime Database.
 import * as admin from 'firebase-admin';
 
-console.log('local? =>', process.env.NODE_ENV);
-console.log('cred app default =>', process.env.GOOGLE_APPLICATION_CREDENTIALS);
-
 // TODO: Replace the following with your app's Firebase project configuration
 const serviceAccount = require('./serviceAccount.json');
 const adminConfig = JSON.parse(process.env.FIREBASE_CONFIG as string);
@@ -57,21 +54,6 @@ const square: Square = { file: File.a, rank: 1 };
 export const helloWorld = functions.https.onRequest((req, res) => {
   res.send('Hello from Firebase!');
 });
-
-// // Take the text parameter passed to this HTTP endpoint and insert it into the
-// // Realtime Database under the path /messages/:pushId/original
-// export const addMessage = functions.https.onRequest(async (req, res) => {
-//   console.log(JSON.stringify(req.params));
-//   // Grab the text parameter.
-//   const original = req.params.text;
-//   // Push the new message into the Realtime Database using the Firebase Admin SDK.
-//   const snapshot = await admin
-//     .database()
-//     .ref('/messages')
-//     .push({ original: original });
-//   // Redirect with 303 SEE OTHER to the URL of the pushed object in the Firebase console.
-//   res.redirect(303, snapshot.ref.toString());
-// });
 
 // Listens for new messages added to /messages/:pushId/original and creates an
 // uppercase version of the message to /messages/:pushId/uppercase
