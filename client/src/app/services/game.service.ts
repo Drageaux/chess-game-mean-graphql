@@ -144,20 +144,17 @@ export class GameService {
         board: null
       } as Game)
     );
-    // games.push(newGameObj).then(() => {}, console.error);
     return from(gamesRef.push(newGameObj)).pipe(
       map(returnedGame => returnedGame.key)
     );
   }
 
   private waitForGameReady(gameId: string) {
-    // return object(this.db.database.ref(`/games/${gameId}`)).pipe(
     return from(
       this.db.object<Game>(`/games/${gameId}`).snapshotChanges()
     ).pipe(
       skipWhile(change => {
         const game = change.payload.val() as Game;
-        console.log(gameId, game);
         return !(
           game &&
           game.whiteTeam &&
@@ -167,10 +164,7 @@ export class GameService {
           game.board
         );
       }),
-      map(() => {
-        console.log(gameId);
-        return gameId;
-      })
+      map(() => gameId)
     );
   }
 
