@@ -109,7 +109,7 @@ export class GameService {
               return from(
                 this.db.object<Game>(`/games/${val.game.snapshot.key}`).update({
                   blackTeam: userId,
-                  gameState: { started: true },
+                  'gameState/started': true,
                   board: newBoardId
                 } as Game)
               ).pipe(map(() => val.game.snapshot.key));
@@ -155,6 +155,7 @@ export class GameService {
     ).pipe(
       skipWhile(change => {
         const game = change.payload.val() as Game;
+        console.log('game =>', game);
         return !(
           game &&
           game.whiteTeam &&
