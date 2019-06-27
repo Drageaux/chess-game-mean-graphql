@@ -45,7 +45,11 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   findGame(userId: string) {
-    this.gameService.playGame(userId);
+    this.subs.sink = this.gameService
+      .playGame(userId)
+      .subscribe((gameId: string) => {
+        this.router.navigate(['/gameboard', gameId]);
+      });
   }
 
   // deprecated

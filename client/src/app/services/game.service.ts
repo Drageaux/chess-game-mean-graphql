@@ -23,6 +23,7 @@ import { Game, Square, Piece, Board } from '@shared/interfaces';
 import { QueryDocumentSnapshot } from '@firebase/firestore-types';
 import { list, QueryChange, object } from 'rxfire/database';
 import { Router } from '@angular/router';
+import { SubSink } from 'subsink';
 
 enum FindGameStatus {
   create,
@@ -38,11 +39,7 @@ const BOARD_SIZE = 8;
 export class GameService {
   private DEFAULT_BOARD: Board;
 
-  constructor(
-    private router: Router,
-    private afs: AngularFirestore,
-    private db: AngularFireDatabase
-  ) {
+  constructor(private afs: AngularFirestore, private db: AngularFireDatabase) {
     const newBoard: Board = { squares: this.initBoard() };
     this.DEFAULT_BOARD = newBoard;
   }
@@ -67,69 +64,63 @@ export class GameService {
       )
     );
 
-    return foundGame
-      .pipe(
-        // decides what action to take
-        map(game => {
-          // create new game instead if no match
-          if (!game) {
-            return { game, status: FindGameStatus.create };
-          } else {
-            const val: Game = game.snapshot.val();
-            // get game where someone is white team but not this user
-            if (`/users/${userId}` !== val.whiteTeam) {
-              return { game, status: FindGameStatus.join };
-            }
+    return foundGame.pipe(
+      // decides what action to take
+      map(game => {
+        // create new game instead if no match
+        if (!game) {
+          return { game, status: FindGameStatus.create };
+        } else {
+          const val: Game = game.snapshot.val();
+          // get game where someone is white team but not this user
+          if (`/users/${userId}` !== val.whiteTeam) {
+            return { game, status: FindGameStatus.join };
           }
-        }),
-        // switchMap also subscribes to inner Observable
-        switchMap(
-          (val: {
-            game: QueryChange;
-            status: FindGameStatus;
-          }): Observable<string> => {
-            switch (val.status) {
-              case FindGameStatus.wait:
-                throwError('Already joined game queue. Waiting for match...');
-                break;
+        }
+      }),
+      // switchMap also subscribes to inner Observable
+      switchMap(
+        (val: {
+          game: QueryChange;
+          status: FindGameStatus;
+        }): Observable<string> => {
+          switch (val.status) {
+            case FindGameStatus.wait:
+              throwError('Already joined game queue. Waiting for match...');
+              break;
 
-              case FindGameStatus.create:
-                console.log('Joining game queue...');
-                // create new game
-                return this.createNewGame(gamesRef, userId).pipe(
-                  switchMap(newGameId => this.waitForGameReady(newGameId))
-                );
+            case FindGameStatus.create:
+              console.log('Joining game queue...');
+              // create new game
+              return this.createNewGame(gamesRef, userId).pipe(
+                switchMap(newGameId => this.waitForGameReady(newGameId))
+              );
 
-              case FindGameStatus.join:
-                console.log('Found game. Initializing...');
-                // create new board
-                const boards = this.db.list<Board>('boards');
-                const newBoardObj = JSON.parse(
-                  JSON.stringify({ ...this.DEFAULT_BOARD })
-                );
-                const newBoardId = boards.push(newBoardObj).key; // NOTE: async/detached from this flow, to speed up the process
+            case FindGameStatus.join:
+              console.log('Found game. Initializing...');
+              // create new board
+              const boards = this.db.list<Board>('boards');
+              const newBoardObj = JSON.parse(
+                JSON.stringify({ ...this.DEFAULT_BOARD })
+              );
+              const newBoardId = boards.push(newBoardObj).key; // NOTE: async/detached from this flow, to speed up the process
 
-                // add this user as final player
-                return from(
-                  this.db
-                    .object<Game>(`/games/${val.game.snapshot.key}`)
-                    .update({
-                      blackTeam: userId,
-                      gameState: { started: true },
-                      board: newBoardId
-                    } as Game)
-                ).pipe(map(() => val.game.snapshot.key));
+              // add this user as final player
+              return from(
+                this.db.object<Game>(`/games/${val.game.snapshot.key}`).update({
+                  blackTeam: userId,
+                  gameState: { started: true },
+                  board: newBoardId
+                } as Game)
+              ).pipe(map(() => val.game.snapshot.key));
 
-              default:
-                throwError('Invalid find game action');
-                break;
-            }
+            default:
+              throwError('Invalid find game action');
+              break;
           }
-        )
+        }
       )
-      .subscribe((gameId: string) => {
-        this.router.navigate(['/gameboard', gameId]);
-      });
+    );
   }
 
   private createNewGame(gamesRef: firebase.database.Reference, userId: string) {
