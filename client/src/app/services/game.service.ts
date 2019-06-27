@@ -12,7 +12,8 @@ import {
 import { File, Color, PieceType } from '@shared/enums';
 import { Game, Square, Piece, Board } from '@shared/interfaces';
 import { QueryDocumentSnapshot } from '@firebase/firestore-types';
-import { list, QueryChange } from 'rxfire/database';
+import { list, QueryChange, object } from 'rxfire/database';
+import { Router } from '@angular/router';
 
 enum FindGameStatus {
   create,
@@ -29,8 +30,9 @@ export class GameService {
   private DEFAULT_BOARD: Board;
 
   constructor(
+    private router: Router,
     private afs: AngularFirestore,
-    private rtdb: AngularFireDatabase
+    private db: AngularFireDatabase
   ) {
     const newBoard: Board = { squares: this.initBoard() };
     this.DEFAULT_BOARD = newBoard;
@@ -40,9 +42,9 @@ export class GameService {
     // can only find reference by getting this DocumentReference
     const userDocRef = this.afs.doc(`users/${userId}`).ref;
     // RTDB can only filter by 1 field
-    const ref = this.rtdb.database.ref('games');
+    const gamesRef = this.db.database.ref('games');
     const gameList: Observable<QueryChange[]> = list(
-      ref.orderByChild('blackTeam').equalTo(null)
+      gamesRef.orderByChild('blackTeam').equalTo(null)
     );
     const foundGame = gameList.pipe(
       take(1),
@@ -55,66 +57,71 @@ export class GameService {
           })[0]
       )
     );
-    let foundGameId: string;
-    return foundGame.pipe(
-      // decides what action to take
-      map(game => {
-        // create new game instead if no match
-        if (!game) {
-          return FindGameStatus.create;
-        } else {
-          const val: Game = game.snapshot.val();
-          // get game where someone is white team but not this user
-          if (`/users/${userId}` !== val.whiteTeam) {
-            // foundGameId = g;
-            return FindGameStatus.join;
+
+    return foundGame
+      .pipe(
+        // decides what action to take
+        map(game => {
+          // create new game instead if no match
+          if (!game) {
+            return { game, status: FindGameStatus.create };
+          } else {
+            const val: Game = game.snapshot.val();
+            console.log(val);
+            // get game where someone is white team but not this user
+            if (`/users/${userId}` !== val.whiteTeam) {
+              return { game, status: FindGameStatus.join };
+            }
           }
-        }
-      }),
-      // switchMap also subscribes to inner Observable
-      map((status: FindGameStatus) => {
-        switch (status) {
-          case FindGameStatus.wait:
-            return throwError(
-              'Already joined game queue. Waiting for match...'
-            );
-          case FindGameStatus.create:
-            console.log('Joining game queue...');
-            // create new game and watch for change
-            return this.createNewGame(ref, userId);
-          case FindGameStatus.join:
-            // console.log('Found game. Initializing...');
-            // // create new board
-            // const boards = this.rtdb.list<Board>('boards');
-            // const newBoardObj = JSON.parse(
-            //   JSON.stringify({ ...this.DEFAULT_BOARD })
-            // );
+        }),
+        // switchMap also subscribes to inner Observable
+        switchMap(
+          (val: {
+            game: QueryChange;
+            status: FindGameStatus;
+          }): Observable<string> => {
+            switch (val.status) {
+              case FindGameStatus.wait:
+                throwError('Already joined game queue. Waiting for match...');
+                break;
 
-            // const newId = boards.push(newBoardObj).key;
-            // // const newBoardRef = this.rtdb.collection<Board>('boards').doc(newId) // saves the new ID here, no need to set as field
-            // //   .ref;
-            // // newBoardRef.set(newBoardObj); // NOTE: async/detached from this flow, to speed up the process
+              case FindGameStatus.create:
+                console.log('Joining game queue...');
+                // create new game
+                return this.createNewGame(gamesRef, userId).pipe(
+                  map(this.waitForGameReady(game))
+                );
 
-            // // add this user as final player
-            // return from(
-            //   gameList.update({
-            //     blackTeam: userDocRef,
-            //     gameState: { started: true },
-            //     board: newId
-            //   } as Game)
-            // ).pipe(map(() => foundGame.ref)); // returns updated game's ref
-            break;
-          default:
-            return throwError('Invalid find game action');
-        }
-      })
-      // // format the doc into human readable interface
-      // switchMap(newGameId: string) =>
-      //   return from(gameRef.get()).pipe(
-      //     map(snapshot => ({ id: snapshot.id, ...snapshot.data() } as Game))
-      //   )
-      // )
-    );
+              case FindGameStatus.join:
+                console.log('Found game. Initializing...');
+                // create new board
+                const boards = this.db.list<Board>('boards');
+                const newBoardObj = JSON.parse(
+                  JSON.stringify({ ...this.DEFAULT_BOARD })
+                );
+                const newBoardId = boards.push(newBoardObj).key; // NOTE: async/detached from this flow, to speed up the process
+
+                // add this user as final player
+                return from(
+                  this.db
+                    .object<Game>(`/games/${val.game.snapshot.key}`)
+                    .update({
+                      blackTeam: userId,
+                      gameState: { started: true },
+                      board: newBoardId
+                    } as Game)
+                ).pipe(map(() => val.game.snapshot.key));
+
+              default:
+                throwError('Invalid find game action');
+                break;
+            }
+          }
+        )
+      )
+      .subscribe((gameId: string) => {
+        this.router.navigate(['/gameboard', gameId]);
+      });
   }
 
   private createNewGame(gamesRef: firebase.database.Reference, userId: string) {
@@ -139,7 +146,11 @@ export class GameService {
       } as Game)
     );
     // games.push(newGameObj).then(() => {}, console.error);
-    return from(gamesRef.push(newGameObj));
+    return from(gamesRef.push(newGameObj).key);
+  }
+
+  private waitForGameReady() {
+    return '';
   }
 
   private initBoard(): Square[] {

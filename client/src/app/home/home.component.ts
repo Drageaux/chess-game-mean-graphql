@@ -45,29 +45,7 @@ export class HomeComponent implements OnInit, OnDestroy {
   }
 
   findGame(userId: string) {
-    this.subs.sink = this.gameService.playGame(userId).subscribe(console.log);
-
-    // wait until found the game
-    // this.subs.sink = playGame
-    // // navigate to game page
-    // .subscribe((foundGame: Game) => {
-    //   if (foundGame) {
-    //     console.log(foundGame);
-    //   }
-
-    //   if (
-    //     foundGame &&
-    //     foundGame.id &&
-    //     foundGame.whiteTeam &&
-    //     foundGame.blackTeam &&
-    //     foundGame.gameState &&
-    //     foundGame.gameState.started &&
-    //     foundGame.board
-    //   ) {
-    //     console.log('Found game. Initializing...');
-    //     this.router.navigate(['/gameboard', foundGame.id]);
-    //   }
-    // }, console.error);
+    this.gameService.playGame(userId);
   }
 
   // deprecated

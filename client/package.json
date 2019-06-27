@@ -15,6 +15,7 @@
     "e2e": "ng e2e",
     "bundle-report": "webpack-bundle-analyzer ../server/dist/stats.json",
     "graph-gen": "graphql-codegen --config codegen.yml",
+    "dev":"npm run start && npm run emulate",
     "deploy:full": "npm run build:prod && firebase deploy",
     "deploy:nobuild": "firebase deploy",
     "emulate": "firebase emulators:start"
