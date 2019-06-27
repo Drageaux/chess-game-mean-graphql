@@ -8,26 +8,26 @@ export interface User {
 }
 
 export interface GameState {
-  gameStarted: boolean;
-  gameOver: boolean;
-  currentTurn: Color;
-  checked: {
-    black: boolean;
-    white: boolean;
+  started?: boolean;
+  over?: boolean;
+  currTurn?: Color;
+  checked?: {
+    black?: boolean;
+    white?: boolean;
   };
 }
 
 export interface Game {
-  readonly id: string;
-  createdAt: Timestamp;
-  whiteTeam?: DocumentReference;
-  blackTeam?: DocumentReference;
-  gameState: GameState;
+  readonly id?: string;
+  createdAt?: any;
+  whiteTeam?: User | string;
+  blackTeam?: User | string;
+  gameState?: GameState;
   board?: DocumentReference | string;
 }
 
 export interface Piece {
-  type: PieceType;
+  type?: PieceType;
   color: Color;
   captured?: boolean;
 }

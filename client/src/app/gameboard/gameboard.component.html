@@ -3,6 +3,6 @@
 <app-board
   *ngIf="game | async; else loading"
   [board]="board | async"
-  [currTurn]="(game | async)?.gameState?.currentTurn"
 ></app-board>
+<!-- [currTurn]="(game | async)?.gameState?.currentTurn" -->
 <ng-template #loading>Loading...</ng-template>
