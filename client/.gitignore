@@ -46,5 +46,4 @@ testem.log
 .DS_Store
 Thumbs.db
 
-/.priv
 /**/serviceAccount.json

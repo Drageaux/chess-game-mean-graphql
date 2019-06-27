@@ -11,10 +11,9 @@ import * as functions from 'firebase-functions';
 import * as admin from 'firebase-admin';
 
 // TODO: Replace the following with your app's Firebase project configuration
-const serviceAccount = require('./serviceAccount.json');
-const adminConfig = JSON.parse(process.env.FIREBASE_CONFIG as string);
+import * as serviceAccount from './serviceAccount.json';
 admin.initializeApp({
-  credential: admin.credential.cert(serviceAccount),
+  credential: admin.credential.cert(serviceAccount as admin.ServiceAccount),
   databaseURL: 'https://chess-game-873f6.firebaseio.com'
 });
 
