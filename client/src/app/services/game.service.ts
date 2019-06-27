@@ -1,7 +1,16 @@
 import { AngularFireDatabase } from '@angular/fire/database';
 import { Injectable } from '@angular/core';
 import { of, from, Observable, throwError } from 'rxjs';
-import { switchMap, map, take, filter, tap } from 'rxjs/operators';
+import {
+  switchMap,
+  map,
+  take,
+  filter,
+  tap,
+  takeUntil,
+  skipUntil,
+  skipWhile
+} from 'rxjs/operators';
 import * as firebase from 'firebase/app';
 import { doc } from 'rxfire/firestore';
 import {
@@ -67,7 +76,6 @@ export class GameService {
             return { game, status: FindGameStatus.create };
           } else {
             const val: Game = game.snapshot.val();
-            console.log(val);
             // get game where someone is white team but not this user
             if (`/users/${userId}` !== val.whiteTeam) {
               return { game, status: FindGameStatus.join };
@@ -89,7 +97,7 @@ export class GameService {
                 console.log('Joining game queue...');
                 // create new game
                 return this.createNewGame(gamesRef, userId).pipe(
-                  map(this.waitForGameReady(game))
+                  switchMap(newGameId => this.waitForGameReady(newGameId))
                 );
 
               case FindGameStatus.join:
@@ -146,11 +154,33 @@ export class GameService {
       } as Game)
     );
     // games.push(newGameObj).then(() => {}, console.error);
-    return from(gamesRef.push(newGameObj).key);
+    return from(gamesRef.push(newGameObj)).pipe(
+      map(returnedGame => returnedGame.key)
+    );
   }
 
-  private waitForGameReady() {
-    return '';
+  private waitForGameReady(gameId: string) {
+    // return object(this.db.database.ref(`/games/${gameId}`)).pipe(
+    return from(
+      this.db.object<Game>(`/games/${gameId}`).snapshotChanges()
+    ).pipe(
+      skipWhile(change => {
+        const game = change.payload.val() as Game;
+        console.log(gameId, game);
+        return !(
+          game &&
+          game.whiteTeam &&
+          game.blackTeam &&
+          game.gameState &&
+          game.gameState.started &&
+          game.board
+        );
+      }),
+      map(() => {
+        console.log(gameId);
+        return gameId;
+      })
+    );
   }
 
   private initBoard(): Square[] {
