@@ -66,4 +66,5 @@ export interface Board {
 export interface Move {
   from: Square;
   to: Square;
+  onAlly: boolean;
 }
