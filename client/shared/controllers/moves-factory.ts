@@ -6,7 +6,7 @@ export const movesFactory = (from: Square, board: Square[]) => {
   const boardMap = toBoardMap(board);
 
   if (from.piece) {
-    const pieceType: PieceType = from.piece.type;
+    const pieceType = from.piece.type;
     switch (pieceType) {
       case PieceType.Rook:
         return makeStraightLineMoves(from, boardMap);
@@ -35,6 +35,9 @@ const makeStraightLineMoves = (
   // go left
   for (let i = from.file - 1; i >= 1; i--) {
     const newMove = travLine(from, i, from.rank, board);
+    if (!newMove) {
+      break;
+    }
     const { to } = newMove;
     result.set(`${from.file}${from.rank}${to.file}${to.rank}`, newMove);
     if (!shouldContinueTrav(newMove)) {
@@ -44,6 +47,9 @@ const makeStraightLineMoves = (
   // go right
   for (let i = from.file + 1; i <= 8; i++) {
     const newMove = travLine(from, i, from.rank, board);
+    if (!newMove) {
+      break;
+    }
     const { to } = newMove;
     result.set(`${from.file}${from.rank}${to.file}${to.rank}`, newMove);
     if (!shouldContinueTrav(newMove)) {
@@ -53,6 +59,9 @@ const makeStraightLineMoves = (
   // go up
   for (let i = from.rank + 1; i <= 8; i++) {
     const newMove = travLine(from, from.file, i, board);
+    if (!newMove) {
+      break;
+    }
     const { to } = newMove;
     result.set(`${from.file}${from.rank}${to.file}${to.rank}`, newMove);
     if (!shouldContinueTrav(newMove)) {
@@ -62,6 +71,9 @@ const makeStraightLineMoves = (
   // go down
   for (let i = from.rank - 1; i >= 1; i--) {
     const newMove = travLine(from, from.file, i, board);
+    if (!newMove) {
+      break;
+    }
     const { to } = newMove;
     result.set(`${from.file}${from.rank}${to.file}${to.rank}`, newMove);
     if (!shouldContinueTrav(newMove)) {
@@ -82,15 +94,25 @@ const travLine = (
   newFile: File,
   newRank: number,
   board: Map<File, Square[]>
-): Move => {
-  let newMove: Move = {} as Move;
-  const to: Square = board.get(newFile)[newRank - 1];
-  if (to) {
-    newMove = {
-      from,
-      to,
-      onAlly: to.piece && to.piece.color === from.piece.color ? true : false
-    } as Move;
+): Move | null => {
+  let newMove = null;
+
+  if (!from.piece) {
+    throw Error('Origin Square does not have a Piece');
+  }
+
+  const squareArray = board.get(newFile);
+  if (squareArray) {
+    const to: Square = squareArray[newRank - 1];
+    if (to && from.piece) {
+      newMove = {
+        from,
+        to,
+        onAlly: to.piece && to.piece.color === from.piece.color ? true : false
+      } as Move;
+    }
+  } else {
+    throw Error('Something went wrong while checking a Square');
   }
   return newMove;
 };
@@ -100,11 +122,15 @@ const shouldContinueTrav = (move: Move): boolean => {
     return false;
   }
   // continue if route is clear
-  if (!move.to.piece) {
+  if (move.to && !move.to.piece) {
     return true;
   }
 
-  if (move.to.piece.color !== move.from.piece.color) {
+  if (
+    move.to.piece &&
+    move.from.piece &&
+    move.to.piece.color !== move.from.piece.color
+  ) {
     // NOT overlapping onAlly if different color
     // don't have to stop if the piece is enemy King
     // because if the enemy King moves anywhere in this line, it's still being attacked
