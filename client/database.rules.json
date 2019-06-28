@@ -4,6 +4,10 @@
     ".write": true,
     "games": {
       ".indexOn": ["createdAt"]
+    },
+    "moves": {
+      ".read": true,
+      ".write": false
     }
   }
 }

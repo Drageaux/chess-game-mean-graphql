@@ -19,7 +19,7 @@ export const makeUppercase = functions.database
   });
 
 export const generateMoves = functions.database
-  .ref('/games/{gameId}/gameState/currTurn')
+  .ref('/games/{gameId}')
   .onUpdate((snapshot, context) => {
-    console.log(snapshot);
+    return snapshot;
   });

@@ -5,12 +5,14 @@ import * as admin from 'firebase-admin';
 const router: Router = Router();
 
 const db = admin.database();
-const ref = db.ref('/boards');
+const movesRef = db.ref('/moves');
+const gamesRef = db.ref('/games');
+const boardsRef = db.ref('/boards');
 
 router.get('/', (req, res) => {
-  ref.once('value', (snapshot: any) => {
-    res.send(snapshot.val());
-  });
+  const { gameId } = req.body;
+  const gameState = gamesRef.ref.child(`/${gameId}`);
+  boardsRef.child('/');
 });
 
 // router.get('/:');
